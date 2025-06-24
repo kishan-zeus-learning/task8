@@ -1,0 +1,19 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.upperDiv {
+  height: 100px;
+  background-color: aliceblue;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.subRow {
+  width: -moz-fit-content;
+  width: fit-content;
+  border: black 1px solid;
+}/*# sourceMappingURL=style.css.map */
