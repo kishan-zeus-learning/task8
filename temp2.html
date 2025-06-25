@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Aliasing vs Anti-Aliasing Demo</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      display: flex;
+      gap: 40px;
+      padding: 20px;
+    }
+    canvas {
+      border: 1px solid #333;
+      image-rendering: pixelated; /* show pixels clearly */
+    }
+    .container {
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h3>No Anti-Aliasing (Aliased)</h3>
+    <canvas id="canvasNoAA" width="200" height="200"></canvas>
+  </div>
+
+  <div class="container">
+    <h3>With Anti-Aliasing</h3>
+    <canvas id="canvasAA" width="200" height="200"></canvas>
+  </div>
+
+<script>
+  // Draw aliased diagonal (no smoothing)
+  const canvasNoAA = document.getElementById('canvasNoAA');
+  const ctxNoAA = canvasNoAA.getContext('2d');
+  ctxNoAA.imageSmoothingEnabled = false; // Disable smoothing
+  ctxNoAA.strokeStyle = 'black';
+  ctxNoAA.lineWidth = 1;
+
+  // Draw diagonal pixels manually (simulate aliased)
+  for(let i=0; i<200; i++) {
+    ctxNoAA.fillRect(i, i, 1, 1);
+  }
+
+  // Draw anti-aliased diagonal (normal canvas line)
+  const canvasAA = document.getElementById('canvasAA');
+  const ctxAA = canvasAA.getContext('2d');
+  ctxAA.strokeStyle = 'black';
+  ctxAA.lineWidth = 1;
+
+  // Draw smooth diagonal line
+  ctxAA.beginPath();
+  ctxAA.moveTo(0.5, 0.5);
+  ctxAA.lineTo(199.5, 199.5);
+  ctxAA.stroke();
+</script>
+
+</body>
+</html>

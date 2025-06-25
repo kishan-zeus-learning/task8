@@ -1,0 +1,52 @@
+.sheet {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  grid-template-rows: auto 1fr;
+  height: calc(100vh - 100px);
+  width: calc(100vw);
+  overflow-y: scroll;
+  overflow-x: scroll;
+ 
+  .corner {
+    grid-row: 1 / 2;
+    grid-column: 1 / 2;
+    position: sticky;
+    top: 0;
+    left: 0;
+    z-index: 3;
+    background-color: #e7e7e7;
+    // border: 1px solid black;
+    width: 80px;
+    height: 25px;
+    box-sizing: border-box;
+    border: 1px solid black;
+  }
+ 
+  .columnsRowWrapper {
+    grid-row: 1 / 2;
+    grid-column: 2 / 3;
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    display: flex;
+    background-color: #f1f1f1;
+  }
+ 
+  .rowsColumnWrapper {
+    grid-row: 2 / 3;
+    grid-column: 1 / 2;
+    position: sticky;
+    left: 0;
+    z-index: 2;
+    background-color: #f1f1f1;
+    box-sizing: content-box;
+  }
+ 
+  .gridContent {
+    grid-row: 2 / 3;
+    grid-column: 2 / 3;
+    overflow: scroll;
+    position: relative;
+  }
+}

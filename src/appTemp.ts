@@ -1,6 +1,7 @@
 import {RowsCanvas} from './Rows.js';
 import { ColumnsCanvas } from './Columns.js';
-import { Tile } from './Tile.js';
+// import { Tile } from './Tile.js';
+import { TilesManager } from './TilesManager.js';
 
 const obj=new RowsCanvas(0,{[20]:{height:500}},80,24);
 const div=obj.createRowCanvas(0);
@@ -19,14 +20,12 @@ temp?.appendChild(div3);
 const colObj=new ColumnsCanvas(0,{[3]:{width:160},[20]:{
     width:900
 }},80,25);
+const colObj2=new ColumnsCanvas(1,{},80,25);
 const temp2=document.querySelector('.columnsRow');
 temp2?.appendChild(colObj.createcolumnCanvas());
+temp2?.appendChild(colObj2.createcolumnCanvas());
 
-const temp3=document.getElementById("grid");
-const tileObj=new Tile(0,0,obj.rowsPositionArr,colObj.columnsPositionArr);
-temp3?.appendChild(tileObj.createTile());
-
-window.addEventListener("click",(event)=>{
-    const temp=event.target as HTMLElement;
-    console.log(temp.parentElement);
-})
+const rowsPositionArr=[obj.rowsPositionArr,obj2.rowsPositionArr];
+const columnsPositionArr=[colObj.columnsPositionArr,colObj2.columnsPositionArr];
+const tilesManagerObj=new TilesManager(rowsPositionArr,columnsPositionArr,2,2,0,0);
+tilesManagerObj.mountTileBottom();
