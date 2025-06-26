@@ -1,23 +1,9 @@
 import { columnData } from "./types/ColumnRows";
- 
-class Columns{
-    private columnWidths:columnData;
-    private mountLeftPos:number;
-    private mountRightPos:number;
- 
-    constructor(columnWidths:columnData,mountLeftPos:number,mountRightPos:number){
-        this.columnWidths=columnWidths;
-        this.mountLeftPos=mountLeftPos;
-        this.mountRightPos=mountRightPos;
-    }
- 
-}
- 
 export class ColumnsCanvas{
     private columnWidths:columnData;
     readonly columnsPositionArr:number[];
     readonly columnID:number;
-    private columnCanvas:HTMLDivElement;
+    readonly columnCanvas:HTMLDivElement;
     private defaultWidth:number;
     private defaultHeight:number;
  
@@ -29,12 +15,11 @@ export class ColumnsCanvas{
         this.columnsPositionArr=this.createColumnsPositionArr();
         this.columnCanvas=this.createcolumnCanvas();
 
-        
     }
 
     
  
-    createColumnsPositionArr(){
+    private createColumnsPositionArr(){
         let startNum=this.columnID*25+1;
         let prefixSum=0;
         const columnsPostion=[];
@@ -50,7 +35,7 @@ export class ColumnsCanvas{
         return columnsPostion;
     }
  
-    createcolumnCanvas(){
+    private createcolumnCanvas(){
         const columnDiv=document.createElement("div");
         columnDiv.id=`column${this.columnID}`;
         columnDiv.classList.add("subColumn");
@@ -90,7 +75,7 @@ export class ColumnsCanvas{
         return columnDiv;
     }
  
-    getColumnString(num:number):string{
+    private getColumnString(num:number):string{
         num--;
         if(num<0) return "";
         return this.getColumnString(Math.floor(num/26))+String.fromCharCode("A".charCodeAt(0) + (num%26));
