@@ -3,8 +3,8 @@
 export class Tile{
     private row:number;
     private col:number;
-    private rowsPositionArr:number[];
-    private colsPositionArr:number[];
+    readonly rowsPositionArr:number[];
+    readonly colsPositionArr:number[];
     readonly tileDiv:HTMLDivElement;
 
     constructor(row:number,col:number,rowsPositionArr:number[],colsPositionArr:number[]){

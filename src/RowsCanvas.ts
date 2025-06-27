@@ -40,13 +40,18 @@ export class RowsCanvas {
 
         const rowCanvas = document.createElement("canvas");
 
+        this.drawCanvas(rowCanvas);
+        rowDiv.appendChild(rowCanvas);
+        return rowDiv;
+    }
+
+    private drawCanvas(rowCanvas:HTMLCanvasElement){
         const dpr = window.devicePixelRatio || 1;
         rowCanvas.width = this.defaultWidth * dpr;
         rowCanvas.height = this.rowsPositionArr[24] * dpr;
         rowCanvas.style.width = `${this.defaultWidth}px`;
         rowCanvas.style.height = `${this.rowsPositionArr[24]}px`;
 
-        rowDiv.style.height = `${this.rowsPositionArr[24]}px`;
 
         const ctx = rowCanvas.getContext("2d") as CanvasRenderingContext2D;
         ctx.scale(dpr, dpr);
@@ -63,7 +68,7 @@ export class RowsCanvas {
         ctx.fillStyle = "black";
 
 
-        let startNum = rowID * 25 + 1;
+        let startNum = this.rowID * 25 + 1;
         const offset = 0.5 / dpr;
         for (let i = 0; i < 25; i++) {
             ctx.moveTo(0, this.rowsPositionArr[i] - offset);
@@ -80,8 +85,6 @@ export class RowsCanvas {
         ctx.stroke();
 
 
-        rowDiv.appendChild(rowCanvas);
-        return rowDiv;
     }
 
 }

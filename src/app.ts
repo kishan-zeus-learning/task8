@@ -1,32 +1,10 @@
-import {RowsCanvas} from './RowsCanvas.js';
-import { ColumnsCanvas } from './ColumnsCanvas.js';
-import { Tile } from './Tile.js';
+import { ScrollManager } from "./ScrollManager.js";
+import { RowsManager } from "./RowsManager.js";
+import { ColumnsManager } from "./ColumnsManager.js";
+import { TilesManager } from "./TilesManager.js";
 
-const obj=new RowsCanvas(0,{[20]:{height:500}},80,24);
-const div=obj.rowCanvas;
-
-const obj2=new RowsCanvas(1,{},80,24);
-const div2=obj2.rowCanvas;
-
-const obj3=new RowsCanvas(2,{},80,24);
-const div3=obj3.rowCanvas;
-
-const temp=document.querySelector('.rowsColumn');
-
-temp?.appendChild(div);
-temp?.appendChild(div2);
-temp?.appendChild(div3);
-const colObj=new ColumnsCanvas(0,{[3]:{width:160},[20]:{
-    width:900
-}},80,25);
-const temp2=document.querySelector('.columnsRow');
-temp2?.appendChild(colObj.columnCanvas);
-
-const temp3=document.getElementById("grid");
-const tileObj=new Tile(0,0,obj.rowsPositionArr,colObj.columnsPositionArr);
-temp3?.appendChild(tileObj.createTile());
-
-window.addEventListener("click",(event)=>{
-    const temp=event.target as HTMLElement;
-    console.log(temp.parentElement);
-})
+const obj = new ScrollManager();
+const RowsManagerObj = new RowsManager({[5]:{height:100},[30]:{height:200},[55]:{height:300}}, 0, obj.verticalNum);
+const ColumnsManagerObj = new ColumnsManager({[5]:{width:200},[30]:{width:300},[55]:{width:400}}, 0, obj.horizontalNum);
+const TilesManagerObj = new TilesManager(RowsManagerObj.rowsPositionPrefixSumArr, ColumnsManagerObj.visibleColumnsPrefixSum, obj.verticalNum, obj.horizontalNum,undefined,undefined,RowsManagerObj.marginTop,ColumnsManagerObj.marginLeft);
+obj.initializeManager(ColumnsManagerObj, RowsManagerObj, TilesManagerObj);

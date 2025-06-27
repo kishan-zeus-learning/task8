@@ -1,8 +1,9 @@
 import { RowsCanvas } from "./RowsCanvas.js";
 export class RowsManager {
-    constructor(rowHeights, startRowIdx, visibleRowCnt, defaultHeight = 25, defaultWidth = 80, marginTop = 0) {
+    constructor(rowHeights, startRowIdx, visibleRowCnt, rowCanvasLimit = 4000, defaultHeight = 25, defaultWidth = 80, marginTop = { value: 0 }) {
         this.rowHeights = rowHeights;
         this.startRowIdx = startRowIdx;
+        this.rowCanvasLimit = rowCanvasLimit;
         this.visibleRowCnt = visibleRowCnt;
         this.rowsPositionPrefixSumArr = [];
         this.rowsDivArr = [];
@@ -14,19 +15,20 @@ export class RowsManager {
         this.initialLoad();
     }
     scrollDown() {
+        if (this.startRowIdx === (this.rowCanvasLimit - 1 - this.visibleRowCnt))
+            return false;
         this.unmountRowTop();
-        this.rowsPositionPrefixSumArr.shift();
-        this.visibleRows.shift();
-        this.rowsDivArr.shift();
         this.startRowIdx++;
         this.mountRowBottom();
+        return true;
     }
     scrollUp() {
         if (this.startRowIdx === 0)
-            return;
+            return false;
         this.unmountRowBottom();
         this.startRowIdx--;
         this.mountRowTop();
+        return true;
     }
     initialLoad() {
         for (let i = 0; i < this.visibleRowCnt; i++) {
@@ -50,12 +52,12 @@ export class RowsManager {
         this.rowsPositionPrefixSumArr.unshift(this.visibleRows[0].rowsPositionArr);
         this.rowsDivArr.unshift(this.visibleRows[0].rowCanvas);
         this.rowsDivContainer.prepend(this.visibleRows[0].rowCanvas);
-        this.marginTop -= this.rowsPositionPrefixSumArr[0][24];
-        this.rowsDivContainer.style.marginTop = `${this.marginTop}px`;
+        this.marginTop.value -= this.rowsPositionPrefixSumArr[0][24];
+        this.rowsDivContainer.style.marginTop = `${this.marginTop.value}px`;
     }
     unmountRowTop() {
-        this.marginTop += this.rowsPositionPrefixSumArr[0][24];
-        this.rowsDivContainer.style.marginTop = `${this.marginTop}px`;
+        this.marginTop.value += this.rowsPositionPrefixSumArr[0][24];
+        this.rowsDivContainer.style.marginTop = `${this.marginTop.value}px`;
         this.rowsDivContainer.removeChild(this.rowsDivArr[0]);
         this.rowsDivArr.shift();
         this.rowsPositionPrefixSumArr.shift();

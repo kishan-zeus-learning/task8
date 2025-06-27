@@ -1,67 +1,142 @@
+import { ColumnsCanvas } from "./ColumnsCanvas.js";
 import { ColumnsManager } from "./ColumnsManager.js";
+import { RowsCanvas } from "./RowsCanvas.js";
 import { RowsManager } from "./RowsManager.js";
 import { TilesManager } from "./TilesManager.js";
-
-export class ScrollManager{
-    private gridDiv:HTMLDivElement;
-    private sheetDiv:HTMLDivElement;
-    private minHeight:number=18;
-    private minWidth:number=40;
-    private verticalNum:number;
-    private horizontalNum:number;
-    constructor(){
-        this.gridDiv=document.getElementById("grid") as HTMLDivElement;
-        this.sheetDiv=document.getElementById("sheet") as HTMLDivElement;
-        this.verticalNum=this.minVerticalDiv()+2;
-        this.horizontalNum=this.minHorizontalDiv()+2;
-        console.log("total divs : ",this.verticalNum,this.horizontalNum);
+ 
+export class ScrollManager {
+    private gridDiv: HTMLDivElement;
+    private sheetDiv: HTMLDivElement;
+    private minHeight: number = 18;
+    private minWidth: number = 40;
+    readonly verticalNum: number;
+    readonly horizontalNum: number;
+    private columnsManager: ColumnsManager | null = null;
+    private rowsManager: RowsManager | null = null;
+    private tilesManager: TilesManager | null = null;
+    private containerDivRect:DOMRect;
+ 
+    constructor() {
+        this.gridDiv = document.getElementById("grid") as HTMLDivElement;
+        this.sheetDiv = document.getElementById("sheet") as HTMLDivElement;
+        this.containerDivRect=this.sheetDiv.getBoundingClientRect();
+        this.verticalNum = this.minVerticalDiv() + 2;
+        this.horizontalNum = this.minHorizontalDiv() + 2;
         this.scrollListener();
     }
-
-    private minVerticalDiv(){
-        return Math.ceil(Math.ceil(this.sheetDiv.clientHeight/(this.minHeight))/25);
+ 
+    initializeManager(columnsManager: ColumnsManager, rowsManager: RowsManager, tilesManager: TilesManager) {
+        this.columnsManager = columnsManager;
+        this.rowsManager = rowsManager;
+        this.tilesManager = tilesManager;
     }
-
-    private minHorizontalDiv(){
-        return Math.ceil(Math.ceil(this.sheetDiv.clientWidth/(this.minWidth))/25);
+ 
+    private minVerticalDiv() {
+        return Math.ceil(Math.ceil(this.sheetDiv.clientHeight / (this.minHeight)) / 25);
     }
-
-    private scrollListener(){
-        let lastScrollTop=this.sheetDiv.scrollTop;
-        let lastScrollLeft=this.sheetDiv.scrollLeft;
-
-        this.sheetDiv.addEventListener("scroll",(event)=>{
-            const currentScrollTop=this.sheetDiv.scrollTop;
-            const currentScrollLeft=this.sheetDiv.scrollLeft;
-            if(currentScrollTop>lastScrollTop){
+ 
+    private minHorizontalDiv() {
+        return Math.ceil(Math.ceil(this.sheetDiv.clientWidth / (this.minWidth)) / 25);
+    }
+ 
+    private scrollListener() {
+        let lastScrollTop = this.sheetDiv.scrollTop;
+        let lastScrollLeft = this.sheetDiv.scrollLeft;
+ 
+        this.sheetDiv.addEventListener("scroll", (event) => {
+            const currentScrollTop = this.sheetDiv.scrollTop;
+            const currentScrollLeft = this.sheetDiv.scrollLeft;
+            if (currentScrollTop > lastScrollTop) {
                 this.handleScrollDown(event);
-            }else if(currentScrollTop<lastScrollTop){
+            }
+            if (currentScrollTop < lastScrollTop) {
                 this.handleScrollUp(event);
-            }else if(currentScrollLeft>lastScrollLeft){
+            }
+             if (currentScrollLeft > lastScrollLeft) {
                 this.handleScrollRight(event);
-            }else{
+            } 
+            if(currentScrollLeft<lastScrollLeft) {
                 this.handleScrollLeft(event);
             }
-
-            lastScrollLeft=currentScrollLeft;
-            lastScrollTop=currentScrollTop;
+ 
+            lastScrollLeft = currentScrollLeft;
+            lastScrollTop = currentScrollTop;
         });
+ 
     }
-
-    private handleScrollDown(event:Event){
-
+ 
+    private handleScrollDown(event: Event) {
+        const lastRow = this.rowsManager?.visibleRows[this.rowsManager.visibleRows.length - 1] as RowsCanvas;
+        const bufferRect = lastRow.rowCanvas.getBoundingClientRect();
+ 
+        const isVisible = (
+bufferRect.top < this.containerDivRect.bottom &&
+bufferRect.bottom > this.containerDivRect.top
+        );
+ 
+        if (isVisible) {
+            if(this.rowsManager?.scrollDown()){
+                this.tilesManager?.scrollDown(this.rowsManager?.rowsPositionPrefixSumArr[this.rowsManager.rowsPositionPrefixSumArr.length-1] as number[]);
+            }
+        }
     }
-
-    private handleScrollUp(event:Event){
-
+ 
+    private handleScrollUp(event: Event) {
+        const firstRow = this.rowsManager?.visibleRows[0] as RowsCanvas;
+ 
+        const bufferRect=firstRow.rowCanvas.getBoundingClientRect();
+ 
+        const isVisible=(
+bufferRect.bottom>this.containerDivRect.top &&
+bufferRect.top<this.containerDivRect.bottom
+        );
+ 
+        if(isVisible){
+            if(this.rowsManager?.scrollUp()){
+                this.tilesManager?.scrollUp(this.rowsManager?.rowsPositionPrefixSumArr[0] as number[]);
+            }
+        }
     }
-
-    private handleScrollRight(event:Event){
-
+ 
+    private handleScrollRight(event: Event) {
+        const lastColumn=this.columnsManager?.visibleColumns[this.columnsManager.visibleColumns.length-1] as ColumnsCanvas;
+        const bufferRect=lastColumn.columnCanvas.getBoundingClientRect();
+ 
+        const isVisible=(
+            bufferRect.right>this.containerDivRect.left &&
+            bufferRect.left<this.containerDivRect.right
+        )
+        if(isVisible){
+            if(this.columnsManager?.scrollRight()){
+                console.log("before rendering : ");
+                // console.log(this.tilesManager);
+                // this.tilesManager?.printConsole();
+                this.tilesManager?.scrollRight(this.columnsManager?.visibleColumnsPrefixSum[this.columnsManager.visibleColumnsPrefixSum.length-1] as number[]);
+                console.log("After rendering");
+                // console.log(this.tilesManager);
+                // this.tilesManager?.printConsole();
+            }
+        }
+ 
     }
-    private handleScrollLeft(event:Event){
-
+    private handleScrollLeft(event: Event) {
+        const firstColumn=this.columnsManager?.visibleColumns[0] as ColumnsCanvas;
+        const bufferRect=firstColumn.columnCanvas.getBoundingClientRect();
+ 
+        const isVisible=(
+            bufferRect.left<this.containerDivRect.right &&
+            bufferRect.right>this.containerDivRect.left
+        )
+ 
+        if(isVisible){
+ 
+            if(this.columnsManager?.scrollLeft()){
+                this.tilesManager?.scrollLeft(this.columnsManager?.visibleColumnsPrefixSum[0] as number[]);
+            }
+        }
+ 
     }
 }
+ 
 
-new ScrollManager();
+

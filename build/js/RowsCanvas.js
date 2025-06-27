@@ -27,12 +27,16 @@ export class RowsCanvas {
         rowDiv.id = `row${rowID}`;
         rowDiv.classList.add("subRow");
         const rowCanvas = document.createElement("canvas");
+        this.drawCanvas(rowCanvas);
+        rowDiv.appendChild(rowCanvas);
+        return rowDiv;
+    }
+    drawCanvas(rowCanvas) {
         const dpr = window.devicePixelRatio || 1;
         rowCanvas.width = this.defaultWidth * dpr;
         rowCanvas.height = this.rowsPositionArr[24] * dpr;
         rowCanvas.style.width = `${this.defaultWidth}px`;
         rowCanvas.style.height = `${this.rowsPositionArr[24]}px`;
-        rowDiv.style.height = `${this.rowsPositionArr[24]}px`;
         const ctx = rowCanvas.getContext("2d");
         ctx.scale(dpr, dpr);
         ctx.beginPath();
@@ -44,7 +48,7 @@ export class RowsCanvas {
         ctx.textBaseline = "middle";
         ctx.strokeStyle = "black";
         ctx.fillStyle = "black";
-        let startNum = rowID * 25 + 1;
+        let startNum = this.rowID * 25 + 1;
         const offset = 0.5 / dpr;
         for (let i = 0; i < 25; i++) {
             ctx.moveTo(0, this.rowsPositionArr[i] - offset);
@@ -57,7 +61,5 @@ export class RowsCanvas {
         ctx.moveTo(0.5, 0);
         ctx.lineTo(0.5, this.rowsPositionArr[24]);
         ctx.stroke();
-        rowDiv.appendChild(rowCanvas);
-        return rowDiv;
     }
 }

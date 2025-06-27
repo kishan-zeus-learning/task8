@@ -1,6 +1,6 @@
 import { Tile } from "./Tile.js";
 export class TilesManager {
-    constructor(visibleTilesRowPrefixSum, visibleTilesColumnPrefixSum, visibleRowCnt, visibleColumnCnt, startRowIdx = 0, startColIdx = 0, marginTop = 0, marginLeft = 0) {
+    constructor(visibleTilesRowPrefixSum, visibleTilesColumnPrefixSum, visibleRowCnt, visibleColumnCnt, startRowIdx = 0, startColIdx = 0, marginTop = { value: 0 }, marginLeft = { value: 0 }) {
         this.gridDiv = document.getElementById("grid");
         this.visibleTilesRowPrefixSum = visibleTilesRowPrefixSum;
         this.visibleTilesColumnPrefixSum = visibleTilesColumnPrefixSum;
@@ -15,33 +15,34 @@ export class TilesManager {
         this.initialLoad();
     }
     scrollDown(nextRowPrefixSumArr) {
-        // if(this.startRowIdx>=this.maxRowIdx) return ;
+        this.gridDiv.style.marginTop = `${this.marginTop.value}px`;
         this.unmountTileTop();
         this.startRowIdx++;
-        this.visibleTilesRowPrefixSum.push(nextRowPrefixSumArr);
+        // this.visibleTilesRowPrefixSum.push(nextRowPrefixSumArr);
         this.mountTileBottom();
     }
     scrollRight(nextColumnPrefixSumArr) {
-        // if(this.startColIdx>=this.maxColIdx) return;
+        console.log("margin: ", this.marginLeft.value);
+        this.gridDiv.style.marginLeft = `${this.marginLeft.value}px`;
         this.unmountTileLeft();
         this.startColIdx++;
-        this.visibleTilesColumnPrefixSum.push(nextColumnPrefixSumArr);
+        // this.visibleTilesColumnPrefixSum.push(nextColumnPrefixSumArr);
         this.mountTileRight();
     }
     scrollUp(prevRowPrefixSumArr) {
-        if (this.startRowIdx === 0)
-            return;
+        this.gridDiv.style.marginTop = `${this.marginTop.value}px`;
         this.unmountTileBottom();
-        this.visibleTilesRowPrefixSum.unshift(prevRowPrefixSumArr);
+        // this.visibleTilesRowPrefixSum.unshift(prevRowPrefixSumArr);
         this.startRowIdx--;
         this.mountTileTop();
     }
     scrollLeft(prevColumnPrefixSumArr) {
         if (this.startColIdx === 0)
             return;
+        this.gridDiv.style.marginLeft = `${this.marginLeft.value}px`;
         this.unmountTileRight();
         this.startColIdx--;
-        this.visibleTilesColumnPrefixSum.unshift(prevColumnPrefixSumArr);
+        // this.visibleTilesColumnPrefixSum.unshift(prevColumnPrefixSumArr);
         this.mountTileLeft();
     }
     initialLoad() {
@@ -77,6 +78,8 @@ export class TilesManager {
         this.gridDiv.appendChild(this.visibleTilesRowDivArr[this.visibleTilesRowDivArr.length - 1]);
     }
     mountTileTop() {
+        //         this.marginTop-=this.visibleTilesRowPrefixSum[0][24];
+        // this.gridDiv.style.marginTop=`${this.marginTop}px`;
         const rowIdx = this.startRowIdx;
         this.visibleTilesRowDivArr.unshift(this.createRowDiv(rowIdx));
         const currentVisibleRow = [];
@@ -108,37 +111,39 @@ export class TilesManager {
         }
     }
     unmountTileTop() {
-        this.marginTop += this.visibleTilesRowPrefixSum[0][24];
-        this.gridDiv.style.marginTop = `${this.marginTop}px`;
+        //         this.marginTop += this.visibleTilesRowPrefixSum[0][24];
+        // this.gridDiv.style.marginTop = `${this.marginTop}px`;
         this.gridDiv.removeChild(this.visibleTilesRowDivArr[0]);
         this.visibleTiles.shift();
         this.visibleTilesRowDivArr.shift();
-        this.visibleTilesRowPrefixSum.shift();
+        // this.visibleTilesRowPrefixSum.shift();
         // this.startRowIdx++;
     }
     unmountTileBottom() {
-        this.gridDiv.style.marginTop = `${this.marginTop}px`;
         this.gridDiv.removeChild(this.visibleTilesRowDivArr[this.visibleTilesRowDivArr.length - 1]);
         this.visibleTiles.pop();
         this.visibleTilesRowDivArr.pop();
-        this.visibleTilesRowPrefixSum.pop();
+        // this.visibleTilesRowPrefixSum.pop();
     }
     unmountTileLeft() {
-        this.marginLeft += this.visibleTilesColumnPrefixSum[0][24];
-        this.gridDiv.style.marginLeft = `${this.marginLeft}px`;
+        // this.marginLeft += this.visibleTilesColumnPrefixSum[0][24];
+        // this.marginLeft+=this.visibleTiles[0][0].colsPositionArr[24];
+        // this.gridDiv.style.marginLeft = `${this.marginLeft}px`;
         for (let i = 0; i < this.visibleRowCnt; i++) {
             this.visibleTilesRowDivArr[i].removeChild(this.visibleTilesRowDivArr[i].firstChild);
             this.visibleTiles[i].shift();
         }
-        this.visibleTilesColumnPrefixSum.shift();
+        // this.visibleTilesColumnPrefixSum.shift();
         // this.startColIdx++;
     }
     unmountTileRight() {
-        this.gridDiv.style.marginLeft = `${this.marginLeft}px`;
         for (let i = 0; i < this.visibleRowCnt; i++) {
             this.visibleTilesRowDivArr[i].removeChild(this.visibleTilesRowDivArr[i].lastChild);
             this.visibleTiles[i].pop();
         }
-        this.visibleTilesColumnPrefixSum.pop();
+        // this.visibleTilesColumnPrefixSum.pop();
+        // this.marginLeft-=this.visibleTilesColumnPrefixSum[0][24];
+        // this.marginLeft-=this.visibleTiles[0][0].colsPositionArr[24];
+        // this.gridDiv.style.marginLeft=`${this.marginLeft}px`;
     }
 }
