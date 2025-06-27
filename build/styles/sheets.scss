@@ -50,3 +50,14 @@
     position: relative;
   }
 }
+
+.subRow{
+  position: relative;
+  .RowResizeDiv{
+    position: absolute;
+    width: 30px;
+    left:35px;
+    height: 2px;
+    background-color: black;
+  }
+}

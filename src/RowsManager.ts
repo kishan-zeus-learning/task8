@@ -53,8 +53,8 @@ export class RowsManager {
             const rowIdx = i + this.startRowIdx;
             this.visibleRows.push(new RowsCanvas(rowIdx, this.rowHeights, this.defaultWidth, this.defaultHeight));
             this.rowsPositionPrefixSumArr.push(this.visibleRows[i].rowsPositionArr);
-            this.rowsDivArr.push(this.visibleRows[i].rowCanvas);
-            this.rowsDivContainer.appendChild(this.visibleRows[i].rowCanvas);
+            this.rowsDivArr.push(this.visibleRows[i].rowCanvasDiv);
+            this.rowsDivContainer.appendChild(this.visibleRows[i].rowCanvasDiv);
 
         }
     }
@@ -65,9 +65,9 @@ export class RowsManager {
 
         this.rowsPositionPrefixSumArr.push(this.visibleRows[this.visibleRows.length - 1].rowsPositionArr);
 
-        this.rowsDivArr.push(this.visibleRows[this.visibleRows.length - 1].rowCanvas);
+        this.rowsDivArr.push(this.visibleRows[this.visibleRows.length - 1].rowCanvasDiv);
 
-        this.rowsDivContainer.appendChild(this.visibleRows[this.visibleRows.length - 1].rowCanvas);
+        this.rowsDivContainer.appendChild(this.visibleRows[this.visibleRows.length - 1].rowCanvasDiv);
     }
 
     private mountRowTop() {
@@ -75,8 +75,8 @@ export class RowsManager {
 
         this.visibleRows.unshift(new RowsCanvas(rowIdx, this.rowHeights, this.defaultWidth, this.defaultHeight));
         this.rowsPositionPrefixSumArr.unshift(this.visibleRows[0].rowsPositionArr);
-        this.rowsDivArr.unshift(this.visibleRows[0].rowCanvas);
-        this.rowsDivContainer.prepend(this.visibleRows[0].rowCanvas);
+        this.rowsDivArr.unshift(this.visibleRows[0].rowCanvasDiv);
+        this.rowsDivContainer.prepend(this.visibleRows[0].rowCanvasDiv);
 
         this.marginTop.value -= this.rowsPositionPrefixSumArr[0][24];
         this.rowsDivContainer.style.marginTop = `${this.marginTop.value}px`;

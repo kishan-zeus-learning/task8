@@ -46,6 +46,17 @@
   position: relative;
 }
 
+.subRow {
+  position: relative;
+}
+.subRow .RowResizeDiv {
+  position: absolute;
+  width: 30px;
+  left: 35px;
+  height: 2px;
+  background-color: black;
+}
+
 * {
   margin: 0;
   padding: 0;
@@ -77,4 +88,17 @@
 .testingClass {
   height: 1000px;
   width: 5000px;
+}
+
+.subRow {
+  position: relative;
+}
+.subRow .RowResizeDiv {
+  position: absolute;
+  width: 30px;
+  left: 35px;
+  height: 1px;
+  background-color: black;
+  cursor: ns-resize;
+  pointer-events: none;
 }/*# sourceMappingURL=style.css.map */

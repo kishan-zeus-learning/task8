@@ -5,7 +5,7 @@ export class ScrollManager {
         this.columnsManager = null;
         this.rowsManager = null;
         this.tilesManager = null;
-        this.gridDiv = document.getElementById("grid");
+        // this.gridDiv = document.getElementById("grid") as HTMLDivElement;
         this.sheetDiv = document.getElementById("sheet");
         this.containerDivRect = this.sheetDiv.getBoundingClientRect();
         this.verticalNum = this.minVerticalDiv() + 2;
@@ -48,7 +48,7 @@ export class ScrollManager {
     handleScrollDown(event) {
         var _a, _b, _c, _d;
         const lastRow = (_a = this.rowsManager) === null || _a === void 0 ? void 0 : _a.visibleRows[this.rowsManager.visibleRows.length - 1];
-        const bufferRect = lastRow.rowCanvas.getBoundingClientRect();
+        const bufferRect = lastRow.rowCanvasDiv.getBoundingClientRect();
         const isVisible = (bufferRect.top < this.containerDivRect.bottom &&
             bufferRect.bottom > this.containerDivRect.top);
         if (isVisible) {
@@ -60,7 +60,7 @@ export class ScrollManager {
     handleScrollUp(event) {
         var _a, _b, _c, _d;
         const firstRow = (_a = this.rowsManager) === null || _a === void 0 ? void 0 : _a.visibleRows[0];
-        const bufferRect = firstRow.rowCanvas.getBoundingClientRect();
+        const bufferRect = firstRow.rowCanvasDiv.getBoundingClientRect();
         const isVisible = (bufferRect.bottom > this.containerDivRect.top &&
             bufferRect.top < this.containerDivRect.bottom);
         if (isVisible) {
@@ -77,13 +77,7 @@ export class ScrollManager {
             bufferRect.left < this.containerDivRect.right);
         if (isVisible) {
             if ((_b = this.columnsManager) === null || _b === void 0 ? void 0 : _b.scrollRight()) {
-                console.log("before rendering : ");
-                // console.log(this.tilesManager);
-                // this.tilesManager?.printConsole();
                 (_c = this.tilesManager) === null || _c === void 0 ? void 0 : _c.scrollRight((_d = this.columnsManager) === null || _d === void 0 ? void 0 : _d.visibleColumnsPrefixSum[this.columnsManager.visibleColumnsPrefixSum.length - 1]);
-                console.log("After rendering");
-                // console.log(this.tilesManager);
-                // this.tilesManager?.printConsole();
             }
         }
     }

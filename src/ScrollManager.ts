@@ -5,7 +5,7 @@ import { RowsManager } from "./RowsManager.js";
 import { TilesManager } from "./TilesManager.js";
  
 export class ScrollManager {
-    private gridDiv: HTMLDivElement;
+    // private gridDiv: HTMLDivElement;
     private sheetDiv: HTMLDivElement;
     private minHeight: number = 18;
     private minWidth: number = 40;
@@ -17,7 +17,7 @@ export class ScrollManager {
     private containerDivRect:DOMRect;
  
     constructor() {
-        this.gridDiv = document.getElementById("grid") as HTMLDivElement;
+        // this.gridDiv = document.getElementById("grid") as HTMLDivElement;
         this.sheetDiv = document.getElementById("sheet") as HTMLDivElement;
         this.containerDivRect=this.sheetDiv.getBoundingClientRect();
         this.verticalNum = this.minVerticalDiv() + 2;
@@ -67,7 +67,7 @@ export class ScrollManager {
  
     private handleScrollDown(event: Event) {
         const lastRow = this.rowsManager?.visibleRows[this.rowsManager.visibleRows.length - 1] as RowsCanvas;
-        const bufferRect = lastRow.rowCanvas.getBoundingClientRect();
+        const bufferRect = lastRow.rowCanvasDiv.getBoundingClientRect();
  
         const isVisible = (
 bufferRect.top < this.containerDivRect.bottom &&
@@ -84,7 +84,7 @@ bufferRect.bottom > this.containerDivRect.top
     private handleScrollUp(event: Event) {
         const firstRow = this.rowsManager?.visibleRows[0] as RowsCanvas;
  
-        const bufferRect=firstRow.rowCanvas.getBoundingClientRect();
+        const bufferRect=firstRow.rowCanvasDiv.getBoundingClientRect();
  
         const isVisible=(
 bufferRect.bottom>this.containerDivRect.top &&
@@ -108,17 +108,14 @@ bufferRect.top<this.containerDivRect.bottom
         )
         if(isVisible){
             if(this.columnsManager?.scrollRight()){
-                console.log("before rendering : ");
-                // console.log(this.tilesManager);
-                // this.tilesManager?.printConsole();
+
                 this.tilesManager?.scrollRight(this.columnsManager?.visibleColumnsPrefixSum[this.columnsManager.visibleColumnsPrefixSum.length-1] as number[]);
-                console.log("After rendering");
-                // console.log(this.tilesManager);
-                // this.tilesManager?.printConsole();
+
             }
         }
  
     }
+
     private handleScrollLeft(event: Event) {
         const firstColumn=this.columnsManager?.visibleColumns[0] as ColumnsCanvas;
         const bufferRect=firstColumn.columnCanvas.getBoundingClientRect();

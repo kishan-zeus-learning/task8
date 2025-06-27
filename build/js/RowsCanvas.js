@@ -1,16 +1,89 @@
 export class RowsCanvas {
     constructor(rowID, rowHeights, defaultWidth, defaultHeight) {
+        this.rowCanvas = null;
+        this.resizeDiv = null;
         this.rowHeights = rowHeights;
         this.rowID = rowID;
         this.defaultHeight = defaultHeight;
         this.defaultWidth = defaultWidth;
-        this.rowsPositionArr = this.getRowsPositionArr(this.rowID);
-        this.rowCanvas = this.createRowCanvas(this.rowID);
+        this.rowsPositionArr = [];
+        this.setRowsPositionArr();
+        this.rowCanvasDiv = this.createRowCanvas();
+        this.handleResize();
+        // this.resizeRow(0,150);
+        // this.resizeRow(4,125);
     }
-    getRowsPositionArr(rowID) {
-        let startNum = rowID * 25 + 1;
+    handleResize() {
+        let ifResizeOn = false;
+        this.rowCanvasDiv.addEventListener("pointermove", (event) => {
+            const hoverIdx = this.binarySearchRange(event.offsetY);
+            if (hoverIdx !== -1) {
+                this.rowCanvasDiv.style.cursor = "ns-resize";
+                ifResizeOn = true;
+                if (this.resizeDiv) {
+                    this.resizeDiv.style.display = "block";
+                    this.resizeDiv.style.top = `${this.rowsPositionArr[hoverIdx] - 0.5}px`;
+                    this.resizeDiv.style.zIndex = `10`;
+                }
+            }
+            else {
+                this.rowCanvasDiv.style.cursor = "default";
+                if (this.resizeDiv)
+                    this.resizeDiv.style.display = "none";
+            }
+        });
+        this.rowCanvasDiv.addEventListener("pointerout", (event) => {
+            if (this.resizeDiv)
+                this.resizeDiv.style.display = "none";
+            this.rowCanvasDiv.style.cursor = "default";
+        });
+    }
+    resizeRow(rowIdx, newPosition) {
+        //to be debugged soon
+        if (rowIdx !== 0) {
+            if (newPosition === this.rowsPositionArr[rowIdx - 1] + this.defaultHeight)
+                delete this.rowHeights[rowIdx + 1 + this.rowID * 25];
+            else {
+                // to be debugged soon
+                if (this.rowHeights[rowIdx + 1]) {
+                    this.rowHeights[rowIdx + 1].height = newPosition - this.rowsPositionArr[rowIdx - 1];
+                }
+                else {
+                    this.rowHeights[rowIdx + 1] = { height: (newPosition - this.rowsPositionArr[rowIdx]) };
+                }
+            }
+        }
+        else {
+            if (newPosition === this.defaultHeight)
+                delete this.rowHeights[rowIdx + 1 + this.rowID * 25];
+            else
+                this.rowHeights[rowIdx + 1 + this.rowID * 25] = { height: newPosition };
+        }
+        this.setRowsPositionArr();
+        this.drawCanvas();
+    }
+    binarySearchRange(num) {
+        let start = 0;
+        let end = 24;
+        let mid;
+        while (start <= end) {
+            mid = Math.floor((start + end) / 2);
+            if (this.rowsPositionArr[mid] + 5 >= num && num >= this.rowsPositionArr[mid] - 5) {
+                return mid;
+            }
+            else if (num > this.rowsPositionArr[mid]) {
+                start = mid + 1;
+            }
+            else {
+                end = mid - 1;
+            }
+        }
+        return -1;
+    }
+    setRowsPositionArr() {
+        let startNum = this.rowID * 25 + 1;
         let prefixSum = 0;
-        const rowsPosition = [];
+        this.rowsPositionArr.length = 0;
         for (let i = 0; i < 25; i++) {
             if (this.rowHeights[i + startNum]) {
                 prefixSum += this.rowHeights[i + startNum].height;
@@ -18,26 +91,31 @@ export class RowsCanvas {
             else {
                 prefixSum += this.defaultHeight;
             }
-            rowsPosition.push(prefixSum);
+            this.rowsPositionArr.push(prefixSum);
         }
-        return rowsPosition;
     }
-    createRowCanvas(rowID) {
+    createRowCanvas() {
         const rowDiv = document.createElement("div");
-        rowDiv.id = `row${rowID}`;
+        rowDiv.id = `row${this.rowID}`;
         rowDiv.classList.add("subRow");
-        const rowCanvas = document.createElement("canvas");
-        this.drawCanvas(rowCanvas);
-        rowDiv.appendChild(rowCanvas);
+        this.rowCanvas = document.createElement("canvas");
+        this.drawCanvas();
+        rowDiv.appendChild(this.rowCanvas);
+        this.resizeDiv = document.createElement("div");
+        this.resizeDiv.classList.add("RowResizeDiv");
+        rowDiv.appendChild(this.resizeDiv);
         return rowDiv;
     }
-    drawCanvas(rowCanvas) {
+    drawCanvas() {
+        if (!this.rowCanvas)
+            return;
         const dpr = window.devicePixelRatio || 1;
-        rowCanvas.width = this.defaultWidth * dpr;
-        rowCanvas.height = this.rowsPositionArr[24] * dpr;
-        rowCanvas.style.width = `${this.defaultWidth}px`;
-        rowCanvas.style.height = `${this.rowsPositionArr[24]}px`;
-        const ctx = rowCanvas.getContext("2d");
+        this.rowCanvas.width = this.defaultWidth * dpr;
+        this.rowCanvas.height = this.rowsPositionArr[24] * dpr;
+        this.rowCanvas.style.width = `${this.defaultWidth}px`;
+        this.rowCanvas.style.height = `${this.rowsPositionArr[24]}px`;
+        const ctx = this.rowCanvas.getContext("2d");
+        ctx.clearRect(0, 0, this.defaultWidth, this.rowsPositionArr[24]);
         ctx.scale(dpr, dpr);
         ctx.beginPath();
         ctx.fillStyle = "#e7e7e7";

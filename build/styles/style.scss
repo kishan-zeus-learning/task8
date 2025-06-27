@@ -35,3 +35,16 @@
   height: 1000px;
   width: 5000px;
 }
+
+.subRow{
+  position: relative;
+  .RowResizeDiv{
+    position: absolute;
+    width: 30px;
+    left:35px;
+    height: 1px;
+    background-color: black;
+    cursor: ns-resize;
+    pointer-events: none;
+  }
+}
