@@ -100,7 +100,7 @@ bufferRect.top<this.containerDivRect.bottom
  
     private handleScrollRight(event: Event) {
         const lastColumn=this.columnsManager?.visibleColumns[this.columnsManager.visibleColumns.length-1] as ColumnsCanvas;
-        const bufferRect=lastColumn.columnCanvas.getBoundingClientRect();
+        const bufferRect=lastColumn.columnCanvasDiv.getBoundingClientRect();
  
         const isVisible=(
             bufferRect.right>this.containerDivRect.left &&
@@ -118,7 +118,7 @@ bufferRect.top<this.containerDivRect.bottom
 
     private handleScrollLeft(event: Event) {
         const firstColumn=this.columnsManager?.visibleColumns[0] as ColumnsCanvas;
-        const bufferRect=firstColumn.columnCanvas.getBoundingClientRect();
+        const bufferRect=firstColumn.columnCanvasDiv.getBoundingClientRect();
  
         const isVisible=(
             bufferRect.left<this.containerDivRect.right &&

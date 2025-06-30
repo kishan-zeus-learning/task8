@@ -1,28 +1,50 @@
 import { ColumnsCanvas } from "./ColumnsCanvas.js";
 import { columnData } from "./types/ColumnRows.js";
+import { GlobalBoolean } from "./types/GlobalBoolean.js";
+import { GlobalNumber } from "./types/GlobalNumber.js";
 export class ColumnsManager{
     private columnWidths:columnData;
     private startColumnIdx:number;
     private visibleColumnCnt:number;
-    readonly visibleColumns:ColumnsCanvas[];
     readonly visibleColumnsPrefixSum:number[][];
-    readonly marginLeft:{value:number};
+    readonly visibleColumns:ColumnsCanvas[];
+    readonly marginLeft:GlobalNumber;
+    // private columnsDivArr:HTMLDivElement[];
     private columnsDivContainer:HTMLDivElement;
     private defaultHeight:number;
     private defaultWidth:number;
     private columnCanvasLimit:number;
-    constructor(columnWidths:columnData,startColumnIdx:number,visibleColumnCnt:number,columnCanvasLimit:number=40,defaultHeight:number=25,defaultWidth:number=80,marginLeft:{value:number}={value:0}){
+    private _ifResizeOn:GlobalBoolean;
+    private _ifResizePointerDown:GlobalBoolean;
+    private currentResizingColumn: GlobalNumber;
+
+    constructor(columnWidths:columnData,startColumnIdx:number,visibleColumnCnt:number,ifResizeOn:GlobalBoolean,ifResizePointerDown:GlobalBoolean,columnCanvasLimit:number=40,defaultHeight:number=25,defaultWidth:number=80,marginLeft:GlobalNumber={value:0}){
         this.columnWidths=columnWidths;
+        this._ifResizeOn=ifResizeOn;
+        this.currentResizingColumn={value:-1};
+        this._ifResizePointerDown=ifResizePointerDown;
         this.startColumnIdx=startColumnIdx;
         this.columnCanvasLimit=columnCanvasLimit;
         this.visibleColumnCnt=visibleColumnCnt;
-        this.visibleColumns=[];
         this.visibleColumnsPrefixSum=[];
+        // this.columnsDivArr=[];
+        this.visibleColumns=[];
         this.marginLeft=marginLeft;
         this.defaultHeight=defaultHeight;
         this.defaultWidth=defaultWidth;
         this.columnsDivContainer=document.getElementById("columnsRow") as HTMLDivElement;
         this.initialLoad();
+    }
+
+    get currentResizingColumnCanvas(){
+        let idx=0;
+        if(this.currentResizingColumn.value===-1){
+            alert("something went wrong");
+        }else{
+            idx=this.currentResizingColumn.value-this.visibleColumns[0].columnID;
+        }
+
+        return this.visibleColumns[idx];
     }
  
     scrollRight(){
@@ -45,26 +67,27 @@ export class ColumnsManager{
     private initialLoad(){
         for(let j=0;j<this.visibleColumnCnt;j++){
             const colIdx=j+this.startColumnIdx;
-            this.visibleColumns.push(new ColumnsCanvas(colIdx,this.columnWidths,this.defaultWidth,this.defaultHeight));
+            this.visibleColumns.push(new ColumnsCanvas(colIdx,this.columnWidths,this.defaultWidth,this.defaultHeight,this._ifResizeOn,this._ifResizePointerDown,this.currentResizingColumn));
             this.visibleColumnsPrefixSum.push(this.visibleColumns[j].columnsPositionArr);
-            this.columnsDivContainer.appendChild(this.visibleColumns[j].columnCanvas);
+            // this.columnsDivArr.push(this.visibleColumns[j].columnCanvasDiv);
+            this.columnsDivContainer.appendChild(this.visibleColumns[j].columnCanvasDiv);
         }
     }
  
     private mountColumnRight(){
         const colIdx=this.startColumnIdx+this.visibleColumnCnt-1;
  
-        this.visibleColumns.push(new ColumnsCanvas(colIdx,this.columnWidths,this.defaultWidth,this.defaultHeight));
+        this.visibleColumns.push(new ColumnsCanvas(colIdx,this.columnWidths,this.defaultWidth,this.defaultHeight,this._ifResizeOn,this._ifResizePointerDown,this.currentResizingColumn));
  
-        this.columnsDivContainer.appendChild(this.visibleColumns[this.visibleColumns.length-1].columnCanvas);
+        this.columnsDivContainer.appendChild(this.visibleColumns[this.visibleColumns.length-1].columnCanvasDiv);
         this.visibleColumnsPrefixSum.push(this.visibleColumns[this.visibleColumns.length-1].columnsPositionArr);
     }
  
     private mountColumnLeft(){
         const columnIdx=this.startColumnIdx;
  
-        this.visibleColumns.unshift(new ColumnsCanvas(columnIdx,this.columnWidths,this.defaultWidth,this.defaultHeight));
-        this.columnsDivContainer.prepend(this.visibleColumns[0].columnCanvas);
+        this.visibleColumns.unshift(new ColumnsCanvas(columnIdx,this.columnWidths,this.defaultWidth,this.defaultHeight,this._ifResizeOn,this._ifResizePointerDown,this.currentResizingColumn));
+        this.columnsDivContainer.prepend(this.visibleColumns[0].columnCanvasDiv);
         this.visibleColumnsPrefixSum.unshift(this.visibleColumns[0].columnsPositionArr);
         this.marginLeft.value-=this.visibleColumns[0].columnsPositionArr[24];
 this.columnsDivContainer.style.marginLeft=`${this.marginLeft.value}px`;
@@ -75,14 +98,14 @@ this.columnsDivContainer.style.marginLeft=`${this.marginLeft.value}px`;
  
 this.columnsDivContainer.style.marginLeft=`${this.marginLeft.value}px`;
  
-        this.columnsDivContainer.removeChild(this.visibleColumns[0].columnCanvas);
+        this.columnsDivContainer.removeChild(this.visibleColumns[0].columnCanvasDiv);
         
         this.visibleColumns.shift();
         this.visibleColumnsPrefixSum.shift();
     }
  
     private unmountColumnRight(){
-        this.columnsDivContainer.removeChild(this.visibleColumns[this.visibleColumns.length-1].columnCanvas);
+        this.columnsDivContainer.removeChild(this.visibleColumns[this.visibleColumns.length-1].columnCanvasDiv);
         this.visibleColumns.pop();
         this.visibleColumnsPrefixSum.pop();
     }

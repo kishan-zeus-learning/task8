@@ -69,6 +69,18 @@ export class TilesManager {
         })
     }
 
+    redrawColumn(columnID:number){
+        const arrIdx=columnID - this.visibleTiles[0][0].col;
+        // console.log(arrIdx);
+        // console.log("before : ",[...this.visibleTiles]);
+        this.visibleTiles.forEach(tileArr=>{
+            console.log("before  :",...tileArr[arrIdx].colsPositionArr)
+            tileArr[arrIdx].drawGrid();
+            console.log("after ",...tileArr[arrIdx].colsPositionArr)
+        });
+        // console.log("After : ",[...this.visibleTiles]);
+    }
+
 
 
     private initialLoad() {

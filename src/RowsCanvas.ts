@@ -6,89 +6,87 @@ export class RowsCanvas {
     public rowsPositionArr: number[];
     readonly rowID: number;
     readonly rowCanvasDiv: HTMLDivElement;
-    public rowCanvas:HTMLCanvasElement|null=null;
+    public rowCanvas: HTMLCanvasElement = document.createElement("canvas");
     private defaultWidth: number;
     private defaultHeight: number;
-    private resizeDiv:HTMLDivElement|null=null;
-    private ifResizOn:{value:boolean};
-    private currentResizingRow:GlobalNumber;
-    private ifResizePointerDown:{value:boolean};
-    private hoverIdx:number=-1;
-    
+    private resizeDiv: HTMLDivElement = document.createElement("div");
+    private ifResizeOn: { value: boolean };
+    private currentResizingRow: GlobalNumber;
+    private ifResizePointerDown: { value: boolean };
+    private hoverIdx: number = -1;
 
-    constructor(rowID: number, rowHeights: RowData, defaultWidth: number, defaultHeight: number,ifResizeOn:GlobalBoolean,ifResizePointerDown:GlobalBoolean,currentResizingRow:GlobalNumber) {
+
+    constructor(rowID: number, rowHeights: RowData, defaultWidth: number, defaultHeight: number, ifResizeOn: GlobalBoolean, ifResizePointerDown: GlobalBoolean, currentResizingRow: GlobalNumber) {
         this.rowHeights = rowHeights;
         this.rowID = rowID;
         this.defaultHeight = defaultHeight;
         this.defaultWidth = defaultWidth;
         this.rowsPositionArr = []
-        this.currentResizingRow=currentResizingRow;
-        // this.ifResizOn=ifResizeOn;
-        this.ifResizOn=ifResizeOn;
-        this.ifResizePointerDown=ifResizePointerDown;
+        this.currentResizingRow = currentResizingRow;
+        // this.ifResizeOn=ifResizeOn;
+        this.ifResizeOn = ifResizeOn;
+        this.ifResizePointerDown = ifResizePointerDown;
         this.setRowsPositionArr();
         this.rowCanvasDiv = this.createRowCanvas();
         this.handleResize();
     }
 
 
-    private handleResize(){
+    private handleResize() {
 
-        this.rowCanvasDiv.addEventListener("pointerdown",(event)=>{
-            this.ifResizePointerDown.value=true;
+        this.rowCanvasDiv.addEventListener("pointerdown", (event) => {
+            this.ifResizePointerDown.value = true;
         });
 
-        this.rowCanvasDiv.addEventListener("pointermove",(event)=>{
+        this.rowCanvasDiv.addEventListener("pointermove", (event) => {
 
-            if(this.ifResizePointerDown.value){
-                
-                this.currentResizingRow.value=this.rowID;
-                
-                return ;
+            if (this.ifResizePointerDown.value) {
+
+                this.currentResizingRow.value = this.rowID;
+
+                return;
             }
-            this.hoverIdx=this.binarySearchRange(event.offsetY);
-            if(this.hoverIdx!==-1){
-                (this.ifResizOn as GlobalBoolean).value=true;
-               
-                if(this.resizeDiv)  {
-                    this.resizeDiv.style.display="block";
-                    this.resizeDiv.style.top=`${this.rowsPositionArr[this.hoverIdx]-0.5}px`;
-                    this.resizeDiv.style.zIndex=`10`;
-                }
+            this.hoverIdx = this.binarySearchRange(event.offsetY);
+            if (this.hoverIdx !== -1) {
+                (this.ifResizeOn as GlobalBoolean).value = true;
+                this.resizeDiv.style.display = "block";
+                this.resizeDiv.style.top = `${this.rowsPositionArr[this.hoverIdx] - 1.5}px`;
+                this.resizeDiv.style.zIndex = `10`;
 
-            }else{
 
-                if (!(this.ifResizePointerDown as GlobalBoolean).value){
-                    if(this.resizeDiv) this.resizeDiv.style.display="none";        
+            } else {
+
+                if (!(this.ifResizePointerDown as GlobalBoolean).value) {
+                    if (this.resizeDiv) this.resizeDiv.style.display = "none";
                 }
-                this.ifResizOn.value=false;
+                this.ifResizeOn.value = false;
             }
         });
-        this.rowCanvasDiv.addEventListener("pointerout",(event)=>{
-            if(!(this.ifResizePointerDown as GlobalBoolean).value){
-                if(this.resizeDiv) this.resizeDiv.style.display="none";
+        this.rowCanvasDiv.addEventListener("pointerout", (event) => {
+            if (!(this.ifResizePointerDown as GlobalBoolean).value) {
+                if (this.resizeDiv) this.resizeDiv.style.display = "none";
             }
-            (this.ifResizOn as GlobalBoolean).value=false;
+            (this.ifResizeOn as GlobalBoolean).value = false;
         });
     }
 
-    public resizeRow(newPosition:number){
-        newPosition=newPosition-this.rowCanvasDiv.getBoundingClientRect().top;
+    public resizeRow(newPosition: number) {
+        newPosition = newPosition - this.rowCanvasDiv.getBoundingClientRect().top;
         let newHeight;
-        if(this.hoverIdx!==0){
-            newHeight=newPosition-this.rowsPositionArr[this.hoverIdx-1];
-        }else{
-            newHeight=newPosition;
+        if (this.hoverIdx !== 0) {
+            newHeight = newPosition - this.rowsPositionArr[this.hoverIdx - 1];
+        } else {
+            newHeight = newPosition;
         }
-        newHeight=Math.max(25,newHeight);
-        newHeight=Math.min(500,newHeight);
-        if(this.hoverIdx!==0){
-            (this.resizeDiv as HTMLDivElement).style.top=`${this.rowsPositionArr[this.hoverIdx-1] + newHeight}px`;
-        }else{
-            (this.resizeDiv as HTMLDivElement).style.top=`${newHeight}px`;
+        newHeight = Math.max(25, newHeight);
+        newHeight = Math.min(500, newHeight);
+        if (this.hoverIdx !== 0) {
+            (this.resizeDiv as HTMLDivElement).style.top = `${this.rowsPositionArr[this.hoverIdx - 1] + newHeight}px`;
+        } else {
+            (this.resizeDiv as HTMLDivElement).style.top = `${newHeight}px`;
         }
-        if(newHeight===25) delete this.rowHeights[this.rowID*25 + this.hoverIdx +1];
-        else this.rowHeights[this.rowID*25 + this.hoverIdx + 1]={height:newHeight};
+        if (newHeight === 25) delete this.rowHeights[this.rowID * 25 + this.hoverIdx + 1];
+        else this.rowHeights[this.rowID * 25 + this.hoverIdx + 1] = { height: newHeight };
 
         this.setRowsPositionArr();
         this.drawCanvas();
@@ -96,19 +94,19 @@ export class RowsCanvas {
 
 
 
-    private binarySearchRange(num:number){
-        let start=0;
-        let end=24;
+    private binarySearchRange(num: number) {
+        let start = 0;
+        let end = 24;
         let mid;
-        while(start<=end){
-            mid=Math.floor((start+end)/2);
+        while (start <= end) {
+            mid = Math.floor((start + end) / 2);
 
-            if(this.rowsPositionArr[mid]+5>=num && num>=this.rowsPositionArr[mid]-5){
+            if (this.rowsPositionArr[mid] + 5 >= num && num >= this.rowsPositionArr[mid] - 5) {
                 return mid;
-            }else if(num>this.rowsPositionArr[mid]){
-                start=mid+1;
-            }else{
-                end=mid-1;
+            } else if (num > this.rowsPositionArr[mid]) {
+                start = mid + 1;
+            } else {
+                end = mid - 1;
             }
         }
         return -1;
@@ -119,7 +117,7 @@ export class RowsCanvas {
         let prefixSum = 0;
 
 
-        this.rowsPositionArr.length=0;
+        this.rowsPositionArr.length = 0;
         for (let i = 0; i < 25; i++) {
             if (this.rowHeights[i + startNum]) {
                 prefixSum += this.rowHeights[i + startNum].height;
@@ -136,20 +134,17 @@ export class RowsCanvas {
         rowDiv.id = `row${this.rowID}`;
         rowDiv.classList.add("subRow");
 
-        this.rowCanvas = document.createElement("canvas");
-
         this.drawCanvas();
         rowDiv.appendChild(this.rowCanvas);
-        this.resizeDiv=document.createElement("div");
         this.resizeDiv.classList.add("RowResizeDiv");
-        
+
         rowDiv.appendChild(this.resizeDiv);
         return rowDiv;
     }
 
-    drawCanvas(){
-        if(!this.rowCanvas) return ;
-        
+    drawCanvas() {
+        if (!this.rowCanvas) return;
+
         const dpr = window.devicePixelRatio || 1;
         this.rowCanvas.width = this.defaultWidth * dpr;
         this.rowCanvas.height = this.rowsPositionArr[24] * dpr;
@@ -158,7 +153,7 @@ export class RowsCanvas {
 
 
         const ctx = this.rowCanvas.getContext("2d") as CanvasRenderingContext2D;
-        ctx.clearRect(0,0,this.defaultWidth,this.rowsPositionArr[24]);
+        ctx.clearRect(0, 0, this.defaultWidth, this.rowsPositionArr[24]);
         ctx.scale(dpr, dpr);
         ctx.beginPath();
         ctx.fillStyle = "#e7e7e7";

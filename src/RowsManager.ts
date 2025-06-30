@@ -9,7 +9,7 @@ export class RowsManager {
     private visibleRowCnt: number;
     readonly rowsPositionPrefixSumArr: number[][];
     readonly visibleRows: RowsCanvas[];
-    readonly marginTop: {value:number};
+    readonly marginTop: GlobalNumber;
     private rowsDivArr: HTMLDivElement[];
     private rowsDivContainer: HTMLDivElement;
     private defaultHeight: number;
@@ -19,7 +19,7 @@ export class RowsManager {
     private _ifResizePointerDown:GlobalBoolean;
     private currentResizingRow:GlobalNumber;
 
-    constructor(rowHeights: RowData, startRowIdx: number, visibleRowCnt: number,ifResizeOn:GlobalBoolean,ifResizePointerDown:GlobalBoolean, rowCanvasLimit: number = 4000, defaultHeight: number = 25, defaultWidth: number = 80, marginTop:{value:number}={value: 0}) {
+    constructor(rowHeights: RowData, startRowIdx: number, visibleRowCnt: number,ifResizeOn:GlobalBoolean,ifResizePointerDown:GlobalBoolean, rowCanvasLimit: number = 4000, defaultHeight: number = 25, defaultWidth: number = 80, marginTop:GlobalNumber={value: 0}) {
         this.rowHeights = rowHeights;
         this._ifResizeOn=ifResizeOn;
         this.currentResizingRow={value:-1};
@@ -50,21 +50,6 @@ export class RowsManager {
         return this.visibleRows[idx];
     }
 
-    // set ifResizeOn(obj:GlobalBoolean){
-    //     this._ifResizeOn=obj;
-    // }
-
-    // get ifResizeOn(){
-    //     return this._ifResizeOn as GlobalBoolean;
-    // }
-
-    // set ifResizePointerDown(obj:GlobalBoolean){
-    //     this._ifResizePointerDown=obj;
-    // }
-
-    // get ifResizePointerDown(){
-    //     return this._ifResizePointerDown as GlobalBoolean;
-    // }
 
     scrollDown() {
         if (this.startRowIdx === (this.rowCanvasLimit - 1 - this.visibleRowCnt)) return false;

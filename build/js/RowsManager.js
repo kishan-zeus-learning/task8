@@ -27,18 +27,6 @@ export class RowsManager {
         }
         return this.visibleRows[idx];
     }
-    // set ifResizeOn(obj:GlobalBoolean){
-    //     this._ifResizeOn=obj;
-    // }
-    // get ifResizeOn(){
-    //     return this._ifResizeOn as GlobalBoolean;
-    // }
-    // set ifResizePointerDown(obj:GlobalBoolean){
-    //     this._ifResizePointerDown=obj;
-    // }
-    // get ifResizePointerDown(){
-    //     return this._ifResizePointerDown as GlobalBoolean;
-    // }
     scrollDown() {
         if (this.startRowIdx === (this.rowCanvasLimit - 1 - this.visibleRowCnt))
             return false;

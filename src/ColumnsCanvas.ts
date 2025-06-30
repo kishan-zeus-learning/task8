@@ -1,53 +1,142 @@
 import { columnData } from "./types/ColumnRows";
+import { GlobalBoolean } from "./types/GlobalBoolean";
+import { GlobalNumber } from "./types/GlobalNumber";
 export class ColumnsCanvas{
     private columnWidths:columnData;
     public columnsPositionArr:number[];
     readonly columnID:number;
-    readonly columnCanvas:HTMLDivElement;
+    readonly columnCanvasDiv:HTMLDivElement;
+    public columnCanvas:HTMLCanvasElement=document.createElement("canvas");
     private defaultWidth:number;
     private defaultHeight:number;
+    private resizeDiv:HTMLDivElement=document.createElement("div");
+    private ifResizeOn:GlobalBoolean;
+    private currentResizingColumn:GlobalNumber;
+    private ifResizePointerDown:GlobalBoolean;
+    private hoverIdx:number=-1;
  
-    constructor(columnID:number,columnWidths:columnData,defaultWidth:number,defaultHeight:number){
+    constructor(columnID:number,columnWidths:columnData,defaultWidth:number,defaultHeight:number,ifResizeOn:GlobalBoolean,ifResizePointerDown:GlobalBoolean,currentResizingColumn:GlobalNumber){
         this.columnWidths=columnWidths;
         this.columnID=columnID;
         this.defaultHeight=defaultHeight;
         this.defaultWidth=defaultWidth;
         this.columnsPositionArr=[];
+        this.currentResizingColumn=currentResizingColumn;
+        this.ifResizeOn=ifResizeOn;
+        this.ifResizePointerDown=ifResizePointerDown;
         this.setColumnsPositionArr();
-        this.columnCanvas=this.createcolumnCanvas();
+        this.columnCanvasDiv=this.createcolumnCanvas();
+        this.handleResize();
 
     }
 
-    
- 
-    private setColumnsPositionArr(){
-        let startNum=this.columnID*25+1;
-        let prefixSum=0;
-        const columnsPostion=[];
-        for(let i=0;i<25;i++){
-            if(this.columnWidths[startNum+i]){
-                prefixSum+=this.columnWidths[startNum+i].width;
-            }else{
-                prefixSum+=this.defaultWidth;
+    private handleResize(){
+        this.columnCanvasDiv.addEventListener("pointerdown",(event)=>{
+            this.ifResizePointerDown.value=true;
+        });
+
+        this.columnCanvasDiv.addEventListener("pointermove",(event)=>{
+            if(this.ifResizePointerDown.value){
+                this.currentResizingColumn.value=this.columnID;
+                
+                return ;
             }
-            columnsPostion.push(prefixSum);
-        }
- 
-        this.columnsPositionArr=columnsPostion;
+
+            this.hoverIdx=this.binarySearchRange(event.offsetX);
+
+            if(this.hoverIdx!==-1){
+                this.ifResizeOn.value=true;
+
+                this.resizeDiv.style.display="block";
+                this.resizeDiv.style.left=`${this.columnsPositionArr[this.hoverIdx]-1.5}px`;
+                this.resizeDiv.style.zIndex=`10`;
+            }else{
+                if(!this.ifResizePointerDown.value){
+                    this.resizeDiv.style.display="none";
+                }
+
+                this.ifResizeOn.value=false;
+            }
+        });
+
+        this.columnCanvasDiv.addEventListener("pointerout",(event)=>{
+            if(!this.ifResizePointerDown.value){
+                this.resizeDiv.style.display="none";
+            }
+            this.ifResizeOn.value=false;
+        });
     }
- 
-    private createcolumnCanvas(){
+
+    public resizeColumn(newPosition:number){
+        newPosition=newPosition - this.columnCanvasDiv.getBoundingClientRect().left;
+
+        let newWidth;
+
+        if(this.hoverIdx!==0){
+            newWidth=newPosition - this.columnsPositionArr[this.hoverIdx-1];
+        }else{
+            newWidth=newPosition;
+        }
+
+        newWidth=Math.max(50,newWidth);
+        newWidth=Math.min(500,newWidth);
+
+        if(this.hoverIdx!==0){
+            this.resizeDiv.style.left=`${this.columnsPositionArr[this.hoverIdx-1]+newWidth}px`;
+        }else{
+            this.resizeDiv.style.left=`${newWidth}px`;
+        }
+
+        if(newWidth===this.defaultWidth) delete this.columnWidths[this.columnID*25 + this.hoverIdx + 1];
+        else this.columnWidths[this.columnID*25 + this.hoverIdx+1]={width:newWidth};
+
+        this.setColumnsPositionArr();
+        this.drawCanvas();
+    }
+
+    private binarySearchRange(num:number){
+        let start=0;
+        let end=24;
+        let mid;
+        while(start<=end){
+            mid=Math.floor((start+end)/2);
+
+            if(this.columnsPositionArr[mid]+5>=num && num>= this.columnsPositionArr[mid]-5){
+                return mid;
+            }else if(num > this.columnsPositionArr[mid]){
+                start=mid+1;
+            }else{
+                end=mid-1;
+            }
+        }
+        return -1;
+    }
+
+
+        private createcolumnCanvas(){
         const columnDiv=document.createElement("div");
         columnDiv.id=`column${this.columnID}`;
         columnDiv.classList.add("subColumn");
-        const columnCanvas=document.createElement("canvas");
-        columnCanvas.width=this.columnsPositionArr[24];
-        columnCanvas.height=this.defaultHeight;
-        columnDiv.style.width=`${this.columnsPositionArr[24]}px`;
-        columnDiv.style.height=`${this.defaultHeight}px`;
+
+        this.drawCanvas();
+ 
+        columnDiv.appendChild(this.columnCanvas);
+        this.resizeDiv.classList.add("ColumnResizeDiv");
+        columnDiv.appendChild(this.resizeDiv);
+        
+        
+        return columnDiv;
+    }
+
+    drawCanvas(){
+        
+        this.columnCanvas.width=this.columnsPositionArr[24];
+        this.columnCanvas.height=this.defaultHeight;
+        // this.columnCanvas.style.width=`${this.columnsPositionArr[24]}px`;
+        // this.columnCanvas.style.height=`${this.defaultHeight}px`;
  
  
-        const ctx=columnCanvas.getContext("2d") as CanvasRenderingContext2D;
+        const ctx=this.columnCanvas.getContext("2d") as CanvasRenderingContext2D;
  
         ctx.beginPath();
         ctx.fillStyle="#e7e7e7";
@@ -69,15 +158,34 @@ export class ColumnsCanvas{
         ctx.moveTo(0,0);
         ctx.lineTo(this.columnsPositionArr[24]-0.5,0)
         ctx.stroke();
- 
-        columnDiv.appendChild(columnCanvas);
         
-        
-        return columnDiv;
     }
+
+    
+ 
+    private setColumnsPositionArr(){
+        let startNum=this.columnID*25+1;
+        let prefixSum=0;
+        const columnsPostion=[];
+        for(let i=0;i<25;i++){
+            if(this.columnWidths[startNum+i]){
+                prefixSum+=this.columnWidths[startNum+i].width;
+            }else{
+                prefixSum+=this.defaultWidth;
+            }
+            columnsPostion.push(prefixSum);
+        }
+ 
+        this.columnsPositionArr=columnsPostion;
+    }
+ 
+
 
 
     
+
+
+
  
     private getColumnString(num:number):string{
         num--;

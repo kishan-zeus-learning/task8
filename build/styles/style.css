@@ -102,4 +102,19 @@
   border: 1px green solid;
   cursor: ns-resize;
   pointer-events: none;
+}
+
+.subColumn {
+  position: relative;
+}
+.subColumn .ColumnResizeDiv {
+  position: absolute;
+  width: 2px;
+  top: 5px;
+  height: 15px;
+  background-color: transparent;
+  border: 1px green solid;
+  cursor: ew-resize;
+  pointer-events: none;
+  display: none;
 }/*# sourceMappingURL=style.css.map */

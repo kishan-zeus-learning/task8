@@ -1,7 +1,7 @@
 export class RowsCanvas {
     constructor(rowID, rowHeights, defaultWidth, defaultHeight, ifResizeOn, ifResizePointerDown, currentResizingRow) {
-        this.rowCanvas = null;
-        this.resizeDiv = null;
+        this.rowCanvas = document.createElement("canvas");
+        this.resizeDiv = document.createElement("div");
         this.hoverIdx = -1;
         this.rowHeights = rowHeights;
         this.rowID = rowID;
@@ -9,8 +9,8 @@ export class RowsCanvas {
         this.defaultWidth = defaultWidth;
         this.rowsPositionArr = [];
         this.currentResizingRow = currentResizingRow;
-        // this.ifResizOn=ifResizeOn;
-        this.ifResizOn = ifResizeOn;
+        // this.ifResizeOn=ifResizeOn;
+        this.ifResizeOn = ifResizeOn;
         this.ifResizePointerDown = ifResizePointerDown;
         this.setRowsPositionArr();
         this.rowCanvasDiv = this.createRowCanvas();
@@ -27,19 +27,17 @@ export class RowsCanvas {
             }
             this.hoverIdx = this.binarySearchRange(event.offsetY);
             if (this.hoverIdx !== -1) {
-                this.ifResizOn.value = true;
-                if (this.resizeDiv) {
-                    this.resizeDiv.style.display = "block";
-                    this.resizeDiv.style.top = `${this.rowsPositionArr[this.hoverIdx] - 0.5}px`;
-                    this.resizeDiv.style.zIndex = `10`;
-                }
+                this.ifResizeOn.value = true;
+                this.resizeDiv.style.display = "block";
+                this.resizeDiv.style.top = `${this.rowsPositionArr[this.hoverIdx] - 1.5}px`;
+                this.resizeDiv.style.zIndex = `10`;
             }
             else {
                 if (!this.ifResizePointerDown.value) {
                     if (this.resizeDiv)
                         this.resizeDiv.style.display = "none";
                 }
-                this.ifResizOn.value = false;
+                this.ifResizeOn.value = false;
             }
         });
         this.rowCanvasDiv.addEventListener("pointerout", (event) => {
@@ -47,7 +45,7 @@ export class RowsCanvas {
                 if (this.resizeDiv)
                     this.resizeDiv.style.display = "none";
             }
-            this.ifResizOn.value = false;
+            this.ifResizeOn.value = false;
         });
     }
     resizeRow(newPosition) {
@@ -110,10 +108,8 @@ export class RowsCanvas {
         const rowDiv = document.createElement("div");
         rowDiv.id = `row${this.rowID}`;
         rowDiv.classList.add("subRow");
-        this.rowCanvas = document.createElement("canvas");
         this.drawCanvas();
         rowDiv.appendChild(this.rowCanvas);
-        this.resizeDiv = document.createElement("div");
         this.resizeDiv.classList.add("RowResizeDiv");
         rowDiv.appendChild(this.resizeDiv);
         return rowDiv;

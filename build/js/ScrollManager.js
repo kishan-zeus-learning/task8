@@ -72,7 +72,7 @@ export class ScrollManager {
     handleScrollRight(event) {
         var _a, _b, _c;
         const lastColumn = (_a = this.columnsManager) === null || _a === void 0 ? void 0 : _a.visibleColumns[this.columnsManager.visibleColumns.length - 1];
-        const bufferRect = lastColumn.columnCanvas.getBoundingClientRect();
+        const bufferRect = lastColumn.columnCanvasDiv.getBoundingClientRect();
         const isVisible = (bufferRect.right > this.containerDivRect.left &&
             bufferRect.left < this.containerDivRect.right);
         if (isVisible) {
@@ -84,7 +84,7 @@ export class ScrollManager {
     handleScrollLeft(event) {
         var _a, _b, _c;
         const firstColumn = (_a = this.columnsManager) === null || _a === void 0 ? void 0 : _a.visibleColumns[0];
-        const bufferRect = firstColumn.columnCanvas.getBoundingClientRect();
+        const bufferRect = firstColumn.columnCanvasDiv.getBoundingClientRect();
         const isVisible = (bufferRect.left < this.containerDivRect.right &&
             bufferRect.right > this.containerDivRect.left);
         if (isVisible) {
