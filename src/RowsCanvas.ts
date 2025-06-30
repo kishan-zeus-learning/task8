@@ -1,3 +1,5 @@
+import { GlobalBoolean } from "./types/GlobalBoolean";
+import { GlobalNumber } from "./types/GlobalNumber";
 import { RowData } from "./types/RowsColumn";
 export class RowsCanvas {
     private rowHeights: RowData;
@@ -8,62 +10,85 @@ export class RowsCanvas {
     private defaultWidth: number;
     private defaultHeight: number;
     private resizeDiv:HTMLDivElement|null=null;
+    private ifResizOn:{value:boolean};
+    private currentResizingRow:GlobalNumber;
+    private ifResizePointerDown:{value:boolean};
+    private hoverIdx:number=-1;
+    
 
-    constructor(rowID: number, rowHeights: RowData, defaultWidth: number, defaultHeight: number) {
+    constructor(rowID: number, rowHeights: RowData, defaultWidth: number, defaultHeight: number,ifResizeOn:GlobalBoolean,ifResizePointerDown:GlobalBoolean,currentResizingRow:GlobalNumber) {
         this.rowHeights = rowHeights;
         this.rowID = rowID;
         this.defaultHeight = defaultHeight;
         this.defaultWidth = defaultWidth;
         this.rowsPositionArr = []
+        this.currentResizingRow=currentResizingRow;
+        // this.ifResizOn=ifResizeOn;
+        this.ifResizOn=ifResizeOn;
+        this.ifResizePointerDown=ifResizePointerDown;
         this.setRowsPositionArr();
         this.rowCanvasDiv = this.createRowCanvas();
         this.handleResize();
-        // this.resizeRow(0,150);
-        // this.resizeRow(4,125);
     }
 
+
     private handleResize(){
-        let ifResizeOn=false;
+
+        this.rowCanvasDiv.addEventListener("pointerdown",(event)=>{
+            this.ifResizePointerDown.value=true;
+        });
+
         this.rowCanvasDiv.addEventListener("pointermove",(event)=>{
 
-            const hoverIdx=this.binarySearchRange(event.offsetY);
-
-            if(hoverIdx!==-1){
-                this.rowCanvasDiv.style.cursor="ns-resize";
-                ifResizeOn=true;
+            if(this.ifResizePointerDown.value){
+                
+                this.currentResizingRow.value=this.rowID;
+                
+                return ;
+            }
+            this.hoverIdx=this.binarySearchRange(event.offsetY);
+            if(this.hoverIdx!==-1){
+                (this.ifResizOn as GlobalBoolean).value=true;
+               
                 if(this.resizeDiv)  {
                     this.resizeDiv.style.display="block";
-                    this.resizeDiv.style.top=`${this.rowsPositionArr[hoverIdx]-0.5}px`;
+                    this.resizeDiv.style.top=`${this.rowsPositionArr[this.hoverIdx]-0.5}px`;
                     this.resizeDiv.style.zIndex=`10`;
                 }
+
             }else{
-                this.rowCanvasDiv.style.cursor="default";
-                if(this.resizeDiv) this.resizeDiv.style.display="none";
+
+                if (!(this.ifResizePointerDown as GlobalBoolean).value){
+                    if(this.resizeDiv) this.resizeDiv.style.display="none";        
+                }
+                this.ifResizOn.value=false;
             }
         });
         this.rowCanvasDiv.addEventListener("pointerout",(event)=>{
-            if(this.resizeDiv) this.resizeDiv.style.display="none";
-            this.rowCanvasDiv.style.cursor="default";
+            if(!(this.ifResizePointerDown as GlobalBoolean).value){
+                if(this.resizeDiv) this.resizeDiv.style.display="none";
+            }
+            (this.ifResizOn as GlobalBoolean).value=false;
         });
     }
 
-    public resizeRow(rowIdx:number,newPosition:number){
-        //to be debugged soon
-        if(rowIdx!==0){
-            if(newPosition===this.rowsPositionArr[rowIdx-1]+this.defaultHeight) delete this.rowHeights[rowIdx+1 + this.rowID*25];
-            else{
-                // to be debugged soon
-                if(this.rowHeights[rowIdx+1]){
-                    this.rowHeights[rowIdx+1].height=newPosition-this.rowsPositionArr[rowIdx-1];
-                }else{
-                    this.rowHeights[rowIdx+1]={height:(newPosition-this.rowsPositionArr[rowIdx])};
-                }
-
-            } 
+    public resizeRow(newPosition:number){
+        newPosition=newPosition-this.rowCanvasDiv.getBoundingClientRect().top;
+        let newHeight;
+        if(this.hoverIdx!==0){
+            newHeight=newPosition-this.rowsPositionArr[this.hoverIdx-1];
         }else{
-            if(newPosition===this.defaultHeight) delete this.rowHeights[rowIdx+1+this.rowID*25];
-            else this.rowHeights[rowIdx+1+this.rowID*25]={height:newPosition};
+            newHeight=newPosition;
         }
+        newHeight=Math.max(25,newHeight);
+        newHeight=Math.min(500,newHeight);
+        if(this.hoverIdx!==0){
+            (this.resizeDiv as HTMLDivElement).style.top=`${this.rowsPositionArr[this.hoverIdx-1] + newHeight}px`;
+        }else{
+            (this.resizeDiv as HTMLDivElement).style.top=`${newHeight}px`;
+        }
+        if(newHeight===25) delete this.rowHeights[this.rowID*25 + this.hoverIdx +1];
+        else this.rowHeights[this.rowID*25 + this.hoverIdx + 1]={height:newHeight};
 
         this.setRowsPositionArr();
         this.drawCanvas();
@@ -117,6 +142,7 @@ export class RowsCanvas {
         rowDiv.appendChild(this.rowCanvas);
         this.resizeDiv=document.createElement("div");
         this.resizeDiv.classList.add("RowResizeDiv");
+        
         rowDiv.appendChild(this.resizeDiv);
         return rowDiv;
     }

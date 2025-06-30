@@ -1,12 +1,16 @@
 export class Tile {
     constructor(row, col, rowsPositionArr, colsPositionArr) {
+        this.tileCanvas = document.createElement("canvas");
         this.row = row;
         this.col = col;
         this.rowsPositionArr = rowsPositionArr;
         this.colsPositionArr = colsPositionArr;
         this.tileDiv = this.createTile();
     }
-    drawGrid(ctx) {
+    drawGrid() {
+        this.tileCanvas.width = this.colsPositionArr[24];
+        this.tileCanvas.height = this.rowsPositionArr[24];
+        const ctx = this.tileCanvas.getContext("2d");
         // ctx.fillStyle = "#e7e7e7";
         ctx.lineWidth = 1;
         ctx.beginPath();
@@ -22,12 +26,9 @@ export class Tile {
     createTile() {
         const tileDiv = document.createElement("div");
         tileDiv.id = `tile_${this.row}_${this.col}`;
-        const tileCanvas = document.createElement("canvas");
-        tileCanvas.width = this.colsPositionArr[24];
-        tileCanvas.height = this.rowsPositionArr[24];
-        const ctx = tileCanvas.getContext("2d");
-        this.drawGrid(ctx);
-        tileDiv.appendChild(tileCanvas);
+        this.tileCanvas;
+        this.drawGrid();
+        tileDiv.appendChild(this.tileCanvas);
         return tileDiv;
     }
 }

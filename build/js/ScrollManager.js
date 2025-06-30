@@ -46,50 +46,50 @@ export class ScrollManager {
         });
     }
     handleScrollDown(event) {
-        var _a, _b, _c, _d;
+        var _a, _b, _c;
         const lastRow = (_a = this.rowsManager) === null || _a === void 0 ? void 0 : _a.visibleRows[this.rowsManager.visibleRows.length - 1];
         const bufferRect = lastRow.rowCanvasDiv.getBoundingClientRect();
         const isVisible = (bufferRect.top < this.containerDivRect.bottom &&
             bufferRect.bottom > this.containerDivRect.top);
         if (isVisible) {
             if ((_b = this.rowsManager) === null || _b === void 0 ? void 0 : _b.scrollDown()) {
-                (_c = this.tilesManager) === null || _c === void 0 ? void 0 : _c.scrollDown((_d = this.rowsManager) === null || _d === void 0 ? void 0 : _d.rowsPositionPrefixSumArr[this.rowsManager.rowsPositionPrefixSumArr.length - 1]);
+                (_c = this.tilesManager) === null || _c === void 0 ? void 0 : _c.scrollDown();
             }
         }
     }
     handleScrollUp(event) {
-        var _a, _b, _c, _d;
+        var _a, _b, _c;
         const firstRow = (_a = this.rowsManager) === null || _a === void 0 ? void 0 : _a.visibleRows[0];
         const bufferRect = firstRow.rowCanvasDiv.getBoundingClientRect();
         const isVisible = (bufferRect.bottom > this.containerDivRect.top &&
             bufferRect.top < this.containerDivRect.bottom);
         if (isVisible) {
             if ((_b = this.rowsManager) === null || _b === void 0 ? void 0 : _b.scrollUp()) {
-                (_c = this.tilesManager) === null || _c === void 0 ? void 0 : _c.scrollUp((_d = this.rowsManager) === null || _d === void 0 ? void 0 : _d.rowsPositionPrefixSumArr[0]);
+                (_c = this.tilesManager) === null || _c === void 0 ? void 0 : _c.scrollUp();
             }
         }
     }
     handleScrollRight(event) {
-        var _a, _b, _c, _d;
+        var _a, _b, _c;
         const lastColumn = (_a = this.columnsManager) === null || _a === void 0 ? void 0 : _a.visibleColumns[this.columnsManager.visibleColumns.length - 1];
         const bufferRect = lastColumn.columnCanvas.getBoundingClientRect();
         const isVisible = (bufferRect.right > this.containerDivRect.left &&
             bufferRect.left < this.containerDivRect.right);
         if (isVisible) {
             if ((_b = this.columnsManager) === null || _b === void 0 ? void 0 : _b.scrollRight()) {
-                (_c = this.tilesManager) === null || _c === void 0 ? void 0 : _c.scrollRight((_d = this.columnsManager) === null || _d === void 0 ? void 0 : _d.visibleColumnsPrefixSum[this.columnsManager.visibleColumnsPrefixSum.length - 1]);
+                (_c = this.tilesManager) === null || _c === void 0 ? void 0 : _c.scrollRight();
             }
         }
     }
     handleScrollLeft(event) {
-        var _a, _b, _c, _d;
+        var _a, _b, _c;
         const firstColumn = (_a = this.columnsManager) === null || _a === void 0 ? void 0 : _a.visibleColumns[0];
         const bufferRect = firstColumn.columnCanvas.getBoundingClientRect();
         const isVisible = (bufferRect.left < this.containerDivRect.right &&
             bufferRect.right > this.containerDivRect.left);
         if (isVisible) {
             if ((_b = this.columnsManager) === null || _b === void 0 ? void 0 : _b.scrollLeft()) {
-                (_c = this.tilesManager) === null || _c === void 0 ? void 0 : _c.scrollLeft((_d = this.columnsManager) === null || _d === void 0 ? void 0 : _d.visibleColumnsPrefixSum[0]);
+                (_c = this.tilesManager) === null || _c === void 0 ? void 0 : _c.scrollLeft();
             }
         }
     }

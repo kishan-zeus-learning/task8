@@ -1,7 +1,7 @@
 import { columnData } from "./types/ColumnRows";
 export class ColumnsCanvas{
     private columnWidths:columnData;
-    readonly columnsPositionArr:number[];
+    public columnsPositionArr:number[];
     readonly columnID:number;
     readonly columnCanvas:HTMLDivElement;
     private defaultWidth:number;
@@ -12,14 +12,15 @@ export class ColumnsCanvas{
         this.columnID=columnID;
         this.defaultHeight=defaultHeight;
         this.defaultWidth=defaultWidth;
-        this.columnsPositionArr=this.createColumnsPositionArr();
+        this.columnsPositionArr=[];
+        this.setColumnsPositionArr();
         this.columnCanvas=this.createcolumnCanvas();
 
     }
 
     
  
-    private createColumnsPositionArr(){
+    private setColumnsPositionArr(){
         let startNum=this.columnID*25+1;
         let prefixSum=0;
         const columnsPostion=[];
@@ -32,7 +33,7 @@ export class ColumnsCanvas{
             columnsPostion.push(prefixSum);
         }
  
-        return columnsPostion;
+        this.columnsPositionArr=columnsPostion;
     }
  
     private createcolumnCanvas(){
@@ -74,6 +75,9 @@ export class ColumnsCanvas{
         
         return columnDiv;
     }
+
+
+    
  
     private getColumnString(num:number):string{
         num--;

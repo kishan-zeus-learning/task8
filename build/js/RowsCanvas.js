@@ -1,64 +1,76 @@
 export class RowsCanvas {
-    constructor(rowID, rowHeights, defaultWidth, defaultHeight) {
+    constructor(rowID, rowHeights, defaultWidth, defaultHeight, ifResizeOn, ifResizePointerDown, currentResizingRow) {
         this.rowCanvas = null;
         this.resizeDiv = null;
+        this.hoverIdx = -1;
         this.rowHeights = rowHeights;
         this.rowID = rowID;
         this.defaultHeight = defaultHeight;
         this.defaultWidth = defaultWidth;
         this.rowsPositionArr = [];
+        this.currentResizingRow = currentResizingRow;
+        // this.ifResizOn=ifResizeOn;
+        this.ifResizOn = ifResizeOn;
+        this.ifResizePointerDown = ifResizePointerDown;
         this.setRowsPositionArr();
         this.rowCanvasDiv = this.createRowCanvas();
         this.handleResize();
-        // this.resizeRow(0,150);
-        // this.resizeRow(4,125);
     }
     handleResize() {
-        let ifResizeOn = false;
+        this.rowCanvasDiv.addEventListener("pointerdown", (event) => {
+            this.ifResizePointerDown.value = true;
+        });
         this.rowCanvasDiv.addEventListener("pointermove", (event) => {
-            const hoverIdx = this.binarySearchRange(event.offsetY);
-            if (hoverIdx !== -1) {
-                this.rowCanvasDiv.style.cursor = "ns-resize";
-                ifResizeOn = true;
+            if (this.ifResizePointerDown.value) {
+                this.currentResizingRow.value = this.rowID;
+                return;
+            }
+            this.hoverIdx = this.binarySearchRange(event.offsetY);
+            if (this.hoverIdx !== -1) {
+                this.ifResizOn.value = true;
                 if (this.resizeDiv) {
                     this.resizeDiv.style.display = "block";
-                    this.resizeDiv.style.top = `${this.rowsPositionArr[hoverIdx] - 0.5}px`;
+                    this.resizeDiv.style.top = `${this.rowsPositionArr[this.hoverIdx] - 0.5}px`;
                     this.resizeDiv.style.zIndex = `10`;
                 }
             }
             else {
-                this.rowCanvasDiv.style.cursor = "default";
-                if (this.resizeDiv)
-                    this.resizeDiv.style.display = "none";
+                if (!this.ifResizePointerDown.value) {
+                    if (this.resizeDiv)
+                        this.resizeDiv.style.display = "none";
+                }
+                this.ifResizOn.value = false;
             }
         });
         this.rowCanvasDiv.addEventListener("pointerout", (event) => {
-            if (this.resizeDiv)
-                this.resizeDiv.style.display = "none";
-            this.rowCanvasDiv.style.cursor = "default";
+            if (!this.ifResizePointerDown.value) {
+                if (this.resizeDiv)
+                    this.resizeDiv.style.display = "none";
+            }
+            this.ifResizOn.value = false;
         });
     }
-    resizeRow(rowIdx, newPosition) {
-        //to be debugged soon
-        if (rowIdx !== 0) {
-            if (newPosition === this.rowsPositionArr[rowIdx - 1] + this.defaultHeight)
-                delete this.rowHeights[rowIdx + 1 + this.rowID * 25];
-            else {
-                // to be debugged soon
-                if (this.rowHeights[rowIdx + 1]) {
-                    this.rowHeights[rowIdx + 1].height = newPosition - this.rowsPositionArr[rowIdx - 1];
-                }
-                else {
-                    this.rowHeights[rowIdx + 1] = { height: (newPosition - this.rowsPositionArr[rowIdx]) };
-                }
-            }
+    resizeRow(newPosition) {
+        newPosition = newPosition - this.rowCanvasDiv.getBoundingClientRect().top;
+        let newHeight;
+        if (this.hoverIdx !== 0) {
+            newHeight = newPosition - this.rowsPositionArr[this.hoverIdx - 1];
         }
         else {
-            if (newPosition === this.defaultHeight)
-                delete this.rowHeights[rowIdx + 1 + this.rowID * 25];
-            else
-                this.rowHeights[rowIdx + 1 + this.rowID * 25] = { height: newPosition };
+            newHeight = newPosition;
         }
+        newHeight = Math.max(25, newHeight);
+        newHeight = Math.min(500, newHeight);
+        if (this.hoverIdx !== 0) {
+            this.resizeDiv.style.top = `${this.rowsPositionArr[this.hoverIdx - 1] + newHeight}px`;
+        }
+        else {
+            this.resizeDiv.style.top = `${newHeight}px`;
+        }
+        if (newHeight === 25)
+            delete this.rowHeights[this.rowID * 25 + this.hoverIdx + 1];
+        else
+            this.rowHeights[this.rowID * 25 + this.hoverIdx + 1] = { height: newHeight };
         this.setRowsPositionArr();
         this.drawCanvas();
     }

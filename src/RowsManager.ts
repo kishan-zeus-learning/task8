@@ -1,5 +1,7 @@
 import { RowData } from "./types/RowsColumn.js";
 import { RowsCanvas } from "./RowsCanvas.js";
+import { GlobalBoolean } from "./types/GlobalBoolean.js";
+import { GlobalNumber } from "./types/GlobalNumber.js";
 export class RowsManager {
 
     private rowHeights: RowData;
@@ -13,10 +15,15 @@ export class RowsManager {
     private defaultHeight: number;
     private defaultWidth: number;
     private rowCanvasLimit: number;
+    private _ifResizeOn:GlobalBoolean;
+    private _ifResizePointerDown:GlobalBoolean;
+    private currentResizingRow:GlobalNumber;
 
-
-    constructor(rowHeights: RowData, startRowIdx: number, visibleRowCnt: number, rowCanvasLimit: number = 4000, defaultHeight: number = 25, defaultWidth: number = 80, marginTop:{value:number}={value: 0}) {
+    constructor(rowHeights: RowData, startRowIdx: number, visibleRowCnt: number,ifResizeOn:GlobalBoolean,ifResizePointerDown:GlobalBoolean, rowCanvasLimit: number = 4000, defaultHeight: number = 25, defaultWidth: number = 80, marginTop:{value:number}={value: 0}) {
         this.rowHeights = rowHeights;
+        this._ifResizeOn=ifResizeOn;
+        this.currentResizingRow={value:-1};
+        this._ifResizePointerDown=ifResizePointerDown;
         this.startRowIdx = startRowIdx;
         this.rowCanvasLimit = rowCanvasLimit;
         this.visibleRowCnt = visibleRowCnt;
@@ -31,6 +38,33 @@ export class RowsManager {
 
 
     }
+    
+    get currentResizingRowCanvas(){
+        let idx=0;
+        if(this.currentResizingRow.value===-1){
+            alert("something went wrong");
+        }else{
+            idx=this.currentResizingRow.value - this.visibleRows[0].rowID;
+        }
+
+        return this.visibleRows[idx];
+    }
+
+    // set ifResizeOn(obj:GlobalBoolean){
+    //     this._ifResizeOn=obj;
+    // }
+
+    // get ifResizeOn(){
+    //     return this._ifResizeOn as GlobalBoolean;
+    // }
+
+    // set ifResizePointerDown(obj:GlobalBoolean){
+    //     this._ifResizePointerDown=obj;
+    // }
+
+    // get ifResizePointerDown(){
+    //     return this._ifResizePointerDown as GlobalBoolean;
+    // }
 
     scrollDown() {
         if (this.startRowIdx === (this.rowCanvasLimit - 1 - this.visibleRowCnt)) return false;
@@ -51,7 +85,7 @@ export class RowsManager {
     private initialLoad() {
         for (let i = 0; i < this.visibleRowCnt; i++) {
             const rowIdx = i + this.startRowIdx;
-            this.visibleRows.push(new RowsCanvas(rowIdx, this.rowHeights, this.defaultWidth, this.defaultHeight));
+            this.visibleRows.push(new RowsCanvas(rowIdx, this.rowHeights, this.defaultWidth, this.defaultHeight,this._ifResizeOn as GlobalBoolean,this._ifResizePointerDown as GlobalBoolean,this.currentResizingRow));
             this.rowsPositionPrefixSumArr.push(this.visibleRows[i].rowsPositionArr);
             this.rowsDivArr.push(this.visibleRows[i].rowCanvasDiv);
             this.rowsDivContainer.appendChild(this.visibleRows[i].rowCanvasDiv);
@@ -61,7 +95,7 @@ export class RowsManager {
 
     private mountRowBottom() {
         const rowIdx = this.startRowIdx + this.visibleRowCnt - 1;
-        this.visibleRows.push(new RowsCanvas(rowIdx, this.rowHeights, this.defaultWidth, this.defaultHeight));
+        this.visibleRows.push(new RowsCanvas(rowIdx, this.rowHeights, this.defaultWidth, this.defaultHeight,this._ifResizeOn as GlobalBoolean,this._ifResizePointerDown as GlobalBoolean,this.currentResizingRow));
 
         this.rowsPositionPrefixSumArr.push(this.visibleRows[this.visibleRows.length - 1].rowsPositionArr);
 
@@ -73,7 +107,7 @@ export class RowsManager {
     private mountRowTop() {
         const rowIdx = this.startRowIdx;
 
-        this.visibleRows.unshift(new RowsCanvas(rowIdx, this.rowHeights, this.defaultWidth, this.defaultHeight));
+        this.visibleRows.unshift(new RowsCanvas(rowIdx, this.rowHeights, this.defaultWidth, this.defaultHeight,this._ifResizeOn as GlobalBoolean,this._ifResizePointerDown as GlobalBoolean,this.currentResizingRow));
         this.rowsPositionPrefixSumArr.unshift(this.visibleRows[0].rowsPositionArr);
         this.rowsDivArr.unshift(this.visibleRows[0].rowCanvasDiv);
         this.rowsDivContainer.prepend(this.visibleRows[0].rowCanvasDiv);

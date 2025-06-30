@@ -76,7 +76,7 @@ bufferRect.bottom > this.containerDivRect.top
  
         if (isVisible) {
             if(this.rowsManager?.scrollDown()){
-                this.tilesManager?.scrollDown(this.rowsManager?.rowsPositionPrefixSumArr[this.rowsManager.rowsPositionPrefixSumArr.length-1] as number[]);
+                this.tilesManager?.scrollDown();
             }
         }
     }
@@ -93,7 +93,7 @@ bufferRect.top<this.containerDivRect.bottom
  
         if(isVisible){
             if(this.rowsManager?.scrollUp()){
-                this.tilesManager?.scrollUp(this.rowsManager?.rowsPositionPrefixSumArr[0] as number[]);
+                this.tilesManager?.scrollUp();
             }
         }
     }
@@ -109,7 +109,7 @@ bufferRect.top<this.containerDivRect.bottom
         if(isVisible){
             if(this.columnsManager?.scrollRight()){
 
-                this.tilesManager?.scrollRight(this.columnsManager?.visibleColumnsPrefixSum[this.columnsManager.visibleColumnsPrefixSum.length-1] as number[]);
+                this.tilesManager?.scrollRight();
 
             }
         }
@@ -128,7 +128,7 @@ bufferRect.top<this.containerDivRect.bottom
         if(isVisible){
  
             if(this.columnsManager?.scrollLeft()){
-                this.tilesManager?.scrollLeft(this.columnsManager?.visibleColumnsPrefixSum[0] as number[]);
+                this.tilesManager?.scrollLeft();
             }
         }
  

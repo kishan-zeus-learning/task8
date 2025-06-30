@@ -4,10 +4,11 @@ export class ColumnsCanvas {
         this.columnID = columnID;
         this.defaultHeight = defaultHeight;
         this.defaultWidth = defaultWidth;
-        this.columnsPositionArr = this.createColumnsPositionArr();
+        this.columnsPositionArr = [];
+        this.setColumnsPositionArr();
         this.columnCanvas = this.createcolumnCanvas();
     }
-    createColumnsPositionArr() {
+    setColumnsPositionArr() {
         let startNum = this.columnID * 25 + 1;
         let prefixSum = 0;
         const columnsPostion = [];
@@ -20,7 +21,7 @@ export class ColumnsCanvas {
             }
             columnsPostion.push(prefixSum);
         }
-        return columnsPostion;
+        this.columnsPositionArr = columnsPostion;
     }
     createcolumnCanvas() {
         const columnDiv = document.createElement("div");
