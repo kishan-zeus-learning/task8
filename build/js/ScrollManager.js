@@ -1,28 +1,55 @@
+/**
+ * Manages scrolling behavior and coordinates updates to rows, columns, and tile data.
+ */
 export class ScrollManager {
+    /**
+     * Initializes the ScrollManager, computes scrollable divisions, and sets up scroll listeners.
+     */
     constructor() {
+        /** @type {number} The minimum row height in pixels */
         this.minHeight = 18;
+        /** @type {number} The minimum column width in pixels */
         this.minWidth = 40;
+        /** @type {ColumnsManager | null} Manager handling columns and scrolling logic */
         this.columnsManager = null;
+        /** @type {RowsManager | null} Manager handling rows and scrolling logic */
         this.rowsManager = null;
+        /** @type {TilesManager | null} Manager handling tiles and scrolling logic */
         this.tilesManager = null;
-        // this.gridDiv = document.getElementById("grid") as HTMLDivElement;
         this.sheetDiv = document.getElementById("sheet");
         this.containerDivRect = this.sheetDiv.getBoundingClientRect();
         this.verticalNum = this.minVerticalDiv() + 2;
         this.horizontalNum = this.minHorizontalDiv() + 2;
         this.scrollListener();
     }
+    /**
+     * Links managers required for scroll coordination.
+     * @param {ColumnsManager} columnsManager - The manager for columns.
+     * @param {RowsManager} rowsManager - The manager for rows.
+     * @param {TilesManager} tilesManager - The manager for cell tiles.
+     */
     initializeManager(columnsManager, rowsManager, tilesManager) {
         this.columnsManager = columnsManager;
         this.rowsManager = rowsManager;
         this.tilesManager = tilesManager;
     }
+    /**
+     * Calculates the minimum number of vertical divisions based on the container height.
+     * @returns {number} Number of vertical scrollable sections.
+     */
     minVerticalDiv() {
-        return Math.ceil(Math.ceil(this.sheetDiv.clientHeight / (this.minHeight)) / 25);
+        return Math.ceil(Math.ceil(this.sheetDiv.clientHeight / this.minHeight) / 25);
     }
+    /**
+     * Calculates the minimum number of horizontal divisions based on the container width.
+     * @returns {number} Number of horizontal scrollable sections.
+     */
     minHorizontalDiv() {
-        return Math.ceil(Math.ceil(this.sheetDiv.clientWidth / (this.minWidth)) / 25);
+        return Math.ceil(Math.ceil(this.sheetDiv.clientWidth / this.minWidth) / 25);
     }
+    /**
+     * Attaches a scroll event listener to the sheet container and tracks scroll direction.
+     */
     scrollListener() {
         let lastScrollTop = this.sheetDiv.scrollTop;
         let lastScrollLeft = this.sheetDiv.scrollLeft;
@@ -45,6 +72,10 @@ export class ScrollManager {
             lastScrollTop = currentScrollTop;
         });
     }
+    /**
+     * Handles scrolling down and triggers row and tile updates if needed.
+     * @param {Event} event - The scroll event.
+     */
     handleScrollDown(event) {
         var _a, _b, _c;
         const lastRow = (_a = this.rowsManager) === null || _a === void 0 ? void 0 : _a.visibleRows[this.rowsManager.visibleRows.length - 1];
@@ -57,6 +88,10 @@ export class ScrollManager {
             }
         }
     }
+    /**
+     * Handles scrolling up and triggers row and tile updates if needed.
+     * @param {Event} event - The scroll event.
+     */
     handleScrollUp(event) {
         var _a, _b, _c;
         const firstRow = (_a = this.rowsManager) === null || _a === void 0 ? void 0 : _a.visibleRows[0];
@@ -69,6 +104,10 @@ export class ScrollManager {
             }
         }
     }
+    /**
+     * Handles scrolling right and triggers column and tile updates if needed.
+     * @param {Event} event - The scroll event.
+     */
     handleScrollRight(event) {
         var _a, _b, _c;
         const lastColumn = (_a = this.columnsManager) === null || _a === void 0 ? void 0 : _a.visibleColumns[this.columnsManager.visibleColumns.length - 1];
@@ -81,6 +120,10 @@ export class ScrollManager {
             }
         }
     }
+    /**
+     * Handles scrolling left and triggers column and tile updates if needed.
+     * @param {Event} event - The scroll event.
+     */
     handleScrollLeft(event) {
         var _a, _b, _c;
         const firstColumn = (_a = this.columnsManager) === null || _a === void 0 ? void 0 : _a.visibleColumns[0];

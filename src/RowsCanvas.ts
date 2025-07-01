@@ -1,29 +1,73 @@
 import { GlobalBoolean } from "./types/GlobalBoolean";
 import { GlobalNumber } from "./types/GlobalNumber";
 import { RowData } from "./types/RowsColumn";
+
+/**
+ * Represents a canvas-based rendering of a block of 25 rows.
+ * Handles row drawing, resizing, and rendering optimizations.
+ */
 export class RowsCanvas {
+    /** Object that stores custom row heights indexed by row number */
     private rowHeights: RowData;
+
+    /** Prefix sum of each row's vertical position */
     public rowsPositionArr: number[];
+
+    /** Row block ID (each block represents 25 rows) */
     readonly rowID: number;
+
+    /** Container div for rowCanvas and resize UI */
     readonly rowCanvasDiv: HTMLDivElement;
+
+    /** The canvas element used to render rows */
     public rowCanvas: HTMLCanvasElement = document.createElement("canvas");
+
+    /** Default width of each row (in pixels) */
     private defaultWidth: number;
+
+    /** Default height of each row (in pixels) */
     private defaultHeight: number;
+
+    /** The horizontal resize UI indicator element */
     private resizeDiv: HTMLDivElement = document.createElement("div");
+
+    /** Global flag to show or hide resize line on hover */
     private ifResizeOn: { value: boolean };
+
+    /** Global shared variable storing the currently resizing row ID */
     private currentResizingRow: GlobalNumber;
+
+    /** Global flag indicating if the pointer is pressed during resize */
     private ifResizePointerDown: { value: boolean };
+
+    /** Index of the row currently being hovered near a resize boundary */
     private hoverIdx: number = -1;
 
-
-    constructor(rowID: number, rowHeights: RowData, defaultWidth: number, defaultHeight: number, ifResizeOn: GlobalBoolean, ifResizePointerDown: GlobalBoolean, currentResizingRow: GlobalNumber) {
+    /**
+     * Initializes the RowsCanvas with layout and resize behavior.
+     * @param rowID Index of this row block
+     * @param rowHeights Custom height map
+     * @param defaultWidth Default width of rows
+     * @param defaultHeight Default height of rows
+     * @param ifResizeOn Shared global boolean for resize indicator
+     * @param ifResizePointerDown Shared global boolean for pointer down
+     * @param currentResizingRow Shared global row ID during resizing
+     */
+    constructor(
+        rowID: number,
+        rowHeights: RowData,
+        defaultWidth: number,
+        defaultHeight: number,
+        ifResizeOn: GlobalBoolean,
+        ifResizePointerDown: GlobalBoolean,
+        currentResizingRow: GlobalNumber
+    ) {
         this.rowHeights = rowHeights;
         this.rowID = rowID;
         this.defaultHeight = defaultHeight;
         this.defaultWidth = defaultWidth;
-        this.rowsPositionArr = []
+        this.rowsPositionArr = [];
         this.currentResizingRow = currentResizingRow;
-        // this.ifResizeOn=ifResizeOn;
         this.ifResizeOn = ifResizeOn;
         this.ifResizePointerDown = ifResizePointerDown;
         this.setRowsPositionArr();
@@ -31,37 +75,34 @@ export class RowsCanvas {
         this.handleResize();
     }
 
-
+    /**
+     * Adds resize behavior and hover logic to row borders.
+     */
     private handleResize() {
-
         this.rowCanvasDiv.addEventListener("pointerdown", (event) => {
             this.ifResizePointerDown.value = true;
         });
 
         this.rowCanvasDiv.addEventListener("pointermove", (event) => {
-
             if (this.ifResizePointerDown.value) {
-
                 this.currentResizingRow.value = this.rowID;
-
                 return;
             }
+
             this.hoverIdx = this.binarySearchRange(event.offsetY);
             if (this.hoverIdx !== -1) {
                 (this.ifResizeOn as GlobalBoolean).value = true;
                 this.resizeDiv.style.display = "block";
                 this.resizeDiv.style.top = `${this.rowsPositionArr[this.hoverIdx] - 1.5}px`;
                 this.resizeDiv.style.zIndex = `10`;
-
-
             } else {
-
                 if (!(this.ifResizePointerDown as GlobalBoolean).value) {
                     if (this.resizeDiv) this.resizeDiv.style.display = "none";
                 }
                 this.ifResizeOn.value = false;
             }
         });
+
         this.rowCanvasDiv.addEventListener("pointerout", (event) => {
             if (!(this.ifResizePointerDown as GlobalBoolean).value) {
                 if (this.resizeDiv) this.resizeDiv.style.display = "none";
@@ -70,34 +111,47 @@ export class RowsCanvas {
         });
     }
 
+    /**
+     * Resizes a specific row when dragged, clamps height, and redraws.
+     * @param newPosition The new Y position of the mouse
+     */
     public resizeRow(newPosition: number) {
         newPosition = newPosition - this.rowCanvasDiv.getBoundingClientRect().top;
         let newHeight;
+
         if (this.hoverIdx !== 0) {
             newHeight = newPosition - this.rowsPositionArr[this.hoverIdx - 1];
         } else {
             newHeight = newPosition;
         }
+
         newHeight = Math.max(25, newHeight);
         newHeight = Math.min(500, newHeight);
+
         if (this.hoverIdx !== 0) {
             (this.resizeDiv as HTMLDivElement).style.top = `${this.rowsPositionArr[this.hoverIdx - 1] + newHeight}px`;
         } else {
             (this.resizeDiv as HTMLDivElement).style.top = `${newHeight}px`;
         }
-        if (newHeight === 25) delete this.rowHeights[this.rowID * 25 + this.hoverIdx + 1];
-        else this.rowHeights[this.rowID * 25 + this.hoverIdx + 1] = { height: newHeight };
+
+        const rowKey = this.rowID * 25 + this.hoverIdx + 1;
+        if (newHeight === 25) delete this.rowHeights[rowKey];
+        else this.rowHeights[rowKey] = { height: newHeight };
 
         this.setRowsPositionArr();
         this.drawCanvas();
     }
 
-
-
+    /**
+     * Finds the row index near the given vertical coordinate using binary search.
+     * @param num The Y offset to check
+     * @returns Row index if found near boundary, else -1
+     */
     private binarySearchRange(num: number) {
         let start = 0;
         let end = 24;
         let mid;
+
         while (start <= end) {
             mid = Math.floor((start + end) / 2);
 
@@ -109,13 +163,16 @@ export class RowsCanvas {
                 end = mid - 1;
             }
         }
+
         return -1;
     }
 
+    /**
+     * Recalculates and stores vertical positions of rows using prefix sum.
+     */
     private setRowsPositionArr() {
         let startNum = this.rowID * 25 + 1;
         let prefixSum = 0;
-
 
         this.rowsPositionArr.length = 0;
         for (let i = 0; i < 25; i++) {
@@ -126,9 +183,12 @@ export class RowsCanvas {
             }
             this.rowsPositionArr.push(prefixSum);
         }
-
     }
 
+    /**
+     * Creates and initializes the DOM structure for a single row block.
+     * @returns HTMLDivElement containing canvas and resize line
+     */
     private createRowCanvas() {
         const rowDiv = document.createElement("div");
         rowDiv.id = `row${this.rowID}`;
@@ -136,12 +196,17 @@ export class RowsCanvas {
 
         this.drawCanvas();
         rowDiv.appendChild(this.rowCanvas);
-        this.resizeDiv.classList.add("RowResizeDiv");
 
+        this.resizeDiv.classList.add("RowResizeDiv");
         rowDiv.appendChild(this.resizeDiv);
+
         return rowDiv;
     }
 
+    /**
+     * Draws row numbers and horizontal lines on the canvas.
+     * Uses device pixel ratio for sharper rendering.
+     */
     drawCanvas() {
         if (!this.rowCanvas) return;
 
@@ -151,10 +216,10 @@ export class RowsCanvas {
         this.rowCanvas.style.width = `${this.defaultWidth}px`;
         this.rowCanvas.style.height = `${this.rowsPositionArr[24]}px`;
 
-
         const ctx = this.rowCanvas.getContext("2d") as CanvasRenderingContext2D;
         ctx.clearRect(0, 0, this.defaultWidth, this.rowsPositionArr[24]);
         ctx.scale(dpr, dpr);
+
         ctx.beginPath();
         ctx.fillStyle = "#e7e7e7";
         ctx.fillRect(0, 0, this.defaultWidth, this.rowsPositionArr[24]);
@@ -166,25 +231,27 @@ export class RowsCanvas {
         ctx.strokeStyle = "black";
         ctx.fillStyle = "black";
 
-
         let startNum = this.rowID * 25 + 1;
         const offset = 0.5 / dpr;
+
         for (let i = 0; i < 25; i++) {
             ctx.moveTo(0, this.rowsPositionArr[i] - offset);
             ctx.lineTo(this.defaultWidth, this.rowsPositionArr[i] - offset);
 
-            const yPos = Math.round(this.rowsPositionArr[i] - (this.rowsPositionArr[i] - ((i === 0) ? 0 : this.rowsPositionArr[i - 1])) / 2 + 1);
+            const yPos = Math.round(
+                this.rowsPositionArr[i] -
+                (this.rowsPositionArr[i] - (i === 0 ? 0 : this.rowsPositionArr[i - 1])) / 2 + 1
+            );
+
             ctx.fillText(`${i + startNum}`, this.defaultWidth - 5, yPos);
         }
 
         ctx.moveTo(this.defaultWidth - 0.5, 0);
         ctx.lineTo(this.defaultWidth - 0.5, this.rowsPositionArr[24]);
+
         ctx.moveTo(0.5, 0);
         ctx.lineTo(0.5, this.rowsPositionArr[24]);
+
         ctx.stroke();
-
-
     }
-
 }
-

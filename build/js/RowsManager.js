@@ -1,5 +1,21 @@
 import { RowsCanvas } from "./RowsCanvas.js";
+/**
+ * Manages a scrolling set of visible row canvases, enabling efficient rendering
+ * and resizing behavior for a large number of rows by dynamically mounting and unmounting row blocks.
+ */
 export class RowsManager {
+    /**
+     * Initializes a scrollable manager for row canvas blocks
+     * @param rowHeights Map of row custom heights
+     * @param startRowIdx Initial starting row block index
+     * @param visibleRowCnt Number of row blocks to render at once
+     * @param ifResizeOn Shared boolean controlling resize line visibility
+     * @param ifResizePointerDown Shared boolean indicating pointer press during resize
+     * @param rowCanvasLimit Maximum number of row blocks
+     * @param defaultHeight Default row height (pixels)
+     * @param defaultWidth Default row width (pixels)
+     * @param marginTop Global object for managing vertical scroll offset
+     */
     constructor(rowHeights, startRowIdx, visibleRowCnt, ifResizeOn, ifResizePointerDown, rowCanvasLimit = 4000, defaultHeight = 25, defaultWidth = 80, marginTop = { value: 0 }) {
         this.rowHeights = rowHeights;
         this._ifResizeOn = ifResizeOn;
@@ -17,6 +33,9 @@ export class RowsManager {
         this.rowsDivContainer = document.getElementById("rowsColumn");
         this.initialLoad();
     }
+    /**
+     * Returns the RowsCanvas currently being resized
+     */
     get currentResizingRowCanvas() {
         let idx = 0;
         if (this.currentResizingRow.value === -1) {
@@ -27,6 +46,9 @@ export class RowsManager {
         }
         return this.visibleRows[idx];
     }
+    /**
+     * Scrolls row view down by one block and mounts a new row at the bottom
+     */
     scrollDown() {
         if (this.startRowIdx === (this.rowCanvasLimit - 1 - this.visibleRowCnt))
             return false;
@@ -35,6 +57,9 @@ export class RowsManager {
         this.mountRowBottom();
         return true;
     }
+    /**
+     * Scrolls row view up by one block and mounts a new row at the top
+     */
     scrollUp() {
         if (this.startRowIdx === 0)
             return false;
@@ -43,31 +68,46 @@ export class RowsManager {
         this.mountRowTop();
         return true;
     }
+    /**
+     * Loads all visible row canvases on initial render
+     */
     initialLoad() {
         for (let i = 0; i < this.visibleRowCnt; i++) {
             const rowIdx = i + this.startRowIdx;
-            this.visibleRows.push(new RowsCanvas(rowIdx, this.rowHeights, this.defaultWidth, this.defaultHeight, this._ifResizeOn, this._ifResizePointerDown, this.currentResizingRow));
-            this.rowsPositionPrefixSumArr.push(this.visibleRows[i].rowsPositionArr);
-            this.rowsDivArr.push(this.visibleRows[i].rowCanvasDiv);
-            this.rowsDivContainer.appendChild(this.visibleRows[i].rowCanvasDiv);
+            const canvas = new RowsCanvas(rowIdx, this.rowHeights, this.defaultWidth, this.defaultHeight, this._ifResizeOn, this._ifResizePointerDown, this.currentResizingRow);
+            this.visibleRows.push(canvas);
+            this.rowsPositionPrefixSumArr.push(canvas.rowsPositionArr);
+            this.rowsDivArr.push(canvas.rowCanvasDiv);
+            this.rowsDivContainer.appendChild(canvas.rowCanvasDiv);
         }
     }
+    /**
+     * Adds a new row block to the bottom of the view
+     */
     mountRowBottom() {
         const rowIdx = this.startRowIdx + this.visibleRowCnt - 1;
-        this.visibleRows.push(new RowsCanvas(rowIdx, this.rowHeights, this.defaultWidth, this.defaultHeight, this._ifResizeOn, this._ifResizePointerDown, this.currentResizingRow));
-        this.rowsPositionPrefixSumArr.push(this.visibleRows[this.visibleRows.length - 1].rowsPositionArr);
-        this.rowsDivArr.push(this.visibleRows[this.visibleRows.length - 1].rowCanvasDiv);
-        this.rowsDivContainer.appendChild(this.visibleRows[this.visibleRows.length - 1].rowCanvasDiv);
+        const canvas = new RowsCanvas(rowIdx, this.rowHeights, this.defaultWidth, this.defaultHeight, this._ifResizeOn, this._ifResizePointerDown, this.currentResizingRow);
+        this.visibleRows.push(canvas);
+        this.rowsPositionPrefixSumArr.push(canvas.rowsPositionArr);
+        this.rowsDivArr.push(canvas.rowCanvasDiv);
+        this.rowsDivContainer.appendChild(canvas.rowCanvasDiv);
     }
+    /**
+     * Adds a new row block to the top of the view
+     */
     mountRowTop() {
         const rowIdx = this.startRowIdx;
-        this.visibleRows.unshift(new RowsCanvas(rowIdx, this.rowHeights, this.defaultWidth, this.defaultHeight, this._ifResizeOn, this._ifResizePointerDown, this.currentResizingRow));
-        this.rowsPositionPrefixSumArr.unshift(this.visibleRows[0].rowsPositionArr);
-        this.rowsDivArr.unshift(this.visibleRows[0].rowCanvasDiv);
-        this.rowsDivContainer.prepend(this.visibleRows[0].rowCanvasDiv);
+        const canvas = new RowsCanvas(rowIdx, this.rowHeights, this.defaultWidth, this.defaultHeight, this._ifResizeOn, this._ifResizePointerDown, this.currentResizingRow);
+        this.visibleRows.unshift(canvas);
+        this.rowsPositionPrefixSumArr.unshift(canvas.rowsPositionArr);
+        this.rowsDivArr.unshift(canvas.rowCanvasDiv);
+        this.rowsDivContainer.prepend(canvas.rowCanvasDiv);
         this.marginTop.value -= this.rowsPositionPrefixSumArr[0][24];
         this.rowsDivContainer.style.marginTop = `${this.marginTop.value}px`;
     }
+    /**
+     * Removes the topmost row block from the view
+     */
     unmountRowTop() {
         this.marginTop.value += this.rowsPositionPrefixSumArr[0][24];
         this.rowsDivContainer.style.marginTop = `${this.marginTop.value}px`;
@@ -76,6 +116,9 @@ export class RowsManager {
         this.rowsPositionPrefixSumArr.shift();
         this.visibleRows.shift();
     }
+    /**
+     * Removes the bottommost row block from the view
+     */
     unmountRowBottom() {
         this.rowsDivContainer.removeChild(this.rowsDivArr[this.rowsDivArr.length - 1]);
         this.rowsDivArr.pop();

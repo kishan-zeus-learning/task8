@@ -1,4 +1,18 @@
+/**
+ * Manages resizing behavior for rows and columns.
+ */
 export class ResizeManager {
+    /**
+     * Initializes the ResizeManager with references to all required managers and global flags.
+     *
+     * @param {RowsManager} rowsManager - Manager handling row operations.
+     * @param {TilesManager} tilesManager - Manager handling tile redraws.
+     * @param {ColumnsManager} columnsManager - Manager handling column operations.
+     * @param {GlobalBoolean} ifRowResizeOn - Flag indicating if row resize is active.
+     * @param {GlobalBoolean} ifRowResizePointerDown - Flag indicating if row resize is in progress.
+     * @param {GlobalBoolean} ifColumnResizeOn - Flag indicating if column resize is active.
+     * @param {GlobalBoolean} ifColumnPointerDown - Flag indicating if column resize is in progress.
+     */
     constructor(rowsManager, tilesManager, columnsManager, ifRowResizeOn, ifRowResizePointerDown, ifColumnResizeOn, ifColumnPointerDown) {
         this.rowsManager = rowsManager;
         this.tilesManager = tilesManager;
@@ -8,10 +22,14 @@ export class ResizeManager {
         this.ifColumnResizeOn = ifColumnResizeOn;
         this.ifColumnResizePointerDown = ifColumnPointerDown;
     }
+    /**
+     * Handles logic on pointer up (mouse release), finalizing any resize actions.
+     *
+     * @param {Event} event - The pointerup event.
+     */
     pointerUpEventHandler(event) {
-        // console.log("pointer up called " );
         document.body.style.cursor = "default";
-        // for row
+        // Hide row resize handles
         const rowCanvasDivs = document.querySelectorAll(".subRow");
         rowCanvasDivs.forEach(rowCanvasDiv => {
             const resizeDiv = rowCanvasDiv.lastElementChild;
@@ -21,22 +39,24 @@ export class ResizeManager {
             this.tilesManager.redrawRow(this.rowsManager.currentResizingRowCanvas.rowID);
             this.ifRowResizePointerDown.value = false;
         }
-        // for column
+        // Hide column resize handles
         const columnCanvasDivs = document.querySelectorAll(".subColumn");
         columnCanvasDivs.forEach(columnCanvasDiv => {
             const resizeDiv = columnCanvasDiv.lastElementChild;
             resizeDiv.style.display = "none";
         });
         if (this.ifColumnResizePointerDown.value) {
-            console.log("before in column manager : ", [...this.columnsManager.visibleColumnsPrefixSum]);
             this.tilesManager.redrawColumn(this.columnsManager.currentResizingColumnCanvas.columnID);
-            console.log("after in column manager : ", [...this.columnsManager.visibleColumnsPrefixSum]);
-            // console.log("pointer up value reset");
             this.ifColumnResizePointerDown.value = false;
         }
     }
+    /**
+     * Handles logic on pointer move (mouse drag), performing the resize if in progress.
+     *
+     * @param {PointerEvent} event - The pointermove event.
+     */
     pointerMove(event) {
-        //row 
+        // Set cursor based on resize state
         if (this.ifRowResizeOn.value || this.ifRowResizePointerDown.value) {
             document.body.style.cursor = "ns-resize";
         }
@@ -46,12 +66,12 @@ export class ResizeManager {
         else {
             document.body.style.cursor = "default";
         }
+        // Resize row if active
         if (this.ifRowResizePointerDown.value) {
             this.rowsManager.currentResizingRowCanvas.resizeRow(event.clientY);
         }
-        //column
+        // Resize column if active
         if (this.ifColumnResizePointerDown.value) {
-            console.log("pointer is down");
             this.columnsManager.currentResizingColumnCanvas.resizeColumn(event.clientX);
         }
     }
