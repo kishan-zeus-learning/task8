@@ -73,28 +73,48 @@ export class RowsCanvas {
      */
     resizeRow(newPosition) {
         newPosition = newPosition - this.rowCanvasDiv.getBoundingClientRect().top;
-        let newHeight;
+        let newHeight = 25;
+        // this.rowCanvasDiv.off
+        if (isNaN(newHeight)) {
+            console.log("nan at 1");
+        }
         if (this.hoverIdx !== 0) {
             newHeight = newPosition - this.rowsPositionArr[this.hoverIdx - 1];
+            if (isNaN(newHeight)) {
+                console.log("new height : ", this.hoverIdx);
+            }
         }
         else {
             newHeight = newPosition;
         }
+        if (isNaN(newHeight)) {
+            console.log("nan at 2");
+        }
         newHeight = Math.max(25, newHeight);
         newHeight = Math.min(500, newHeight);
+        if (isNaN(newHeight)) {
+            console.log("nan at 3");
+        }
         if (this.hoverIdx !== 0) {
             this.resizeDiv.style.top = `${this.rowsPositionArr[this.hoverIdx - 1] + newHeight}px`;
         }
         else {
             this.resizeDiv.style.top = `${newHeight}px`;
         }
+        if (isNaN(newHeight)) {
+            console.log("nan at 4");
+        }
         const rowKey = this.rowID * 25 + this.hoverIdx + 1;
         if (newHeight === 25)
             delete this.rowHeights[rowKey];
         else
             this.rowHeights[rowKey] = { height: newHeight };
+        if (isNaN(newHeight)) {
+            console.log("nan at 5");
+        }
         this.setRowsPositionArr();
         this.drawCanvas();
+        console.log(this.rowHeights);
     }
     /**
      * Finds the row index near the given vertical coordinate using binary search.
@@ -107,7 +127,7 @@ export class RowsCanvas {
         let mid;
         while (start <= end) {
             mid = Math.floor((start + end) / 2);
-            if (this.rowsPositionArr[mid] + 5 >= num && num >= this.rowsPositionArr[mid] - 5) {
+            if (Math.abs(num - this.rowsPositionArr[mid]) <= 5) {
                 return mid;
             }
             else if (num > this.rowsPositionArr[mid]) {
@@ -117,6 +137,7 @@ export class RowsCanvas {
                 end = mid - 1;
             }
         }
+        console.log("binary search num : ", num);
         return -1;
     }
     /**
@@ -166,14 +187,14 @@ export class RowsCanvas {
         ctx.clearRect(0, 0, this.defaultWidth, this.rowsPositionArr[24]);
         ctx.scale(dpr, dpr);
         ctx.beginPath();
-        ctx.fillStyle = "#e7e7e7";
+        ctx.fillStyle = "#f5f5f5";
         ctx.fillRect(0, 0, this.defaultWidth, this.rowsPositionArr[24]);
-        ctx.font = '16px Arial';
+        ctx.font = '14px Arial';
         ctx.lineWidth = 1;
         ctx.textAlign = "right";
         ctx.textBaseline = "middle";
-        ctx.strokeStyle = "black";
-        ctx.fillStyle = "black";
+        ctx.strokeStyle = "#ddd";
+        ctx.fillStyle = "#616161";
         let startNum = this.rowID * 25 + 1;
         const offset = 0.5 / dpr;
         for (let i = 0; i < 25; i++) {

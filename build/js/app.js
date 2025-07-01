@@ -3,12 +3,14 @@ import { RowsManager } from "./RowsManager.js";
 import { ColumnsManager } from "./ColumnsManager.js";
 import { TilesManager } from "./TilesManager.js";
 import { ResizeManager } from "./ResizeManager.js";
+import { CellSelectionManager } from "./CellSelectionManager.js";
 class App {
     constructor() {
         this.ifRowResizeOn = { value: false };
         this.ifRowResizePointerDown = { value: false };
         this.ifColumnResizeOn = { value: false };
         this.ifColumnResizePointerDown = { value: false };
+        this.ifMultipleSelection = { value: false };
         this.initialize();
     }
     initialize() {
@@ -18,7 +20,9 @@ class App {
         const TilesManagerObj = new TilesManager(RowsManagerObj.rowsPositionPrefixSumArr, ColumnsManagerObj.visibleColumnsPrefixSum, ScrollManagerObj.verticalNum, ScrollManagerObj.horizontalNum, undefined, undefined, RowsManagerObj.marginTop, ColumnsManagerObj.marginLeft);
         ScrollManagerObj.initializeManager(ColumnsManagerObj, RowsManagerObj, TilesManagerObj);
         const ResizeManagerObj = new ResizeManager(RowsManagerObj, TilesManagerObj, ColumnsManagerObj, this.ifRowResizeOn, this.ifRowResizePointerDown, this.ifColumnResizeOn, this.ifColumnResizePointerDown);
+        const CellSelectionManagerObj = new CellSelectionManager(RowsManagerObj, TilesManagerObj, ColumnsManagerObj, this.ifMultipleSelection);
         window.addEventListener("pointerup", (event) => {
+            console.log(event.target);
             ResizeManagerObj.pointerUpEventHandler(event);
         });
         window.addEventListener("pointermove", (event) => {

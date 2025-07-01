@@ -16,7 +16,7 @@ export class ColumnsManager {
      * @param {number} defaultWidth - Default column width (default 80)
      * @param {GlobalNumber} marginLeft - Margin left for scroll (default {value:0})
      */
-    constructor(columnWidths, startColumnIdx, visibleColumnCnt, ifResizeOn, ifResizePointerDown, columnCanvasLimit = 40, defaultHeight = 25, defaultWidth = 80, marginLeft = { value: 0 }) {
+    constructor(columnWidths, startColumnIdx, visibleColumnCnt, ifResizeOn, ifResizePointerDown, columnCanvasLimit = 40, defaultHeight = 25, defaultWidth = 100, marginLeft = { value: 0 }) {
         this.columnWidths = columnWidths;
         this._ifResizeOn = ifResizeOn;
         this.currentResizingColumn = { value: -1 };
@@ -39,7 +39,7 @@ export class ColumnsManager {
     get currentResizingColumnCanvas() {
         let idx = 0;
         if (this.currentResizingColumn.value === -1) {
-            alert("something went wrong");
+            // alert("something went wrong");
         }
         else {
             idx = this.currentResizingColumn.value - this.visibleColumns[0].columnID;

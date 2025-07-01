@@ -16,7 +16,7 @@ export class RowsManager {
      * @param defaultWidth Default row width (pixels)
      * @param marginTop Global object for managing vertical scroll offset
      */
-    constructor(rowHeights, startRowIdx, visibleRowCnt, ifResizeOn, ifResizePointerDown, rowCanvasLimit = 4000, defaultHeight = 25, defaultWidth = 80, marginTop = { value: 0 }) {
+    constructor(rowHeights, startRowIdx, visibleRowCnt, ifResizeOn, ifResizePointerDown, rowCanvasLimit = 4000, defaultHeight = 25, defaultWidth = 50, marginTop = { value: 0 }) {
         this.rowHeights = rowHeights;
         this._ifResizeOn = ifResizeOn;
         this.currentResizingRow = { value: -1 };
@@ -39,7 +39,7 @@ export class RowsManager {
     get currentResizingRowCanvas() {
         let idx = 0;
         if (this.currentResizingRow.value === -1) {
-            alert("something went wrong");
+            // alert("something went wrong");
         }
         else {
             idx = this.currentResizingRow.value - this.visibleRows[0].rowID;

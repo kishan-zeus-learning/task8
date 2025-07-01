@@ -101,7 +101,7 @@ export class TilesManager {
         for (let j = 0; j < this.visibleColumnCnt; j++) {
             const colIdx = this.startColIdx + j;
             const tile = new Tile(rowIdx, colIdx, this.visibleTilesRowPrefixSum[0], this.visibleTilesColumnPrefixSum[0]);
-            currentVisibleRow.unshift(tile);
+            currentVisibleRow.push(tile);
             this.visibleTilesRowDivArr[0].appendChild(tile.tileDiv);
         }
         this.visibleTiles.unshift(currentVisibleRow);

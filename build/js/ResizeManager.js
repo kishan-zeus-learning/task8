@@ -68,6 +68,7 @@ export class ResizeManager {
         }
         // Resize row if active
         if (this.ifRowResizePointerDown.value) {
+            console.log(event.clientY);
             this.rowsManager.currentResizingRowCanvas.resizeRow(event.clientY);
         }
         // Resize column if active

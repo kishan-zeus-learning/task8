@@ -4,17 +4,20 @@ import { ColumnsManager } from "./ColumnsManager.js";
 import { TilesManager } from "./TilesManager.js";
 import { ResizeManager } from "./ResizeManager.js";
 import { GlobalBoolean } from "./types/GlobalBoolean.js";
+import { CellSelectionManager } from "./CellSelectionManager.js";
 class App{
     private ifRowResizeOn:GlobalBoolean;
     private ifColumnResizeOn: GlobalBoolean;
     private ifRowResizePointerDown:GlobalBoolean;
     private ifColumnResizePointerDown:GlobalBoolean;
+    private ifMultipleSelection:GlobalBoolean;
     
     constructor(){
         this.ifRowResizeOn={value:false};
         this.ifRowResizePointerDown={value:false};
         this.ifColumnResizeOn={value:false};
         this.ifColumnResizePointerDown={value:false};
+        this.ifMultipleSelection={value:false};
         this.initialize();
     }
 
@@ -25,14 +28,15 @@ class App{
         const TilesManagerObj = new TilesManager(RowsManagerObj.rowsPositionPrefixSumArr, ColumnsManagerObj.visibleColumnsPrefixSum, ScrollManagerObj.verticalNum, ScrollManagerObj.horizontalNum,undefined,undefined,RowsManagerObj.marginTop,ColumnsManagerObj.marginLeft);
         ScrollManagerObj.initializeManager(ColumnsManagerObj, RowsManagerObj, TilesManagerObj);
         const ResizeManagerObj= new ResizeManager(RowsManagerObj,TilesManagerObj,ColumnsManagerObj,this.ifRowResizeOn,this.ifRowResizePointerDown,this.ifColumnResizeOn,this.ifColumnResizePointerDown);
-
+        const CellSelectionManagerObj = new CellSelectionManager(RowsManagerObj,TilesManagerObj,ColumnsManagerObj,this.ifMultipleSelection);
         window.addEventListener("pointerup",(event)=>{
+            console.log(event.target);
             ResizeManagerObj.pointerUpEventHandler(event);
         })
 
         window.addEventListener("pointermove",(event)=>{
             ResizeManagerObj.pointerMove(event);
-        })
+        });
     }
 }
 

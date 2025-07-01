@@ -67,7 +67,7 @@ export class ColumnsManager {
         ifResizePointerDown: GlobalBoolean,
         columnCanvasLimit: number = 40,
         defaultHeight: number = 25,
-        defaultWidth: number = 80,
+        defaultWidth: number = 100,
         marginLeft: GlobalNumber = { value: 0 }
     ) {
         this.columnWidths = columnWidths;
@@ -93,7 +93,7 @@ export class ColumnsManager {
     get currentResizingColumnCanvas() {
         let idx = 0;
         if (this.currentResizingColumn.value === -1) {
-            alert("something went wrong");
+            // alert("something went wrong");
         } else {
             idx = this.currentResizingColumn.value - this.visibleColumns[0].columnID;
         }

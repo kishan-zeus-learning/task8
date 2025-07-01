@@ -2,7 +2,7 @@ import { Tile } from "./Tile.js";
 
 export class TilesManager {
     // 2D array of currently visible tiles
-    private visibleTiles: Tile[][];
+    public visibleTiles: Tile[][];
 
     // Array of row container divs for visible tile rows
     private visibleTilesRowDivArr: HTMLDivElement[];
@@ -26,7 +26,7 @@ export class TilesManager {
     private marginLeft: { value: number };
 
     // The main grid container div element
-    private gridDiv: HTMLDivElement;
+    readonly gridDiv: HTMLDivElement;
 
     constructor(
         visibleTilesRowPrefixSum: number[][],
@@ -167,7 +167,7 @@ export class TilesManager {
                 this.visibleTilesRowPrefixSum[0],
                 this.visibleTilesColumnPrefixSum[0]
             );
-            currentVisibleRow.unshift(tile);
+            currentVisibleRow.push(tile);
             this.visibleTilesRowDivArr[0].appendChild(tile.tileDiv);
         }
 

@@ -43,12 +43,14 @@ export class Tile {
         // Set canvas dimensions based on the total size of 25 rows and columns
         this.tileCanvas.width = this.colsPositionArr[24];
         this.tileCanvas.height = this.rowsPositionArr[24];
+        this.tileCanvas.setAttribute("row",`${this.row}`);
+        this.tileCanvas.setAttribute("col",`${this.col}`);
 
         const ctx = this.tileCanvas.getContext("2d") as CanvasRenderingContext2D;
 
         ctx.lineWidth = 1;
         ctx.beginPath();
-        ctx.strokeStyle = "#e7e7e7"; // Light gray for grid lines
+        ctx.strokeStyle = "#ddd"; // Light gray for grid lines
 
         // Draw horizontal and vertical grid lines
         for (let i = 0; i < 25; i++) {
@@ -77,4 +79,7 @@ export class Tile {
         tileDiv.appendChild(this.tileCanvas); // Attach canvas to the container
         return tileDiv;
     }
+
+
+    
 }

@@ -70,7 +70,7 @@ export class RowsManager {
         ifResizePointerDown: GlobalBoolean,
         rowCanvasLimit: number = 4000,
         defaultHeight: number = 25,
-        defaultWidth: number = 80,
+        defaultWidth: number = 50,
         marginTop: GlobalNumber = { value: 0 }
     ) {
         this.rowHeights = rowHeights;
@@ -96,7 +96,7 @@ export class RowsManager {
     get currentResizingRowCanvas() {
         let idx = 0;
         if (this.currentResizingRow.value === -1) {
-            alert("something went wrong");
+            // alert("something went wrong");
         } else {
             idx = this.currentResizingRow.value - this.visibleRows[0].rowID;
         }

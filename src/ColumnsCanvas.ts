@@ -198,16 +198,18 @@ export class ColumnsCanvas {
         const ctx = this.columnCanvas.getContext("2d") as CanvasRenderingContext2D;
 
         ctx.beginPath();
-        ctx.fillStyle = "#e7e7e7";
+        ctx.fillStyle = "#f5f5f5";
         ctx.font = "12px Arial";
         ctx.lineWidth = 1;
 
         ctx.fillRect(0, 0, this.columnsPositionArr[24], this.defaultHeight);
-        ctx.fillStyle = "black";
+        ctx.fillStyle = "#616161";
 
         let startNum = this.columnID * 25 + 1;
         ctx.textBaseline = "middle";
         ctx.textAlign = "center";
+
+        ctx.strokeStyle="#ddd";
 
         for (let i = 0; i < 25; i++) {
             ctx.moveTo(this.columnsPositionArr[i] - 0.5, 0);
