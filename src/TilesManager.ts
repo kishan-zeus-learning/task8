@@ -1,4 +1,5 @@
 import { Tile } from "./Tile.js";
+import { MultipleSelectionCoordinates } from "./types/MultipleSelectionCoordinates.js";
 
 export class TilesManager {
     // 2D array of currently visible tiles
@@ -6,6 +7,8 @@ export class TilesManager {
 
     // Array of row container divs for visible tile rows
     private visibleTilesRowDivArr: HTMLDivElement[];
+
+    private selectionCoordinates: MultipleSelectionCoordinates;
 
     // Row-wise prefix sums of visible row heights
     private visibleTilesRowPrefixSum: number[][];
@@ -33,6 +36,7 @@ export class TilesManager {
         visibleTilesColumnPrefixSum: number[][],
         visibleRowCnt: number,
         visibleColumnCnt: number,
+        selectionCoordinates:MultipleSelectionCoordinates,
         startRowIdx: number = 0,
         startColIdx: number = 0,
         marginTop: { value: number } = { value: 0 },
@@ -45,6 +49,7 @@ export class TilesManager {
         this.visibleTilesRowDivArr = [];
         this.visibleRowCnt = visibleRowCnt;
         this.visibleColumnCnt = visibleColumnCnt;
+        this.selectionCoordinates=selectionCoordinates;
         this.startRowIdx = startRowIdx;
         this.startColIdx = startColIdx;
         this.marginTop = marginTop;
@@ -101,6 +106,16 @@ export class TilesManager {
         });
     }
 
+
+    rerender(){
+        console.log("rerendered");
+        for(let tilesRow of this.visibleTiles){
+            for(let tile of tilesRow){
+                tile.drawGrid();
+            }
+        }
+    }
+
     // Initial rendering of all visible tiles
     private initialLoad() {
         for (let i = this.startRowIdx; i < this.visibleRowCnt + this.startRowIdx; i++) {
@@ -112,7 +127,8 @@ export class TilesManager {
                     i,
                     j,
                     this.visibleTilesRowPrefixSum[i - this.startRowIdx],
-                    this.visibleTilesColumnPrefixSum[j - this.startColIdx]
+                    this.visibleTilesColumnPrefixSum[j - this.startColIdx],
+                    this.selectionCoordinates
                 );
                 currentVisibleRow.push(tile);
                 this.visibleTilesRowDivArr[i - this.startRowIdx].appendChild(tile.tileDiv);
@@ -143,7 +159,8 @@ export class TilesManager {
                 rowIdx,
                 colIdx,
                 this.visibleTilesRowPrefixSum[this.visibleTilesRowPrefixSum.length - 1],
-                this.visibleTilesColumnPrefixSum[j]
+                this.visibleTilesColumnPrefixSum[j],
+                this.selectionCoordinates
             );
             currentVisibleRow.push(tile);
             this.visibleTilesRowDivArr[this.visibleTilesRowDivArr.length - 1].appendChild(tile.tileDiv);
@@ -165,7 +182,8 @@ export class TilesManager {
                 rowIdx,
                 colIdx,
                 this.visibleTilesRowPrefixSum[0],
-                this.visibleTilesColumnPrefixSum[0]
+                this.visibleTilesColumnPrefixSum[0],
+                this.selectionCoordinates
             );
             currentVisibleRow.push(tile);
             this.visibleTilesRowDivArr[0].appendChild(tile.tileDiv);
@@ -185,7 +203,8 @@ export class TilesManager {
                 rowIdx,
                 colIdx,
                 this.visibleTilesRowPrefixSum[i],
-                this.visibleTilesColumnPrefixSum[0]
+                this.visibleTilesColumnPrefixSum[0],
+                this.selectionCoordinates
             );
             this.visibleTiles[i].unshift(tile);
             this.visibleTilesRowDivArr[i].prepend(tile.tileDiv);
@@ -202,7 +221,8 @@ export class TilesManager {
                 rowIdx,
                 colIdx,
                 this.visibleTilesRowPrefixSum[i],
-                this.visibleTilesColumnPrefixSum[this.visibleTilesColumnPrefixSum.length - 1]
+                this.visibleTilesColumnPrefixSum[this.visibleTilesColumnPrefixSum.length - 1],
+                this.selectionCoordinates
             );
             this.visibleTiles[i].push(tile);
             this.visibleTilesRowDivArr[i].appendChild(tile.tileDiv);

@@ -62,7 +62,7 @@ export class ResizeManager {
      * 
      * @param {Event} event - The pointerup event.
      */
-    pointerUpEventHandler(event: Event) {
+    pointerUpEventHandler(event: PointerEvent) {
         document.body.style.cursor = "default";
 
         // Hide row resize handles

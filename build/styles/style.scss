@@ -40,6 +40,7 @@
 .subRow{
   position: relative;
   .RowResizeDiv{
+    display: none;
     position: absolute;
     width: 30px;
     left:35px;
@@ -63,5 +64,5 @@
     cursor: ew-resize;
     pointer-events: none;
     display: none;
-  }
+  } 
 }

@@ -1,3 +1,5 @@
+import { MultipleSelectionCoordinates } from "./types/MultipleSelectionCoordinates";
+
 /**
  * Represents a single tile (cell group) in a grid system composed of 25 rows and 25 columns.
  * Responsible for rendering the grid lines within this tile using canvas.
@@ -21,6 +23,8 @@ export class Tile {
     /** Canvas element used to render grid lines */
     private tileCanvas: HTMLCanvasElement = document.createElement("canvas");
 
+    private selectionCoordinates:MultipleSelectionCoordinates;
+
     /**
      * Initializes a new Tile instance for a specific (row, col) position
      * @param row - The row index of the tile
@@ -28,11 +32,12 @@ export class Tile {
      * @param rowsPositionArr - Array of row edge positions (prefix sum of heights)
      * @param colsPositionArr - Array of column edge positions (prefix sum of widths)
      */
-    constructor(row: number, col: number, rowsPositionArr: number[], colsPositionArr: number[]) {
+    constructor(row: number, col: number, rowsPositionArr: number[], colsPositionArr: number[],selectionCoordinates:MultipleSelectionCoordinates) {
         this.row = row;
         this.col = col;
         this.rowsPositionArr = rowsPositionArr;
         this.colsPositionArr = colsPositionArr;
+        this.selectionCoordinates=selectionCoordinates;
         this.tileDiv = this.createTile(); // initialize and attach canvas
     }
 
@@ -64,6 +69,8 @@ export class Tile {
         }
 
         ctx.stroke(); // Render the lines
+
+        this.renderSelected(ctx);
     }
 
     /**
@@ -78,6 +85,76 @@ export class Tile {
         this.drawGrid(); // Render the grid on canvas
         tileDiv.appendChild(this.tileCanvas); // Attach canvas to the container
         return tileDiv;
+    }
+
+    private renderSelected(ctx:CanvasRenderingContext2D){
+        // console.log("called rendering the tile");
+        // ctx.beginPath();
+        const tileStartRowNum=this.row*25 + 1;
+        const tileStartColNum=this.col*25 + 1;
+        const tileEndRowNum= this.row*25 + 25;
+        const tileEndColNum= this.col*25 + 25;
+
+        const selectedStartRow = Math.min(this.selectionCoordinates.selectionEndRow,this.selectionCoordinates.selectionStartRow);
+        const selectedEndRow = Math.max(this.selectionCoordinates.selectionEndRow,this.selectionCoordinates.selectionStartRow);
+        const selectedStartCol = Math.min(this.selectionCoordinates.selectionEndColumn,this.selectionCoordinates.selectionStartColumn);
+        const selectedEndCol = Math.max(this.selectionCoordinates.selectionEndColumn,this.selectionCoordinates.selectionStartColumn);
+
+        // console.log({tileStartRowNum,tileStartColNum,tileEndRowNum,tileEndColNum});
+
+        if((selectedEndRow<tileStartRowNum) ||
+            (selectedStartRow>tileEndRowNum) ||
+            (selectedEndCol<tileStartColNum) ||
+            (selectedStartCol>tileEndColNum)
+        ) return ;
+
+        // console.log("Reached here at : ",this.row,this.col);
+
+        const rangeRowStartNum=Math.max(selectedStartRow,tileStartRowNum);
+        const rangeRowEndNum=Math.min(selectedEndRow,tileEndRowNum);
+
+        const rangeColumnStartNum=Math.max(selectedStartCol,tileStartColNum);
+        const rangeColumnEndNum=Math.min(selectedEndCol,tileEndColNum);
+
+        // console.log("range" ,{rangeRowStartNum,rangeRowEndNum,rangeColumnStartNum,rangeColumnEndNum});
+        // const rectHeight = this.rowsPositionArr[rangeRowStartNum]
+        const startY=((rangeRowStartNum-1)%25===0)?0:(this.rowsPositionArr[(rangeRowStartNum-2)%25]);
+        const startX=((rangeColumnStartNum-1)%25===0)?0:(this.colsPositionArr[(rangeColumnStartNum-2)%25]);
+
+        const rectHeight= this.rowsPositionArr[(rangeRowEndNum-1)%25] - startY;
+        const rectWidth= this.colsPositionArr[(rangeColumnEndNum-1)%25] - startX;
+        // ctx.strokeStyle="#E8F2EC";
+        console.log("start : ",{startX,startY});
+        // ctx.moveTo(0,0);
+        ctx.fillStyle="#E8F2EC";
+        ctx.fillRect(startX,startY,rectWidth,rectHeight);
+        ctx.stroke();
+        // ctx.clearRect()
+
+        if((this.selectionCoordinates.selectionStartRow>=tileStartRowNum && this.selectionCoordinates.selectionStartRow<=tileEndRowNum) && (this.selectionCoordinates.selectionStartColumn>=tileStartColNum && this.selectionCoordinates.selectionEndColumn<=tileEndColNum)){
+            // ctx.beginPath();
+            console.log("reached in clear ");
+            const clearY=((this.selectionCoordinates.selectionStartRow-1)%25===0)?0:(this.rowsPositionArr[(this.selectionCoordinates.selectionStartRow-2)%25]);
+            const clearX=((this.selectionCoordinates.selectionStartColumn-1)%25===0)?0:(this.colsPositionArr[(this.selectionCoordinates.selectionStartColumn-2)%25]);
+
+            const clearWidth= this.colsPositionArr[(this.selectionCoordinates.selectionStartColumn-1)%25] - clearX;
+            const clearHeight= this.rowsPositionArr[(this.selectionCoordinates.selectionStartRow-1)%25] - clearY;
+
+            ctx.clearRect(clearX,clearY,clearWidth-1,clearHeight-1);
+            // ctx.stroke();
+            
+        }
+        ctx.beginPath();
+        ctx.strokeStyle="#137E43";
+        ctx.lineWidth=2;
+        ctx.moveTo(startX,startY);
+        ctx.lineTo(startX,startY+rectHeight);
+        ctx.lineTo(startX + rectWidth,startY+rectHeight);
+        ctx.lineTo(startX+rectWidth,startY);
+        ctx.lineTo(startX,startY);
+        ctx.stroke();
+        
+
     }
 
 

@@ -30,10 +30,10 @@ export class ColumnsManager {
     private columnsDivContainer: HTMLDivElement;
 
     /** Default height for each column header */
-    private defaultHeight: number;
+    public defaultHeight: number;
 
     /** Default width for each column */
-    private defaultWidth: number;
+    public defaultWidth: number;
 
     /** Max number of ColumnsCanvas groups allowed (used for scroll bounds) */
     private columnCanvasLimit: number;

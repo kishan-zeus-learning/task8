@@ -19,7 +19,7 @@
   width: 50px;
   height: 25px;
   box-sizing: border-box;
-  border: 1px solid black;
+  border: 1px solid #BDBDBD;
 }
 .sheet .columnsRowWrapper {
   grid-row: 1/2;

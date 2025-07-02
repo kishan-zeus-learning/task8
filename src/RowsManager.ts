@@ -33,10 +33,10 @@ export class RowsManager {
     private rowsDivContainer: HTMLDivElement;
 
     /** Default height for a single row */
-    private defaultHeight: number;
+    public defaultHeight: number;
 
     /** Default width for a single row */
-    private defaultWidth: number;
+    public defaultWidth: number;
 
     /** Maximum row canvas blocks (hard limit for scrolling) */
     private rowCanvasLimit: number;
