@@ -28,7 +28,7 @@ export class ColumnsManager {
     readonly marginLeft: GlobalNumber;
 
     /** HTML container where column canvas divs are mounted */
-    private columnsDivContainer: HTMLDivElement;
+    readonly columnsDivContainer: HTMLDivElement;
 
     /** Default height for each column header */
     public defaultHeight: number;

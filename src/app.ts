@@ -41,6 +41,7 @@ class App{
         window.addEventListener("pointerup",(event)=>{
             ResizeManagerObj.pointerUpEventHandler(event);
             CellSelectionManagerObj.pointerUp(event);
+            // CellSelectionManagerObj
         })
 
         window.addEventListener("pointermove",(event)=>{

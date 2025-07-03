@@ -38,7 +38,8 @@ export class RowsCanvas {
      */
     handleResize() {
         this.rowCanvasDiv.addEventListener("pointerdown", (event) => {
-            this.ifResizePointerDown.value = true;
+            if (this.binarySearchRange(event.offsetY) !== -1)
+                this.ifResizePointerDown.value = true;
         });
         this.rowCanvasDiv.addEventListener("pointermove", (event) => {
             if (this.ifResizePointerDown.value) {
@@ -166,6 +167,7 @@ export class RowsCanvas {
         const rowDiv = document.createElement("div");
         rowDiv.id = `row${this.rowID}`;
         rowDiv.classList.add("subRow");
+        this.rowCanvas.setAttribute("row", `${this.rowID}`);
         this.drawCanvas();
         rowDiv.appendChild(this.rowCanvas);
         this.resizeDiv.classList.add("RowResizeDiv");

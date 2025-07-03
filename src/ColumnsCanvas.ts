@@ -85,7 +85,8 @@ export class ColumnsCanvas {
      */
     private handleResize() {
         this.columnCanvasDiv.addEventListener("pointerdown", (event) => {
-            this.ifResizePointerDown.value = true;
+            if(this.binarySearchRange(event.offsetX)!==-1)this.ifResizePointerDown.value = true;
+
         });
 
         this.columnCanvasDiv.addEventListener("pointermove", (event) => {
@@ -183,7 +184,7 @@ export class ColumnsCanvas {
         const columnDiv = document.createElement("div");
         columnDiv.id = `column${this.columnID}`;
         columnDiv.classList.add("subColumn");
-
+        this.columnCanvas.setAttribute("col",`${this.columnID}`);
         this.drawCanvas();
 
         columnDiv.appendChild(this.columnCanvas);

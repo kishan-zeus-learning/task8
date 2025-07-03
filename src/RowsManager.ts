@@ -31,7 +31,7 @@ export class RowsManager {
     private rowsDivArr: HTMLDivElement[];
 
     /** Container element that holds all the visible row divs */
-    private rowsDivContainer: HTMLDivElement;
+    public rowsDivContainer: HTMLDivElement;
 
     /** Default height for a single row */
     public defaultHeight: number;

@@ -96,13 +96,16 @@ export class ResizeManager {
      * @param {PointerEvent} event - The pointermove event.
      */
     pointerMove(event: PointerEvent) {
+        // console.log("i don't know why i am getting triggered");
         // Set cursor based on resize state
+        // console.log(this.ifRowResizeOn,this.ifRowResizePointerDown);
         if (this.ifRowResizeOn.value || this.ifRowResizePointerDown.value) {
             document.body.style.cursor = "ns-resize";
         } else if (this.ifColumnResizeOn.value || this.ifColumnResizePointerDown.value) {
             document.body.style.cursor = "ew-resize";
         } else {
             document.body.style.cursor = "default";
+            return ;
         }
 
         // Resize row if active
