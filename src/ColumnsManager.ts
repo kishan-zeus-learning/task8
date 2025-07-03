@@ -2,6 +2,7 @@ import { ColumnsCanvas } from "./ColumnsCanvas.js";
 import { columnData } from "./types/ColumnRows.js";
 import { GlobalBoolean } from "./types/GlobalBoolean.js";
 import { GlobalNumber } from "./types/GlobalNumber.js";
+import { MultipleSelectionCoordinates } from "./types/MultipleSelectionCoordinates.js";
 
 /**
  * Manages the creation, rendering, and scrolling of column canvases.
@@ -47,6 +48,8 @@ export class ColumnsManager {
     /** Global number tracking the currently resizing column group index */
     private currentResizingColumn: GlobalNumber;
 
+    private selectionCoordinates:MultipleSelectionCoordinates;
+
     /**
      * Initializes the ColumnsManager with config values and starts rendering columns.
      * @param {columnData} columnWidths - Column widths map
@@ -65,6 +68,7 @@ export class ColumnsManager {
         visibleColumnCnt: number,
         ifResizeOn: GlobalBoolean,
         ifResizePointerDown: GlobalBoolean,
+        selectionCoordinates:MultipleSelectionCoordinates,
         columnCanvasLimit: number = 40,
         defaultHeight: number = 25,
         defaultWidth: number = 100,
@@ -82,6 +86,7 @@ export class ColumnsManager {
         this.marginLeft = marginLeft;
         this.defaultHeight = defaultHeight;
         this.defaultWidth = defaultWidth;
+        this.selectionCoordinates=selectionCoordinates;
         this.columnsDivContainer = document.getElementById("columnsRow") as HTMLDivElement;
         this.initialLoad();
     }
@@ -142,7 +147,8 @@ export class ColumnsManager {
                     this.defaultHeight,
                     this._ifResizeOn,
                     this._ifResizePointerDown,
-                    this.currentResizingColumn
+                    this.currentResizingColumn,
+                    this.selectionCoordinates
                 )
             );
             this.visibleColumnsPrefixSum.push(this.visibleColumns[j].columnsPositionArr);
@@ -164,7 +170,8 @@ export class ColumnsManager {
                 this.defaultHeight,
                 this._ifResizeOn,
                 this._ifResizePointerDown,
-                this.currentResizingColumn
+                this.currentResizingColumn,
+                this.selectionCoordinates
             )
         );
 
@@ -186,7 +193,8 @@ export class ColumnsManager {
                 this.defaultHeight,
                 this._ifResizeOn,
                 this._ifResizePointerDown,
-                this.currentResizingColumn
+                this.currentResizingColumn,
+                this.selectionCoordinates
             )
         );
         this.columnsDivContainer.prepend(this.visibleColumns[0].columnCanvasDiv);
@@ -215,5 +223,11 @@ export class ColumnsManager {
         this.columnsDivContainer.removeChild(this.visibleColumns[this.visibleColumns.length - 1].columnCanvasDiv);
         this.visibleColumns.pop();
         this.visibleColumnsPrefixSum.pop();
+    }
+
+    rerender(){
+        for(let column of this.visibleColumns){
+            column.drawCanvas();
+        }
     }
 }

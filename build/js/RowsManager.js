@@ -126,4 +126,9 @@ export class RowsManager {
         this.rowsPositionPrefixSumArr.pop();
         this.visibleRows.pop();
     }
+    rerender() {
+        for (let row of this.visibleRows) {
+            row.drawCanvas();
+        }
+    }
 }

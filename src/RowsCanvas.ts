@@ -166,7 +166,7 @@ export class RowsCanvas {
         this.setRowsPositionArr();
         this.drawCanvas();
 
-        console.log(this.rowHeights);
+        // console.log(this.rowHeights);
     }
 
     /**
@@ -190,7 +190,7 @@ export class RowsCanvas {
                 end = mid - 1;
             }
         }
-        console.log("binary search num : ",num);
+        // console.log("binary search num : ",num);
         return -1;
     }
 
@@ -234,51 +234,128 @@ export class RowsCanvas {
      * Draws row numbers and horizontal lines on the canvas.
      * Uses device pixel ratio for sharper rendering.
      */
-    drawCanvas() {
-        if (!this.rowCanvas) return;
+drawCanvas() {
+    if (!this.rowCanvas) return;
+    const canvasStartRow=Math.min(this.selectionCoordinates.selectionEndRow,this.selectionCoordinates.selectionStartRow);
+    const canvasEndRow=Math.max(this.selectionCoordinates.selectionEndRow,this.selectionCoordinates.selectionStartRow);
+    const canvasStartColumn=Math.min(this.selectionCoordinates.selectionEndColumn,this.selectionCoordinates.selectionStartColumn);
+    const canvasEndColumn=Math.max(this.selectionCoordinates.selectionEndColumn,this.selectionCoordinates.selectionStartColumn);
 
-        const dpr = window.devicePixelRatio || 1;
-        this.rowCanvas.width = this.defaultWidth * dpr;
-        this.rowCanvas.height = this.rowsPositionArr[24] * dpr;
-        this.rowCanvas.style.width = `${this.defaultWidth}px`;
-        this.rowCanvas.style.height = `${this.rowsPositionArr[24]}px`;
+    const dpr = window.devicePixelRatio || 1;
+    this.rowCanvas.width = this.defaultWidth * dpr;
+    this.rowCanvas.height = this.rowsPositionArr[24] * dpr;
+    this.rowCanvas.style.width = `${this.defaultWidth}px`;
+    this.rowCanvas.style.height = `${this.rowsPositionArr[24]}px`;
 
-        const ctx = this.rowCanvas.getContext("2d") as CanvasRenderingContext2D;
-        // ctx.clearRect(0, 0, this.defaultWidth, this.rowsPositionArr[24]);
-        ctx.scale(dpr, dpr);
+    let widthOffset=0;
 
-        ctx.beginPath();
-        ctx.fillStyle = "#f5f5f5";
-        ctx.fillRect(0, 0, this.defaultWidth, this.rowsPositionArr[24]);
+    const ctx = this.rowCanvas.getContext("2d") as CanvasRenderingContext2D;
+    ctx.clearRect(0, 0, this.defaultWidth, this.rowsPositionArr[24]);
+    ctx.scale(dpr, dpr);
 
-        ctx.font = '14px Arial';
-        ctx.lineWidth = 1;
-        ctx.textAlign = "right";
-        ctx.textBaseline = "middle";
-        ctx.strokeStyle = "#ddd";
-        ctx.fillStyle = "#616161";
+    // Fill background
+    ctx.fillStyle = "#f5f5f5";
+    ctx.fillRect(0, 0, this.defaultWidth, this.rowsPositionArr[24]);
 
-        let startNum = this.rowID * 25 + 1;
-        const offset = 0.5 / dpr;
+    // === Draw Right Border First ===
+    ctx.beginPath();
+    ctx.strokeStyle = "#ddd";
+    ctx.moveTo(this.defaultWidth - 0.5, 0);
+    ctx.lineTo(this.defaultWidth - 0.5, this.rowsPositionArr[24]);
+    ctx.stroke();
 
-        for (let i = 0; i < 25; i++) {
-            ctx.moveTo(0, this.rowsPositionArr[i] - offset);
-            ctx.lineTo(this.defaultWidth, this.rowsPositionArr[i] - offset);
+    // === Text and grid line setup ===
+    ctx.font = '14px Arial';
+    ctx.lineWidth = 1;
+    ctx.textAlign = "right";
+    ctx.textBaseline = "middle";
 
-            const yPos = Math.round(
-                this.rowsPositionArr[i] -
-                (this.rowsPositionArr[i] - (i === 0 ? 0 : this.rowsPositionArr[i - 1])) / 2 + 1
-            );
+    let startNum = this.rowID * 25 + 1;
+    const offset = 0.5 / dpr;
 
-            ctx.fillText(`${i + startNum}`, this.defaultWidth - 5, yPos);
+    for (let i = 0; i < 25; i++) {
+        const yTop = (i === 0) ? 0 : this.rowsPositionArr[i - 1];
+        const yBottom = this.rowsPositionArr[i];
+        const yPos = Math.round(yBottom - (yBottom - yTop) / 2 + 1);
+
+        const rowIndex = i + startNum;
+
+        // Handle selection
+        if (this.ifSelected(rowIndex)) {
+            widthOffset=2;
+            if (this.ifSelectedWhole()) {
+                ctx.fillStyle = "#107C41";
+                ctx.fillRect(0, yTop, this.defaultWidth, yBottom - yTop);
+                ctx.fillStyle = "#ffffff";
+                ctx.strokeStyle = "#ffffff";
+            } else {
+                ctx.fillStyle = "#CAEAD8";
+                ctx.fillRect(0, yTop, this.defaultWidth, yBottom - yTop);
+
+                ctx.beginPath();
+                ctx.lineWidth = 2;
+                ctx.strokeStyle = "#107C41";
+                ctx.moveTo(this.defaultWidth - 1, yTop);
+                ctx.lineTo(this.defaultWidth - 1, yBottom);
+                ctx.stroke();
+
+                ctx.beginPath();
+                ctx.lineWidth = 1;
+                ctx.fillStyle = "#0F703B";
+                ctx.strokeStyle = "#A0D8B9";
+            }
+        } else {
+            ctx.fillStyle = "#616161";
+            ctx.strokeStyle = "#ddd";
+            widthOffset=0;
         }
 
-        ctx.moveTo(this.defaultWidth - 0.5, 0);
-        ctx.lineTo(this.defaultWidth - 0.5, this.rowsPositionArr[24]);
-
-        // ctx.moveTo(0.5, 0);
-        // ctx.lineTo(0.5, this.rowsPositionArr[24]);
-
+        // Draw horizontal grid line
+        ctx.beginPath();
+        ctx.moveTo(0, this.rowsPositionArr[i] - offset);
+        ctx.lineTo(this.defaultWidth-widthOffset, this.rowsPositionArr[i] - offset);
         ctx.stroke();
+
+        // Draw text
+        ctx.fillText(`${rowIndex}`, this.defaultWidth - 5, yPos);
+    }
+
+    
+    // const canvas
+
+    ctx.beginPath();
+    if(this.ifSelectedWhole()){
+        if(canvasEndRow<=this.rowID*25+25 && canvasEndRow>=this.rowID*25+1 && (canvasEndRow===this.selectionCoordinates.selectionStartRow || canvasEndRow=== this.selectionCoordinates.selectionEndRow)){
+            const lastIdx=(canvasEndRow-1)%25;
+            ctx.strokeStyle="#107C41";
+            ctx.lineWidth=2;
+            ctx.moveTo(0,this.rowsPositionArr[lastIdx]-1);
+            ctx.lineTo(this.defaultWidth,this.rowsPositionArr[lastIdx]-1);
+        }
+    }else{
+        if(canvasStartRow<=this.rowID*25+25 && canvasStartRow>=this.rowID*25+1 && (canvasStartRow===this.selectionCoordinates.selectionStartRow || canvasStartRow=== this.selectionCoordinates.selectionEndRow)){
+            const firstIdx=(canvasStartRow-1)%25;
+            ctx.strokeStyle="#A0D8B9";
+            ctx.lineWidth=1;
+            ctx.moveTo(0,(firstIdx===0)?0:this.rowsPositionArr[firstIdx-1]);
+            ctx.lineTo(this.defaultWidth,(firstIdx===0)?0:this.rowsPositionArr[firstIdx-1]);
+        }
+    }
+
+
+    ctx.stroke();
+}
+
+    private ifSelected(num:number){
+    const canvasStartRow=Math.min(this.selectionCoordinates.selectionEndRow,this.selectionCoordinates.selectionStartRow);
+    const canvasEndRow=Math.max(this.selectionCoordinates.selectionEndRow,this.selectionCoordinates.selectionStartRow);
+    
+        return num>=canvasStartRow && num<=canvasEndRow;
+    }
+
+    private ifSelectedWhole(){
+        const canvasStartColumn=Math.min(this.selectionCoordinates.selectionEndColumn,this.selectionCoordinates.selectionStartColumn);
+        const canvasEndColumn=Math.max(this.selectionCoordinates.selectionEndColumn,this.selectionCoordinates.selectionStartColumn);
+        return canvasStartColumn===1 && canvasEndColumn===1000;
     }
 }

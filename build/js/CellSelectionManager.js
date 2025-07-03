@@ -106,6 +106,8 @@ export class CellSelectionManager {
     }
     rerender() {
         this.tilesManager.rerender();
+        this.rowsManager.rerender();
+        this.columnsManager.rerender();
     }
     binarySearchUpperBound(arr, target) {
         let start = 0;

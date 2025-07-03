@@ -108,7 +108,6 @@ export class TilesManager {
 
 
     rerender(){
-        console.log("rerendered");
         for(let tilesRow of this.visibleTiles){
             for(let tile of tilesRow){
                 tile.drawGrid();

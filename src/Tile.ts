@@ -123,7 +123,6 @@ export class Tile {
         ctx.stroke();
 
         if((this.selectionCoordinates.selectionStartRow>=tileStartRowNum && this.selectionCoordinates.selectionStartRow<=tileEndRowNum) && (this.selectionCoordinates.selectionStartColumn>=tileStartColNum && this.selectionCoordinates.selectionStartColumn<=tileEndColNum)){
-            console.log("reached in clear ");
             const clearY=((this.selectionCoordinates.selectionStartRow-1)%25===0)?0:(this.rowsPositionArr[(this.selectionCoordinates.selectionStartRow-2)%25]);
             const clearX=((this.selectionCoordinates.selectionStartColumn-1)%25===0)?0:(this.colsPositionArr[(this.selectionCoordinates.selectionStartColumn-2)%25]);
 
@@ -132,42 +131,28 @@ export class Tile {
 
             ctx.clearRect(clearX,clearY,clearWidth-1,clearHeight-1);
             
-        }else{
-            console.log("condition false for tile : ",this.row,this.col);
-            console.log("Selection Coordinates:",
-            "StartRow:", this.selectionCoordinates.selectionStartRow,
-            "EndRow:", this.selectionCoordinates.selectionEndRow,
-            "StartCol:", this.selectionCoordinates.selectionStartColumn,
-            "EndCol:", this.selectionCoordinates.selectionEndColumn,
-            "| Tile Bounds:",
-            "StartRow:", tileStartRowNum,
-            "EndRow:", tileEndRowNum,
-            "StartCol:", tileStartColNum,
-            "EndCol:", tileEndColNum
-            );
-
         }
         ctx.beginPath();
         ctx.strokeStyle="#137E43";
         ctx.lineWidth=2;
         if(selectedStartCol===rangeColumnStartNum){
-            ctx.moveTo(startX,startY);
-            ctx.lineTo(startX,startY+rectHeight);
+            ctx.moveTo(startX+1,startY);
+            ctx.lineTo(startX+1,startY+rectHeight);
         }
 
         if(selectedStartRow===rangeRowStartNum){
-            ctx.moveTo(startX,startY);
-            ctx.lineTo(startX+rectWidth,startY);
+            ctx.moveTo(startX,startY+1);
+            ctx.lineTo(startX+rectWidth,startY+1);
         }
 
         if(selectedEndCol === rangeColumnEndNum){
-            ctx.moveTo(startX+rectWidth,startY);
-            ctx.lineTo(startX+rectWidth,startY+rectHeight);
+            ctx.moveTo(startX+rectWidth-1,startY);
+            ctx.lineTo(startX+rectWidth-1,startY+rectHeight);
         }
 
         if(selectedEndRow === rangeRowEndNum){
-            ctx.moveTo(startX,startY+rectHeight);
-            ctx.lineTo(startX+rectWidth,startY+rectHeight);
+            ctx.moveTo(startX,startY+rectHeight-1);
+            ctx.lineTo(startX+rectWidth,startY+rectHeight-1);
         }
         ctx.stroke();
         

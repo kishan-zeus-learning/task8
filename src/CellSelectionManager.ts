@@ -162,6 +162,8 @@ export class CellSelectionManager {
 
     private rerender(){
         this.tilesManager.rerender();
+        this.rowsManager.rerender();
+        this.columnsManager.rerender();
     }
 
     private binarySearchUpperBound(arr: number[], target: number) {
