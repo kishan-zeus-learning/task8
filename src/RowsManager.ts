@@ -2,6 +2,7 @@ import { RowData } from "./types/RowsColumn.js";
 import { RowsCanvas } from "./RowsCanvas.js";
 import { GlobalBoolean } from "./types/GlobalBoolean.js";
 import { GlobalNumber } from "./types/GlobalNumber.js";
+import { MultipleSelectionCoordinates } from "./types/MultipleSelectionCoordinates.js";
 
 /**
  * Manages a scrolling set of visible row canvases, enabling efficient rendering
@@ -50,6 +51,8 @@ export class RowsManager {
     /** Currently active resizing row block index */
     private currentResizingRow: GlobalNumber;
 
+    private  selectionCoordinates:MultipleSelectionCoordinates;
+
     /**
      * Initializes a scrollable manager for row canvas blocks
      * @param rowHeights Map of row custom heights
@@ -68,7 +71,8 @@ export class RowsManager {
         visibleRowCnt: number,
         ifResizeOn: GlobalBoolean,
         ifResizePointerDown: GlobalBoolean,
-        rowCanvasLimit: number = 4000,
+        selectionCoordinates:MultipleSelectionCoordinates,
+        rowCanvasLimit: number = 40000,
         defaultHeight: number = 25,
         defaultWidth: number = 50,
         marginTop: GlobalNumber = { value: 0 }
@@ -80,6 +84,7 @@ export class RowsManager {
         this.startRowIdx = startRowIdx;
         this.rowCanvasLimit = rowCanvasLimit;
         this.visibleRowCnt = visibleRowCnt;
+        this.selectionCoordinates=selectionCoordinates;
         this.rowsPositionPrefixSumArr = [];
         this.rowsDivArr = [];
         this.visibleRows = [];
@@ -138,7 +143,8 @@ export class RowsManager {
                 this.defaultHeight,
                 this._ifResizeOn,
                 this._ifResizePointerDown,
-                this.currentResizingRow
+                this.currentResizingRow,
+                this.selectionCoordinates
             );
 
             this.visibleRows.push(canvas);
@@ -161,7 +167,8 @@ export class RowsManager {
             this.defaultHeight,
             this._ifResizeOn,
             this._ifResizePointerDown,
-            this.currentResizingRow
+            this.currentResizingRow,
+            this.selectionCoordinates
         );
 
         this.visibleRows.push(canvas);
@@ -183,7 +190,8 @@ export class RowsManager {
             this.defaultHeight,
             this._ifResizeOn,
             this._ifResizePointerDown,
-            this.currentResizingRow
+            this.currentResizingRow,
+            this.selectionCoordinates
         );
 
         this.visibleRows.unshift(canvas);

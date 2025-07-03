@@ -1,5 +1,6 @@
 import { GlobalBoolean } from "./types/GlobalBoolean";
 import { GlobalNumber } from "./types/GlobalNumber";
+import { MultipleSelectionCoordinates } from "./types/MultipleSelectionCoordinates";
 import { RowData } from "./types/RowsColumn";
 
 /**
@@ -43,6 +44,8 @@ export class RowsCanvas {
     /** Index of the row currently being hovered near a resize boundary */
     private hoverIdx: number = -1;
 
+    private  selectionCoordinates:MultipleSelectionCoordinates;
+
     /**
      * Initializes the RowsCanvas with layout and resize behavior.
      * @param rowID Index of this row block
@@ -60,7 +63,8 @@ export class RowsCanvas {
         defaultHeight: number,
         ifResizeOn: GlobalBoolean,
         ifResizePointerDown: GlobalBoolean,
-        currentResizingRow: GlobalNumber
+        currentResizingRow: GlobalNumber,
+        selectionCoordinates:MultipleSelectionCoordinates
     ) {
         this.rowHeights = rowHeights;
         this.rowID = rowID;
@@ -70,6 +74,7 @@ export class RowsCanvas {
         this.currentResizingRow = currentResizingRow;
         this.ifResizeOn = ifResizeOn;
         this.ifResizePointerDown = ifResizePointerDown;
+        this.selectionCoordinates=selectionCoordinates;
         this.setRowsPositionArr();
         this.rowCanvasDiv = this.createRowCanvas();
         this.handleResize();
@@ -239,7 +244,7 @@ export class RowsCanvas {
         this.rowCanvas.style.height = `${this.rowsPositionArr[24]}px`;
 
         const ctx = this.rowCanvas.getContext("2d") as CanvasRenderingContext2D;
-        ctx.clearRect(0, 0, this.defaultWidth, this.rowsPositionArr[24]);
+        // ctx.clearRect(0, 0, this.defaultWidth, this.rowsPositionArr[24]);
         ctx.scale(dpr, dpr);
 
         ctx.beginPath();
@@ -271,8 +276,8 @@ export class RowsCanvas {
         ctx.moveTo(this.defaultWidth - 0.5, 0);
         ctx.lineTo(this.defaultWidth - 0.5, this.rowsPositionArr[24]);
 
-        ctx.moveTo(0.5, 0);
-        ctx.lineTo(0.5, this.rowsPositionArr[24]);
+        // ctx.moveTo(0.5, 0);
+        // ctx.lineTo(0.5, this.rowsPositionArr[24]);
 
         ctx.stroke();
     }

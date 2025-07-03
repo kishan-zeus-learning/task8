@@ -24,15 +24,9 @@ export class CellSelectionManager {
     deselectCell(row, col) {
     }
     init() {
-        // this.tilesManager.gridDiv.addEventListener("click",(event)=>{
-        //     // console.log(event.offsetX,event.offsetY);
-        //     console.log(this.getRowColumn(event));
-        // })
         this.tilesManager.gridDiv.addEventListener("pointerdown", (event) => this.pointerDown(event));
     }
     getRowColumn(canvasUnderCursor, clientX, clientY) {
-        // const canvasUnderCursor = document.elementFromPoint(event.clientX, event.clientY) as HTMLCanvasElement;
-        // const canvasUnderCursor = event.target as HTMLCanvasElement;
         if (!canvasUnderCursor || canvasUnderCursor.tagName !== 'CANVAS') {
             return null;
         }
@@ -54,11 +48,9 @@ export class CellSelectionManager {
     startAutoScroll() {
         if (this.scrollId !== null)
             return;
-        console.log("start Auto scroll executed : ");
         this.scrollId = requestAnimationFrame(this.autoScroll);
     }
     autoScroll() {
-        console.log("auto scroll executed : ");
         if (!this.ifSelectionOn.value) {
             this.scrollId = null;
             return;
@@ -110,7 +102,7 @@ export class CellSelectionManager {
     }
     pointerUp(event) {
         this.ifSelectionOn.value = false;
-        console.log(this.selectionCoordinates);
+        console.log("selection coordinates : ", this.selectionCoordinates);
     }
     rerender() {
         this.tilesManager.rerender();

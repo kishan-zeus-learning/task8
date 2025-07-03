@@ -16,7 +16,7 @@ export class RowsManager {
      * @param defaultWidth Default row width (pixels)
      * @param marginTop Global object for managing vertical scroll offset
      */
-    constructor(rowHeights, startRowIdx, visibleRowCnt, ifResizeOn, ifResizePointerDown, rowCanvasLimit = 4000, defaultHeight = 25, defaultWidth = 50, marginTop = { value: 0 }) {
+    constructor(rowHeights, startRowIdx, visibleRowCnt, ifResizeOn, ifResizePointerDown, selectionCoordinates, rowCanvasLimit = 40000, defaultHeight = 25, defaultWidth = 50, marginTop = { value: 0 }) {
         this.rowHeights = rowHeights;
         this._ifResizeOn = ifResizeOn;
         this.currentResizingRow = { value: -1 };
@@ -24,6 +24,7 @@ export class RowsManager {
         this.startRowIdx = startRowIdx;
         this.rowCanvasLimit = rowCanvasLimit;
         this.visibleRowCnt = visibleRowCnt;
+        this.selectionCoordinates = selectionCoordinates;
         this.rowsPositionPrefixSumArr = [];
         this.rowsDivArr = [];
         this.visibleRows = [];
@@ -74,7 +75,7 @@ export class RowsManager {
     initialLoad() {
         for (let i = 0; i < this.visibleRowCnt; i++) {
             const rowIdx = i + this.startRowIdx;
-            const canvas = new RowsCanvas(rowIdx, this.rowHeights, this.defaultWidth, this.defaultHeight, this._ifResizeOn, this._ifResizePointerDown, this.currentResizingRow);
+            const canvas = new RowsCanvas(rowIdx, this.rowHeights, this.defaultWidth, this.defaultHeight, this._ifResizeOn, this._ifResizePointerDown, this.currentResizingRow, this.selectionCoordinates);
             this.visibleRows.push(canvas);
             this.rowsPositionPrefixSumArr.push(canvas.rowsPositionArr);
             this.rowsDivArr.push(canvas.rowCanvasDiv);
@@ -86,7 +87,7 @@ export class RowsManager {
      */
     mountRowBottom() {
         const rowIdx = this.startRowIdx + this.visibleRowCnt - 1;
-        const canvas = new RowsCanvas(rowIdx, this.rowHeights, this.defaultWidth, this.defaultHeight, this._ifResizeOn, this._ifResizePointerDown, this.currentResizingRow);
+        const canvas = new RowsCanvas(rowIdx, this.rowHeights, this.defaultWidth, this.defaultHeight, this._ifResizeOn, this._ifResizePointerDown, this.currentResizingRow, this.selectionCoordinates);
         this.visibleRows.push(canvas);
         this.rowsPositionPrefixSumArr.push(canvas.rowsPositionArr);
         this.rowsDivArr.push(canvas.rowCanvasDiv);
@@ -97,7 +98,7 @@ export class RowsManager {
      */
     mountRowTop() {
         const rowIdx = this.startRowIdx;
-        const canvas = new RowsCanvas(rowIdx, this.rowHeights, this.defaultWidth, this.defaultHeight, this._ifResizeOn, this._ifResizePointerDown, this.currentResizingRow);
+        const canvas = new RowsCanvas(rowIdx, this.rowHeights, this.defaultWidth, this.defaultHeight, this._ifResizeOn, this._ifResizePointerDown, this.currentResizingRow, this.selectionCoordinates);
         this.visibleRows.unshift(canvas);
         this.rowsPositionPrefixSumArr.unshift(canvas.rowsPositionArr);
         this.rowsDivArr.unshift(canvas.rowCanvasDiv);

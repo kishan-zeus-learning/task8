@@ -88,8 +88,7 @@ export class Tile {
     }
 
     private renderSelected(ctx:CanvasRenderingContext2D){
-        // console.log("called rendering the tile");
-        // ctx.beginPath();
+
         const tileStartRowNum=this.row*25 + 1;
         const tileStartColNum=this.col*25 + 1;
         const tileEndRowNum= this.row*25 + 25;
@@ -100,7 +99,6 @@ export class Tile {
         const selectedStartCol = Math.min(this.selectionCoordinates.selectionEndColumn,this.selectionCoordinates.selectionStartColumn);
         const selectedEndCol = Math.max(this.selectionCoordinates.selectionEndColumn,this.selectionCoordinates.selectionStartColumn);
 
-        // console.log({tileStartRowNum,tileStartColNum,tileEndRowNum,tileEndColNum});
 
         if((selectedEndRow<tileStartRowNum) ||
             (selectedStartRow>tileEndRowNum) ||
@@ -108,7 +106,6 @@ export class Tile {
             (selectedStartCol>tileEndColNum)
         ) return ;
 
-        // console.log("Reached here at : ",this.row,this.col);
 
         const rangeRowStartNum=Math.max(selectedStartRow,tileStartRowNum);
         const rangeRowEndNum=Math.min(selectedEndRow,tileEndRowNum);
@@ -116,23 +113,16 @@ export class Tile {
         const rangeColumnStartNum=Math.max(selectedStartCol,tileStartColNum);
         const rangeColumnEndNum=Math.min(selectedEndCol,tileEndColNum);
 
-        // console.log("range" ,{rangeRowStartNum,rangeRowEndNum,rangeColumnStartNum,rangeColumnEndNum});
-        // const rectHeight = this.rowsPositionArr[rangeRowStartNum]
         const startY=((rangeRowStartNum-1)%25===0)?0:(this.rowsPositionArr[(rangeRowStartNum-2)%25]);
         const startX=((rangeColumnStartNum-1)%25===0)?0:(this.colsPositionArr[(rangeColumnStartNum-2)%25]);
 
         const rectHeight= this.rowsPositionArr[(rangeRowEndNum-1)%25] - startY;
         const rectWidth= this.colsPositionArr[(rangeColumnEndNum-1)%25] - startX;
-        // ctx.strokeStyle="#E8F2EC";
-        console.log("start : ",{startX,startY});
-        // ctx.moveTo(0,0);
         ctx.fillStyle="#E8F2EC";
         ctx.fillRect(startX,startY,rectWidth,rectHeight);
         ctx.stroke();
-        // ctx.clearRect()
 
-        if((this.selectionCoordinates.selectionStartRow>=tileStartRowNum && this.selectionCoordinates.selectionStartRow<=tileEndRowNum) && (this.selectionCoordinates.selectionStartColumn>=tileStartColNum && this.selectionCoordinates.selectionEndColumn<=tileEndColNum)){
-            // ctx.beginPath();
+        if((this.selectionCoordinates.selectionStartRow>=tileStartRowNum && this.selectionCoordinates.selectionStartRow<=tileEndRowNum) && (this.selectionCoordinates.selectionStartColumn>=tileStartColNum && this.selectionCoordinates.selectionStartColumn<=tileEndColNum)){
             console.log("reached in clear ");
             const clearY=((this.selectionCoordinates.selectionStartRow-1)%25===0)?0:(this.rowsPositionArr[(this.selectionCoordinates.selectionStartRow-2)%25]);
             const clearX=((this.selectionCoordinates.selectionStartColumn-1)%25===0)?0:(this.colsPositionArr[(this.selectionCoordinates.selectionStartColumn-2)%25]);
@@ -141,17 +131,44 @@ export class Tile {
             const clearHeight= this.rowsPositionArr[(this.selectionCoordinates.selectionStartRow-1)%25] - clearY;
 
             ctx.clearRect(clearX,clearY,clearWidth-1,clearHeight-1);
-            // ctx.stroke();
             
+        }else{
+            console.log("condition false for tile : ",this.row,this.col);
+            console.log("Selection Coordinates:",
+            "StartRow:", this.selectionCoordinates.selectionStartRow,
+            "EndRow:", this.selectionCoordinates.selectionEndRow,
+            "StartCol:", this.selectionCoordinates.selectionStartColumn,
+            "EndCol:", this.selectionCoordinates.selectionEndColumn,
+            "| Tile Bounds:",
+            "StartRow:", tileStartRowNum,
+            "EndRow:", tileEndRowNum,
+            "StartCol:", tileStartColNum,
+            "EndCol:", tileEndColNum
+            );
+
         }
         ctx.beginPath();
         ctx.strokeStyle="#137E43";
         ctx.lineWidth=2;
-        ctx.moveTo(startX,startY);
-        ctx.lineTo(startX,startY+rectHeight);
-        ctx.lineTo(startX + rectWidth,startY+rectHeight);
-        ctx.lineTo(startX+rectWidth,startY);
-        ctx.lineTo(startX,startY);
+        if(selectedStartCol===rangeColumnStartNum){
+            ctx.moveTo(startX,startY);
+            ctx.lineTo(startX,startY+rectHeight);
+        }
+
+        if(selectedStartRow===rangeRowStartNum){
+            ctx.moveTo(startX,startY);
+            ctx.lineTo(startX+rectWidth,startY);
+        }
+
+        if(selectedEndCol === rangeColumnEndNum){
+            ctx.moveTo(startX+rectWidth,startY);
+            ctx.lineTo(startX+rectWidth,startY+rectHeight);
+        }
+
+        if(selectedEndRow === rangeRowEndNum){
+            ctx.moveTo(startX,startY+rectHeight);
+            ctx.lineTo(startX+rectWidth,startY+rectHeight);
+        }
         ctx.stroke();
         
 

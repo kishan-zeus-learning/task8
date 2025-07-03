@@ -13,7 +13,7 @@ export class RowsCanvas {
      * @param ifResizePointerDown Shared global boolean for pointer down
      * @param currentResizingRow Shared global row ID during resizing
      */
-    constructor(rowID, rowHeights, defaultWidth, defaultHeight, ifResizeOn, ifResizePointerDown, currentResizingRow) {
+    constructor(rowID, rowHeights, defaultWidth, defaultHeight, ifResizeOn, ifResizePointerDown, currentResizingRow, selectionCoordinates) {
         /** The canvas element used to render rows */
         this.rowCanvas = document.createElement("canvas");
         /** The horizontal resize UI indicator element */
@@ -28,6 +28,7 @@ export class RowsCanvas {
         this.currentResizingRow = currentResizingRow;
         this.ifResizeOn = ifResizeOn;
         this.ifResizePointerDown = ifResizePointerDown;
+        this.selectionCoordinates = selectionCoordinates;
         this.setRowsPositionArr();
         this.rowCanvasDiv = this.createRowCanvas();
         this.handleResize();
@@ -184,7 +185,7 @@ export class RowsCanvas {
         this.rowCanvas.style.width = `${this.defaultWidth}px`;
         this.rowCanvas.style.height = `${this.rowsPositionArr[24]}px`;
         const ctx = this.rowCanvas.getContext("2d");
-        ctx.clearRect(0, 0, this.defaultWidth, this.rowsPositionArr[24]);
+        // ctx.clearRect(0, 0, this.defaultWidth, this.rowsPositionArr[24]);
         ctx.scale(dpr, dpr);
         ctx.beginPath();
         ctx.fillStyle = "#f5f5f5";
@@ -206,8 +207,8 @@ export class RowsCanvas {
         }
         ctx.moveTo(this.defaultWidth - 0.5, 0);
         ctx.lineTo(this.defaultWidth - 0.5, this.rowsPositionArr[24]);
-        ctx.moveTo(0.5, 0);
-        ctx.lineTo(0.5, this.rowsPositionArr[24]);
+        // ctx.moveTo(0.5, 0);
+        // ctx.lineTo(0.5, this.rowsPositionArr[24]);
         ctx.stroke();
     }
 }
