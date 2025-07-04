@@ -1,3 +1,4 @@
+import { CellsManager } from "./CellsManager.js";
 import { Tile } from "./Tile.js";
 import { MultipleSelectionCoordinates } from "./types/MultipleSelectionCoordinates.js";
 
@@ -31,12 +32,15 @@ export class TilesManager {
     // The main grid container div element
     readonly gridDiv: HTMLDivElement;
 
+    private CellsManager:CellsManager;
+
     constructor(
         visibleTilesRowPrefixSum: number[][],
         visibleTilesColumnPrefixSum: number[][],
         visibleRowCnt: number,
         visibleColumnCnt: number,
         selectionCoordinates:MultipleSelectionCoordinates,
+        CellsManager:CellsManager,
         startRowIdx: number = 0,
         startColIdx: number = 0,
         marginTop: { value: number } = { value: 0 },
@@ -49,6 +53,7 @@ export class TilesManager {
         this.visibleTilesRowDivArr = [];
         this.visibleRowCnt = visibleRowCnt;
         this.visibleColumnCnt = visibleColumnCnt;
+        this.CellsManager=CellsManager;
         this.selectionCoordinates=selectionCoordinates;
         this.startRowIdx = startRowIdx;
         this.startColIdx = startColIdx;
@@ -127,7 +132,8 @@ export class TilesManager {
                     j,
                     this.visibleTilesRowPrefixSum[i - this.startRowIdx],
                     this.visibleTilesColumnPrefixSum[j - this.startColIdx],
-                    this.selectionCoordinates
+                    this.selectionCoordinates,
+                    this.CellsManager
                 );
                 currentVisibleRow.push(tile);
                 this.visibleTilesRowDivArr[i - this.startRowIdx].appendChild(tile.tileDiv);
@@ -159,7 +165,8 @@ export class TilesManager {
                 colIdx,
                 this.visibleTilesRowPrefixSum[this.visibleTilesRowPrefixSum.length - 1],
                 this.visibleTilesColumnPrefixSum[j],
-                this.selectionCoordinates
+                this.selectionCoordinates,
+                this.CellsManager
             );
             currentVisibleRow.push(tile);
             this.visibleTilesRowDivArr[this.visibleTilesRowDivArr.length - 1].appendChild(tile.tileDiv);
@@ -182,7 +189,8 @@ export class TilesManager {
                 colIdx,
                 this.visibleTilesRowPrefixSum[0],
                 this.visibleTilesColumnPrefixSum[0],
-                this.selectionCoordinates
+                this.selectionCoordinates,
+                this.CellsManager
             );
             currentVisibleRow.push(tile);
             this.visibleTilesRowDivArr[0].appendChild(tile.tileDiv);
@@ -203,7 +211,8 @@ export class TilesManager {
                 colIdx,
                 this.visibleTilesRowPrefixSum[i],
                 this.visibleTilesColumnPrefixSum[0],
-                this.selectionCoordinates
+                this.selectionCoordinates,
+                this.CellsManager
             );
             this.visibleTiles[i].unshift(tile);
             this.visibleTilesRowDivArr[i].prepend(tile.tileDiv);
@@ -221,7 +230,8 @@ export class TilesManager {
                 colIdx,
                 this.visibleTilesRowPrefixSum[i],
                 this.visibleTilesColumnPrefixSum[this.visibleTilesColumnPrefixSum.length - 1],
-                this.selectionCoordinates
+                this.selectionCoordinates,
+                this.CellsManager
             );
             this.visibleTiles[i].push(tile);
             this.visibleTilesRowDivArr[i].appendChild(tile.tileDiv);

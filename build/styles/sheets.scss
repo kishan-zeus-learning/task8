@@ -61,3 +61,12 @@
     background-color: black;
   }
 }
+
+.tileDiv{
+  position: relative;
+  .cellInput{
+    position: absolute;
+    top:0;
+    left:0;
+  }
+}

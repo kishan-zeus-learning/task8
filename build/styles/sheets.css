@@ -55,4 +55,13 @@
   left: 35px;
   height: 2px;
   background-color: black;
+}
+
+.tileDiv {
+  position: relative;
+}
+.tileDiv .cellInput {
+  position: absolute;
+  top: 0;
+  left: 0;
 }/*# sourceMappingURL=sheets.css.map */

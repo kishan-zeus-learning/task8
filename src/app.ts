@@ -6,6 +6,7 @@ import { ResizeManager } from "./ResizeManager.js";
 import { GlobalBoolean } from "./types/GlobalBoolean.js";
 import { CellSelectionManager } from "./CellSelectionManager.js";
 import { MultipleSelectionCoordinates } from "./types/MultipleSelectionCoordinates.js";
+import { CellsManager } from "./CellsManager.js";
 class App {
     private ifRowResizeOn: GlobalBoolean;
     private ifColumnResizeOn: GlobalBoolean;
@@ -34,10 +35,14 @@ class App {
     }
 
     private initialize() {
+        const CellsManagerObj=new CellsManager();
+        CellsManagerObj.manageCellUpdate(2,2,"Hi");
+        CellsManagerObj.manageCellUpdate(2,3,"50");
+        CellsManagerObj.manageCellUpdate(3,5,"Zeus");
         const ScrollManagerObj = new ScrollManager();
         const RowsManagerObj = new RowsManager({ [5]: { height: 100 }, [30]: { height: 200 }, [55]: { height: 300 } }, 0, ScrollManagerObj.verticalNum, this.ifRowResizeOn, this.ifRowResizePointerDown, this.selectionCoordinates);
         const ColumnsManagerObj = new ColumnsManager({ [5]: { width: 200 }, [30]: { width: 300 }, [55]: { width: 400 } }, 0, ScrollManagerObj.horizontalNum, this.ifColumnResizeOn, this.ifColumnResizePointerDown, this.selectionCoordinates);
-        const TilesManagerObj = new TilesManager(RowsManagerObj.rowsPositionPrefixSumArr, ColumnsManagerObj.visibleColumnsPrefixSum, ScrollManagerObj.verticalNum, ScrollManagerObj.horizontalNum, this.selectionCoordinates, undefined, undefined, RowsManagerObj.marginTop, ColumnsManagerObj.marginLeft);
+        const TilesManagerObj = new TilesManager(RowsManagerObj.rowsPositionPrefixSumArr, ColumnsManagerObj.visibleColumnsPrefixSum, ScrollManagerObj.verticalNum, ScrollManagerObj.horizontalNum, this.selectionCoordinates,CellsManagerObj,undefined, undefined, RowsManagerObj.marginTop, ColumnsManagerObj.marginLeft);
         const ResizeManagerObj = new ResizeManager(RowsManagerObj, TilesManagerObj, ColumnsManagerObj, this.ifRowResizeOn, this.ifRowResizePointerDown, this.ifColumnResizeOn, this.ifColumnResizePointerDown);
         const CellSelectionManagerObj = new CellSelectionManager(RowsManagerObj, TilesManagerObj, ColumnsManagerObj, this.ifTileSelectionOn, this.ifRowSelectionOn, this.ifColumnSelectionOn, this.selectionCoordinates);
         ScrollManagerObj.initializeManager(ColumnsManagerObj, RowsManagerObj, TilesManagerObj);
@@ -62,9 +67,9 @@ class App {
                     document.body.style.cursor = "url('./img/ArrowDown.png'), auto";
                     break;
 
-                case this.ifTileSelectionOn.value:
-                    document.body.style.cursor = "cell";
-                    break;
+                // case this.ifTileSelectionOn.value:
+                //     document.body.style.cursor = "cell";
+                //     break;
 
                 case this.ifRowResizeOn.value:
                     document.body.style.cursor = "ns-resize";
