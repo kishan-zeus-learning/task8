@@ -1,6 +1,6 @@
 import { Tile } from "./Tile.js";
 export class TilesManager {
-    constructor(visibleTilesRowPrefixSum, visibleTilesColumnPrefixSum, visibleRowCnt, visibleColumnCnt, selectionCoordinates, startRowIdx = 0, startColIdx = 0, marginTop = { value: 0 }, marginLeft = { value: 0 }) {
+    constructor(visibleTilesRowPrefixSum, visibleTilesColumnPrefixSum, visibleRowCnt, visibleColumnCnt, selectionCoordinates, CellsManager, startRowIdx = 0, startColIdx = 0, marginTop = { value: 0 }, marginLeft = { value: 0 }) {
         this.gridDiv = document.getElementById("grid");
         this.visibleTilesRowPrefixSum = visibleTilesRowPrefixSum;
         this.visibleTilesColumnPrefixSum = visibleTilesColumnPrefixSum;
@@ -8,6 +8,7 @@ export class TilesManager {
         this.visibleTilesRowDivArr = [];
         this.visibleRowCnt = visibleRowCnt;
         this.visibleColumnCnt = visibleColumnCnt;
+        this.CellsManager = CellsManager;
         this.selectionCoordinates = selectionCoordinates;
         this.startRowIdx = startRowIdx;
         this.startColIdx = startColIdx;
@@ -72,7 +73,7 @@ export class TilesManager {
             this.visibleTilesRowDivArr.push(this.createRowDiv(i));
             const currentVisibleRow = [];
             for (let j = this.startColIdx; j < this.visibleColumnCnt + this.startColIdx; j++) {
-                const tile = new Tile(i, j, this.visibleTilesRowPrefixSum[i - this.startRowIdx], this.visibleTilesColumnPrefixSum[j - this.startColIdx], this.selectionCoordinates);
+                const tile = new Tile(i, j, this.visibleTilesRowPrefixSum[i - this.startRowIdx], this.visibleTilesColumnPrefixSum[j - this.startColIdx], this.selectionCoordinates, this.CellsManager);
                 currentVisibleRow.push(tile);
                 this.visibleTilesRowDivArr[i - this.startRowIdx].appendChild(tile.tileDiv);
             }
@@ -94,7 +95,7 @@ export class TilesManager {
         const currentVisibleRow = [];
         for (let j = 0; j < this.visibleColumnCnt; j++) {
             const colIdx = this.startColIdx + j;
-            const tile = new Tile(rowIdx, colIdx, this.visibleTilesRowPrefixSum[this.visibleTilesRowPrefixSum.length - 1], this.visibleTilesColumnPrefixSum[j], this.selectionCoordinates);
+            const tile = new Tile(rowIdx, colIdx, this.visibleTilesRowPrefixSum[this.visibleTilesRowPrefixSum.length - 1], this.visibleTilesColumnPrefixSum[j], this.selectionCoordinates, this.CellsManager);
             currentVisibleRow.push(tile);
             this.visibleTilesRowDivArr[this.visibleTilesRowDivArr.length - 1].appendChild(tile.tileDiv);
         }
@@ -108,7 +109,7 @@ export class TilesManager {
         const currentVisibleRow = [];
         for (let j = 0; j < this.visibleColumnCnt; j++) {
             const colIdx = this.startColIdx + j;
-            const tile = new Tile(rowIdx, colIdx, this.visibleTilesRowPrefixSum[0], this.visibleTilesColumnPrefixSum[0], this.selectionCoordinates);
+            const tile = new Tile(rowIdx, colIdx, this.visibleTilesRowPrefixSum[0], this.visibleTilesColumnPrefixSum[0], this.selectionCoordinates, this.CellsManager);
             currentVisibleRow.push(tile);
             this.visibleTilesRowDivArr[0].appendChild(tile.tileDiv);
         }
@@ -120,7 +121,7 @@ export class TilesManager {
         const colIdx = this.startColIdx;
         for (let i = 0; i < this.visibleRowCnt; i++) {
             const rowIdx = this.startRowIdx + i;
-            const tile = new Tile(rowIdx, colIdx, this.visibleTilesRowPrefixSum[i], this.visibleTilesColumnPrefixSum[0], this.selectionCoordinates);
+            const tile = new Tile(rowIdx, colIdx, this.visibleTilesRowPrefixSum[i], this.visibleTilesColumnPrefixSum[0], this.selectionCoordinates, this.CellsManager);
             this.visibleTiles[i].unshift(tile);
             this.visibleTilesRowDivArr[i].prepend(tile.tileDiv);
         }
@@ -130,7 +131,7 @@ export class TilesManager {
         const colIdx = this.startColIdx + this.visibleColumnCnt - 1;
         for (let i = 0; i < this.visibleRowCnt; i++) {
             const rowIdx = this.startRowIdx + i;
-            const tile = new Tile(rowIdx, colIdx, this.visibleTilesRowPrefixSum[i], this.visibleTilesColumnPrefixSum[this.visibleTilesColumnPrefixSum.length - 1], this.selectionCoordinates);
+            const tile = new Tile(rowIdx, colIdx, this.visibleTilesRowPrefixSum[i], this.visibleTilesColumnPrefixSum[this.visibleTilesColumnPrefixSum.length - 1], this.selectionCoordinates, this.CellsManager);
             this.visibleTiles[i].push(tile);
             this.visibleTilesRowDivArr[i].appendChild(tile.tileDiv);
         }

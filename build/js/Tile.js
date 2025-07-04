@@ -10,14 +10,16 @@ export class Tile {
      * @param rowsPositionArr - Array of row edge positions (prefix sum of heights)
      * @param colsPositionArr - Array of column edge positions (prefix sum of widths)
      */
-    constructor(row, col, rowsPositionArr, colsPositionArr, selectionCoordinates) {
+    constructor(row, col, rowsPositionArr, colsPositionArr, selectionCoordinates, CellsManager) {
         /** Canvas element used to render grid lines */
         this.tileCanvas = document.createElement("canvas");
+        this.inputDiv = document.createElement("input");
         this.row = row;
         this.col = col;
         this.rowsPositionArr = rowsPositionArr;
         this.colsPositionArr = colsPositionArr;
         this.selectionCoordinates = selectionCoordinates;
+        this.CellsManager = CellsManager;
         this.tileDiv = this.createTile(); // initialize and attach canvas
     }
     /**
@@ -44,6 +46,39 @@ export class Tile {
         }
         ctx.stroke(); // Render the lines
         this.renderSelected(ctx);
+        this.renderText(ctx);
+    }
+    renderText(ctx) {
+        ctx.beginPath();
+        ctx.fillStyle = "black"; // text color
+        ctx.font = "16px Arial"; // text size and font
+        ctx.textBaseline = "bottom";
+        let rowNum, colNum;
+        for (let i = 0; i < 25; i++) {
+            rowNum = this.row * 25 + 1 + i;
+            const columnMap = this.CellsManager.CellsMap.get(rowNum);
+            if (columnMap) {
+                for (let j = 0; j < 25; j++) {
+                    colNum = this.col * 25 + 1 + j;
+                    const cell = columnMap.get(colNum);
+                    if (cell) {
+                        if (cell.leftAlign) {
+                            ctx.textAlign = "left";
+                            const textX = (j === 0) ? 0 : this.colsPositionArr[j - 1] + 5;
+                            const textY = this.rowsPositionArr[i] - 3;
+                            ctx.fillText(cell.getValue(), textX, textY);
+                        }
+                        else {
+                            ctx.textAlign = "right";
+                            const textX = this.colsPositionArr[j] - 5;
+                            const textY = this.rowsPositionArr[i] - 3;
+                            ctx.fillText(cell.getValue(), textX, textY);
+                        }
+                    }
+                }
+            }
+        }
+        ctx.stroke();
     }
     /**
      * Creates and returns the tile's outer container div, appending the canvas inside it
@@ -52,8 +87,18 @@ export class Tile {
     createTile() {
         const tileDiv = document.createElement("div");
         tileDiv.id = `tile_${this.row}_${this.col}`; // Unique ID based on position
+        tileDiv.classList.add("tileDiv");
         this.drawGrid(); // Render the grid on canvas
         tileDiv.appendChild(this.tileCanvas); // Attach canvas to the container
+        tileDiv.appendChild(this.inputDiv);
+        this.inputDiv.classList.add("cellInput");
+        this.inputDiv.style.display = "none";
+        const startRowNum = this.row * 25 + 1;
+        const endRowNum = this.col * 25 + 1;
+        const startColumnNum = this.row * 25 + 25;
+        const endColumnNum = this.col * 25 + 25;
+        if (this.selectionCoordinates.selectionStartRow >= startRowNum && this.selectionCoordinates.selectionStartRow <= endRowNum && this.selectionCoordinates.selectionStartColumn >= startColumnNum && this.selectionCoordinates.selectionStartColumn <= endColumnNum) {
+        }
         return tileDiv;
     }
     renderSelected(ctx) {

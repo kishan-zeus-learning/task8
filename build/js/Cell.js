@@ -3,7 +3,7 @@ export class Cell {
         this.row = row;
         this.column = column;
         this.value = value;
-        this.leftAlign = Number.isFinite(Number(value));
+        this.leftAlign = !Number.isFinite(Number(value));
     }
     setValue(value) {
         this.value = value;
