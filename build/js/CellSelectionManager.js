@@ -1,21 +1,21 @@
 export class CellSelectionManager {
-    constructor(rowsManager, tilesManager, columnsManager, ifMultipleSelection, selectionCoordinates) {
+    constructor(rowsManager, tilesManager, columnsManager, ifTilesSelectionOn, ifRowsSelectionOn, ifColumnSelectionOn, selectionCoordinates) {
         this.coordinateX = 0;
         this.coordinateY = 0;
         this.scrollId = null;
         this.maxDistance = 100;
         this.maxSpeed = 10;
+        // private ifMultipleSelection: GlobalBoolean;
         this.sheetDiv = document.getElementById('sheet');
-        this.selectedCells = {};
-        this.selectedRows = [];
-        this.selectedColumns = [];
-        this.ifMultipleSelection = ifMultipleSelection;
+        // this.selectedCells = {};
+        // this.selectedRows = [];
+        // this.selectedColumns = [];
+        this.ifTileSelectionOn = ifTilesSelectionOn;
+        this.ifRowSelectionOn = ifRowsSelectionOn;
+        this.ifColumnSelectionOn = ifColumnSelectionOn;
         this.rowsManager = rowsManager;
         this.columnsManager = columnsManager;
         this.tilesManager = tilesManager;
-        this.ifTileSelectionOn = { value: false };
-        this.ifRowSelectionOn = { value: false };
-        this.ifColumnSelectionOn = { value: false };
         this.selectionCoordinates = selectionCoordinates;
         this.autoScroll = this.autoScroll.bind(this);
         this.init();
@@ -167,6 +167,7 @@ export class CellSelectionManager {
         this.ifTileSelectionOn.value = true;
         this.coordinateY = event.clientY;
         this.coordinateX = event.clientX;
+        // document.body.style.cursor="cell";
         this.rerender();
         this.startAutoScroll();
     }

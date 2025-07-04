@@ -8,15 +8,15 @@ export class CellSelectionManager {
     coordinateX = 0;
     coordinateY = 0;
     scrollId:number | null=null;
-    selectedCells: object;
+    // selectedCells: object;
     ifTileSelectionOn: GlobalBoolean;
     ifRowSelectionOn: GlobalBoolean;
     ifColumnSelectionOn: GlobalBoolean;
     readonly maxDistance:number=100;
     readonly maxSpeed:number=10;
     selectionCoordinates: MultipleSelectionCoordinates;
-    private selectedRows: number[];
-    private selectedColumns: number[];
+    // private selectedRows: number[];
+    // private selectedColumns: number[];
     /** @type {RowsManager} Manages row operations and resizing */
     private rowsManager: RowsManager;
 
@@ -26,20 +26,20 @@ export class CellSelectionManager {
     /** @type {ColumnsManager} Manages column operations and resizing */
     private columnsManager: ColumnsManager;
 
-    private ifMultipleSelection: GlobalBoolean;
+    // private ifMultipleSelection: GlobalBoolean;
 
     private sheetDiv = document.getElementById('sheet') as HTMLDivElement;
-    constructor(rowsManager: RowsManager, tilesManager: TilesManager, columnsManager: ColumnsManager, ifMultipleSelection: GlobalBoolean,selectionCoordinates:MultipleSelectionCoordinates) {
-        this.selectedCells = {};
-        this.selectedRows = [];
-        this.selectedColumns = [];
-        this.ifMultipleSelection = ifMultipleSelection;
+    constructor(rowsManager: RowsManager, tilesManager: TilesManager, columnsManager: ColumnsManager, ifTilesSelectionOn: GlobalBoolean,ifRowsSelectionOn:GlobalBoolean,ifColumnSelectionOn:GlobalBoolean,selectionCoordinates:MultipleSelectionCoordinates) {
+        // this.selectedCells = {};
+        // this.selectedRows = [];
+        // this.selectedColumns = [];
+        this.ifTileSelectionOn = ifTilesSelectionOn;
+        this.ifRowSelectionOn=ifRowsSelectionOn;
+        this.ifColumnSelectionOn=ifColumnSelectionOn;
         this.rowsManager = rowsManager;
         this.columnsManager = columnsManager;
         this.tilesManager = tilesManager;
-        this.ifTileSelectionOn = { value: false };
-        this.ifRowSelectionOn={value:false};
-        this.ifColumnSelectionOn={value:false};
+
         this.selectionCoordinates = selectionCoordinates;
         this.autoScroll=this.autoScroll.bind(this);
         this.init();
@@ -249,7 +249,7 @@ export class CellSelectionManager {
         this.ifTileSelectionOn.value = true;
         this.coordinateY = event.clientY;
         this.coordinateX = event.clientX;
-
+        // document.body.style.cursor="cell";
         this.rerender();
         this.startAutoScroll();
 
