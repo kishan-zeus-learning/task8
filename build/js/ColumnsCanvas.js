@@ -1,24 +1,7 @@
-/**
- * Represents a canvas component for rendering a group of 25 Excel-style columns.
- * Supports rendering, resizing, and hover interactions for each column.
- */
 export class ColumnsCanvas {
-    /**
-     * Initializes the ColumnsCanvas
-     * @param {number} columnID - Unique ID for the column block
-     * @param {columnData} columnWidths - Object storing column width info
-     * @param {number} defaultWidth - Default column width
-     * @param {number} defaultHeight - Default column height
-     * @param {GlobalBoolean} ifResizeOn - Global flag for resize hover
-     * @param {GlobalBoolean} ifResizePointerDown - Global flag for active pointer during resize
-     * @param {GlobalNumber} currentResizingColumn - Global index of the column currently being resized
-     */
     constructor(columnID, columnWidths, defaultWidth, defaultHeight, ifResizeOn, ifResizePointerDown, currentResizingColumn, selectionCoordinates) {
-        /** Canvas element where column headers are drawn */
         this.columnCanvas = document.createElement("canvas");
-        /** Div used for displaying the resize line during hover/drag */
         this.resizeDiv = document.createElement("div");
-        /** Tracks the index of the column currently being hovered for resizing */
         this.hoverIdx = -1;
         this.columnWidths = columnWidths;
         this.columnID = columnID;
@@ -33,9 +16,6 @@ export class ColumnsCanvas {
         this.columnCanvasDiv = this.createcolumnCanvas();
         this.handleResize();
     }
-    /**
-     * Attaches event listeners for handling column resize operations
-     */
     handleResize() {
         this.columnCanvasDiv.addEventListener("pointerdown", (event) => {
             if (this.binarySearchRange(event.offsetX) !== -1)
@@ -60,17 +40,13 @@ export class ColumnsCanvas {
                 this.ifResizeOn.value = false;
             }
         });
-        this.columnCanvasDiv.addEventListener("pointerout", (event) => {
+        this.columnCanvasDiv.addEventListener("pointerout", () => {
             if (!this.ifResizePointerDown.value) {
                 this.resizeDiv.style.display = "none";
             }
             this.ifResizeOn.value = false;
         });
     }
-    /**
-     * Resizes the selected column based on new pointer position
-     * @param {number} newPosition - New pointer x-coordinate for resize
-     */
     resizeColumn(newPosition) {
         newPosition = newPosition - this.columnCanvasDiv.getBoundingClientRect().left;
         let newWidth;
@@ -80,7 +56,6 @@ export class ColumnsCanvas {
         else {
             newWidth = newPosition;
         }
-        // Clamp newWidth to acceptable limits
         newWidth = Math.max(50, newWidth);
         newWidth = Math.min(500, newWidth);
         if (this.hoverIdx !== 0) {
@@ -89,25 +64,21 @@ export class ColumnsCanvas {
         else {
             this.resizeDiv.style.left = `${newWidth}px`;
         }
-        // Update width in columnWidths or delete if default
-        if (newWidth === this.defaultWidth)
-            delete this.columnWidths[this.columnID * 25 + this.hoverIdx + 1];
-        else
-            this.columnWidths[this.columnID * 25 + this.hoverIdx + 1] = { width: newWidth };
+        const colNum = this.columnID * 25 + this.hoverIdx + 1;
+        if (newWidth === this.defaultWidth) {
+            this.columnWidths.delete(colNum);
+        }
+        else {
+            this.columnWidths.set(colNum, { width: newWidth });
+        }
         this.setColumnsPositionArr();
         this.drawCanvas();
     }
-    /**
-     * Performs binary search to determine if mouse is near a column boundary
-     * @param {number} num - X-position of the mouse
-     * @returns {number} Index of column near boundary, -1 if none
-     */
     binarySearchRange(num) {
         let start = 0;
         let end = 24;
-        let mid;
         while (start <= end) {
-            mid = Math.floor((start + end) / 2);
+            const mid = Math.floor((start + end) / 2);
             if (this.columnsPositionArr[mid] + 5 >= num && num >= this.columnsPositionArr[mid] - 5) {
                 return mid;
             }
@@ -120,10 +91,6 @@ export class ColumnsCanvas {
         }
         return -1;
     }
-    /**
-     * Creates the column canvas div and initializes rendering
-     * @returns {HTMLDivElement} Column div container
-     */
     createcolumnCanvas() {
         const columnDiv = document.createElement("div");
         columnDiv.id = `column${this.columnID}`;
@@ -135,9 +102,6 @@ export class ColumnsCanvas {
         columnDiv.appendChild(this.resizeDiv);
         return columnDiv;
     }
-    /**
-     * Draws the column headers on the canvas
-     */
     drawCanvas() {
         const canvasStartColumn = Math.min(this.selectionCoordinates.selectionStartColumn, this.selectionCoordinates.selectionEndColumn);
         const canvasEndColumn = Math.max(this.selectionCoordinates.selectionStartColumn, this.selectionCoordinates.selectionEndColumn);
@@ -154,14 +118,10 @@ export class ColumnsCanvas {
         ctx.textBaseline = "middle";
         ctx.textAlign = "center";
         ctx.lineWidth = 1;
-        // === Background Fill ===
         ctx.fillStyle = "#f5f5f5";
         ctx.fillRect(0, 0, this.columnsPositionArr[24], this.defaultHeight);
-        // === Top and Bottom Borders ===
         ctx.strokeStyle = "#ddd";
         ctx.beginPath();
-        ctx.moveTo(0, 0);
-        ctx.lineTo(this.columnsPositionArr[24], 0);
         ctx.moveTo(0, this.defaultHeight - 0.5);
         ctx.lineTo(this.columnsPositionArr[24], this.defaultHeight - 0.5);
         ctx.stroke();
@@ -199,15 +159,12 @@ export class ColumnsCanvas {
                 ctx.strokeStyle = "#ddd";
                 heightOffset = 0;
             }
-            // Draw vertical grid line
             ctx.beginPath();
             ctx.moveTo(this.columnsPositionArr[i] - 0.5, 0);
             ctx.lineTo(this.columnsPositionArr[i] - 0.5, this.defaultHeight - heightOffset);
             ctx.stroke();
-            // Draw text
             ctx.fillText(this.getColumnString(colIndex), xCenter, this.defaultHeight / 2 + 1);
         }
-        // === Draw bottom or top border for selected column edge ===
         ctx.beginPath();
         if (this.ifSelectedWhole()) {
             if (canvasEndColumn <= this.columnID * 25 + 25 &&
@@ -229,8 +186,8 @@ export class ColumnsCanvas {
                 const firstIdx = (canvasStartColumn - 1) % 25;
                 ctx.strokeStyle = "#A0D8B9";
                 ctx.lineWidth = 1;
-                ctx.moveTo((firstIdx === 0 ? 0 : this.columnsPositionArr[firstIdx - 1]), 0);
-                ctx.lineTo((firstIdx === 0 ? 0 : this.columnsPositionArr[firstIdx - 1]), this.defaultHeight);
+                ctx.moveTo(firstIdx === 0 ? 0 : this.columnsPositionArr[firstIdx - 1], 0);
+                ctx.lineTo(firstIdx === 0 ? 0 : this.columnsPositionArr[firstIdx - 1], this.defaultHeight);
             }
         }
         ctx.stroke();
@@ -245,28 +202,16 @@ export class ColumnsCanvas {
         const canvasEndRow = Math.max(this.selectionCoordinates.selectionEndRow, this.selectionCoordinates.selectionStartRow);
         return canvasStartRow === 1 && canvasEndRow === 1000000;
     }
-    /**
-     * Updates `columnsPositionArr` based on current column widths
-     */
     setColumnsPositionArr() {
-        let startNum = this.columnID * 25 + 1;
+        const startNum = this.columnID * 25 + 1;
         let prefixSum = 0;
         this.columnsPositionArr.length = 0;
         for (let i = 0; i < 25; i++) {
-            if (this.columnWidths[startNum + i]) {
-                prefixSum += this.columnWidths[startNum + i].width;
-            }
-            else {
-                prefixSum += this.defaultWidth;
-            }
+            const col = this.columnWidths.get(startNum + i);
+            prefixSum += col ? col.width : this.defaultWidth;
             this.columnsPositionArr.push(prefixSum);
         }
     }
-    /**
-     * Converts a numeric column index to its Excel-style string (e.g., 1 -> A, 27 -> AA)
-     * @param {number} num - The column index (1-based)
-     * @returns {string} Excel-style column label
-     */
     getColumnString(num) {
         num--;
         if (num < 0)

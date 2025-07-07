@@ -76,7 +76,6 @@ export class RowsCanvas {
     resizeRow(newPosition) {
         newPosition = newPosition - this.rowCanvasDiv.getBoundingClientRect().top;
         let newHeight = 25;
-        // this.rowCanvasDiv.off
         if (isNaN(newHeight)) {
             console.log("nan at 1");
         }
@@ -107,10 +106,12 @@ export class RowsCanvas {
             console.log("nan at 4");
         }
         const rowKey = this.rowID * 25 + this.hoverIdx + 1;
-        if (newHeight === 25)
-            delete this.rowHeights[rowKey];
-        else
-            this.rowHeights[rowKey] = { height: newHeight };
+        if (newHeight === 25) {
+            this.rowHeights.delete(rowKey);
+        }
+        else {
+            this.rowHeights.set(rowKey, { height: newHeight });
+        }
         if (isNaN(newHeight)) {
             console.log("nan at 5");
         }
@@ -150,8 +151,9 @@ export class RowsCanvas {
         let prefixSum = 0;
         this.rowsPositionArr.length = 0;
         for (let i = 0; i < 25; i++) {
-            if (this.rowHeights[i + startNum]) {
-                prefixSum += this.rowHeights[i + startNum].height;
+            const rowData = this.rowHeights.get(i + startNum);
+            if (rowData) {
+                prefixSum += rowData.height;
             }
             else {
                 prefixSum += this.defaultHeight;

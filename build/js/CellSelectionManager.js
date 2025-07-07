@@ -14,7 +14,7 @@ export class CellSelectionManager {
      * @param {MultipleSelectionCoordinates} selectionCoordinates
      * @param {CellsManager} cellsManager
      */
-    constructor(rowsManager, tilesManager, columnsManager, ifTilesSelectionOn, ifRowsSelectionOn, ifColumnSelectionOn, selectionCoordinates, cellsManager, undoRedoManager) {
+    constructor(rowsManager, tilesManager, columnsManager, ifTilesSelectionOn, ifRowsSelectionOn, ifColumnSelectionOn, selectionCoordinates, cellsManager, undoRedoManager, resizeManager, outerInput) {
         /** @type {number} X coordinate for selection or auto-scroll */
         this.coordinateX = 0;
         /** @type {number} Y coordinate for selection or auto-scroll */
@@ -35,7 +35,10 @@ export class CellSelectionManager {
         /** @type {HTMLDivElement} The main sheet container element */
         this.sheetDiv = document.getElementById('sheet');
         this.ifCellEdited = false;
+        this.outerInputFocus = false;
         this.undoRedoManager = undoRedoManager;
+        this.outerInput = outerInput;
+        console.log("from constructor", this.outerInput);
         this.cellsManager = cellsManager;
         this.ifTileSelectionOn = ifTilesSelectionOn;
         this.ifRowSelectionOn = ifRowsSelectionOn;
@@ -44,6 +47,7 @@ export class CellSelectionManager {
         this.columnsManager = columnsManager;
         this.tilesManager = tilesManager;
         this.selectionCoordinates = selectionCoordinates;
+        this.resizeManager = resizeManager;
         this.autoScroll = this.autoScroll.bind(this);
         this.init();
     }
@@ -71,6 +75,11 @@ export class CellSelectionManager {
      * @param {KeyboardEvent} event
      */
     handleKeyDown(event) {
+        console.log(this.outerInputFocus);
+        console.log("hello ji");
+        if (this.outerInputFocus)
+            return;
+        console.log("hello world");
         const arrowKeys = ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"];
         if (arrowKeys.includes(event.key)) {
             event.preventDefault();
@@ -117,10 +126,15 @@ export class CellSelectionManager {
     }
     /** Moves selection one row up */
     handleArrowUp() {
-        this.selectionCoordinates.selectionStartRow = Math.max(1, this.selectionCoordinates.selectionStartRow - 1);
-        this.selectionCoordinates.selectionEndRow = this.selectionCoordinates.selectionStartRow;
-        this.selectionCoordinates.selectionEndColumn = this.selectionCoordinates.selectionStartColumn;
-        this.saveInput();
+        if (this.ifShiftDown.value) {
+            this.selectionCoordinates.selectionEndRow = Math.max(1, this.selectionCoordinates.selectionEndRow - 1);
+        }
+        else {
+            this.selectionCoordinates.selectionStartRow = Math.max(1, this.selectionCoordinates.selectionStartRow - 1);
+            this.selectionCoordinates.selectionEndRow = this.selectionCoordinates.selectionStartRow;
+            this.selectionCoordinates.selectionEndColumn = this.selectionCoordinates.selectionStartColumn;
+            this.saveInput();
+        }
         this.rerender();
         this.handleArrowKeyScroll();
     }
@@ -149,28 +163,43 @@ export class CellSelectionManager {
     }
     /** Moves selection one row down */
     handleArrowDown() {
-        this.selectionCoordinates.selectionStartRow = Math.min(1000000, this.selectionCoordinates.selectionStartRow + 1);
-        this.selectionCoordinates.selectionEndRow = this.selectionCoordinates.selectionStartRow;
-        this.selectionCoordinates.selectionEndColumn = this.selectionCoordinates.selectionStartColumn;
-        this.saveInput();
+        if (this.ifShiftDown.value) {
+            this.selectionCoordinates.selectionEndRow = Math.min(1000000, this.selectionCoordinates.selectionEndRow + 1);
+        }
+        else {
+            this.selectionCoordinates.selectionStartRow = Math.min(1000000, this.selectionCoordinates.selectionStartRow + 1);
+            this.selectionCoordinates.selectionEndRow = this.selectionCoordinates.selectionStartRow;
+            this.selectionCoordinates.selectionEndColumn = this.selectionCoordinates.selectionStartColumn;
+            this.saveInput();
+        }
         this.rerender();
         this.handleArrowKeyScroll();
     }
     /** Moves selection one column left */
     handleArrowLeft() {
-        this.selectionCoordinates.selectionEndRow = this.selectionCoordinates.selectionStartRow;
-        this.selectionCoordinates.selectionStartColumn = Math.max(1, this.selectionCoordinates.selectionStartColumn - 1);
-        this.selectionCoordinates.selectionEndColumn = this.selectionCoordinates.selectionStartColumn;
-        this.saveInput();
+        if (this.ifShiftDown.value) {
+            this.selectionCoordinates.selectionEndColumn = Math.max(1, this.selectionCoordinates.selectionEndColumn - 1);
+        }
+        else {
+            this.selectionCoordinates.selectionEndRow = this.selectionCoordinates.selectionStartRow;
+            this.selectionCoordinates.selectionStartColumn = Math.max(1, this.selectionCoordinates.selectionStartColumn - 1);
+            this.selectionCoordinates.selectionEndColumn = this.selectionCoordinates.selectionStartColumn;
+            this.saveInput();
+        }
         this.rerender();
         this.handleArrowKeyScroll();
     }
     /** Moves selection one column right */
     handleArrowRight() {
-        this.selectionCoordinates.selectionEndRow = this.selectionCoordinates.selectionStartRow;
-        this.selectionCoordinates.selectionStartColumn = Math.min(1000, this.selectionCoordinates.selectionStartColumn + 1);
-        this.selectionCoordinates.selectionEndColumn = this.selectionCoordinates.selectionStartColumn;
-        this.saveInput();
+        if (this.ifShiftDown.value) {
+            this.selectionCoordinates.selectionEndColumn = Math.min(1000, this.selectionCoordinates.selectionEndColumn + 1);
+        }
+        else {
+            this.selectionCoordinates.selectionEndRow = this.selectionCoordinates.selectionStartRow;
+            this.selectionCoordinates.selectionStartColumn = Math.min(1000, this.selectionCoordinates.selectionStartColumn + 1);
+            this.selectionCoordinates.selectionEndColumn = this.selectionCoordinates.selectionStartColumn;
+            this.saveInput();
+        }
         this.rerender();
         this.handleArrowKeyScroll();
     }
@@ -179,6 +208,15 @@ export class CellSelectionManager {
      * @param {MouseEvent} event
      */
     handleWindowClick(event) {
+        console.log("clicked : ", event.target);
+        console.log(this.outerInput);
+        if (event.target === this.outerInput) {
+            this.outerInputFocus = true;
+        }
+        else {
+            this.outerInputFocus = false;
+        }
+        console.log("outerInputFocus", this.outerInputFocus);
         if (!this.inputDiv || event.target === this.inputDiv)
             return;
         this.saveInput();
@@ -239,7 +277,7 @@ export class CellSelectionManager {
      * @param {PointerEvent} event
      */
     columnPointerDown(event) {
-        if (this.ifColumnResize(event))
+        if (this.resizeManager.ifColumnResizeOn.value || this.resizeManager.ifColumnResizePointerDown.value)
             return;
         const startColumn = this.getColumn(event.target, event.clientX, event.clientY);
         if (!startColumn)
@@ -259,7 +297,7 @@ export class CellSelectionManager {
      * @param {PointerEvent} event
      */
     rowPointerDown(event) {
-        if (this.ifRowResize(event))
+        if (this.resizeManager.ifRowResizeOn.value || this.resizeManager.ifRowResizePointerDown.value)
             return;
         const startRow = this.getRow(event.target, event.clientX, event.clientY);
         if (!startRow)
@@ -365,6 +403,7 @@ export class CellSelectionManager {
             }
         }
         if (this.ifRowSelectionOn.value) {
+            console.log("inside if statement selection on for row resizing");
             const canvasX = this.rowsManager.defaultWidth / 2;
             const canvasY = Math.min(rect.bottom - 18, Math.max(this.coordinateY, this.columnsManager.defaultHeight + 1 + rect.top));
             const endRow = this.getRow(document.elementFromPoint(canvasX, canvasY), canvasX, canvasY);
@@ -448,19 +487,5 @@ export class CellSelectionManager {
             }
         }
         return ans === -1 ? 24 : ans;
-    }
-    /**
-     * Checks if column resize handle is targeted
-     */
-    ifColumnResize(event) {
-        const target = event.target;
-        return target.tagName === "CANVAS" && target.classList.contains("columnResizeCanvas");
-    }
-    /**
-     * Checks if row resize handle is targeted
-     */
-    ifRowResize(event) {
-        const target = event.target;
-        return target.tagName === "CANVAS" && target.classList.contains("rowResizeCanvas");
     }
 }

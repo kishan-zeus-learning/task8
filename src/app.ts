@@ -9,6 +9,7 @@ import { CellSelectionManager } from "./CellSelectionManager.js";
 import { MultipleSelectionCoordinates } from "./types/MultipleSelectionCoordinates.js";
 import { CellsManager } from "./CellsManager.js";
 import { UndoRedoManager } from "./UndoRedoManager.js";
+import { JSONUpload } from "./JSONUpload.js";
 
 /**
  * Main application class for initializing and managing the spreadsheet-like interface
@@ -38,6 +39,8 @@ class App {
     /**@type {MultipleSelectionCoordinates} Stores the selection start and end coordinates */
     private selectionCoordinates: MultipleSelectionCoordinates;
 
+    private outerInput:HTMLInputElement;
+
 
 
     /**
@@ -51,6 +54,7 @@ class App {
         this.ifTileSelectionOn = { value: false };
         this.ifRowSelectionOn = { value: false };
         this.ifColumnSelectionOn = { value: false };
+        this.outerInput=document.querySelector(".outerInputBar") as HTMLInputElement;
         
 
         this.selectionCoordinates = {
@@ -68,16 +72,17 @@ class App {
      */
     private initialize() {
         const CellsManagerObj = new CellsManager();
-        CellsManagerObj.manageCellUpdate(2, 2, "Hi");
-        CellsManagerObj.manageCellUpdate(2, 3, "50");
-        CellsManagerObj.manageCellUpdate(3, 5, "Zeus");
-
+        // CellsManagerObj.manageCellUpdate(2, 2, "Hi");
+        // CellsManagerObj.manageCellUpdate(2, 3, "50");
+        // CellsManagerObj.manageCellUpdate(3, 5, "Zeus");
+        const JSONUploadObj= new JSONUpload();
+        
         const undoRedoManager= new UndoRedoManager();
 
         const ScrollManagerObj = new ScrollManager();
 
         const RowsManagerObj = new RowsManager(
-            { [5]: { height: 100 }, [30]: { height: 200 }, [55]: { height: 300 } },
+            new Map(),
             0,
             ScrollManagerObj.verticalNum,
             this.ifRowResizeOn,
@@ -86,7 +91,7 @@ class App {
         );
 
         const ColumnsManagerObj = new ColumnsManager(
-            { [5]: { width: 200 }, [30]: { width: 300 }, [55]: { width: 400 } },
+            new Map(),
             0,
             ScrollManagerObj.horizontalNum,
             this.ifColumnResizeOn,
@@ -127,6 +132,8 @@ class App {
             this.selectionCoordinates,
             CellsManagerObj,
             undoRedoManager,
+            ResizeManagerObj,
+            this.outerInput
         );
 
         ScrollManagerObj.initializeManager(ColumnsManagerObj, RowsManagerObj, TilesManagerObj);

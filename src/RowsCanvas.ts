@@ -8,8 +8,9 @@ import { RowData } from "./types/RowsColumn";
  * Handles row drawing, resizing, and rendering optimizations.
  */
 export class RowsCanvas {
-    /** Object that stores custom row heights indexed by row number */
-    private rowHeights: RowData;
+    /** Map that stores custom row heights keyed by row number */
+private rowHeights: RowData;
+
 
     /** Prefix sum of each row's vertical position */
     public rowsPositionArr: number[];
@@ -123,7 +124,6 @@ export class RowsCanvas {
     public resizeRow(newPosition: number) {
         newPosition = newPosition - this.rowCanvasDiv.getBoundingClientRect().top;
         let newHeight=25;
-        // this.rowCanvasDiv.off
         if(isNaN(newHeight)){
             console.log("nan at 1");
         }
@@ -156,8 +156,12 @@ export class RowsCanvas {
 
         
         const rowKey = this.rowID * 25 + this.hoverIdx + 1;
-        if (newHeight === 25) delete this.rowHeights[rowKey];
-        else this.rowHeights[rowKey] = { height: newHeight };
+        if (newHeight === 25) {
+            this.rowHeights.delete(rowKey);
+        } else {
+            this.rowHeights.set(rowKey, { height: newHeight });
+        }
+
         
         if(isNaN(newHeight)){
             console.log("nan at 5");
@@ -203,13 +207,15 @@ export class RowsCanvas {
 
         this.rowsPositionArr.length = 0;
         for (let i = 0; i < 25; i++) {
-            if (this.rowHeights[i + startNum]) {
-                prefixSum += this.rowHeights[i + startNum].height;
-            } else {
-                prefixSum += this.defaultHeight;
-            }
-            this.rowsPositionArr.push(prefixSum);
-        }
+    const rowData = this.rowHeights.get(i + startNum);
+    if (rowData) {
+        prefixSum += rowData.height;
+    } else {
+        prefixSum += this.defaultHeight;
+    }
+    this.rowsPositionArr.push(prefixSum);
+}
+
     }
 
     /**

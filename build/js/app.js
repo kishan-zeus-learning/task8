@@ -7,6 +7,7 @@ import { ResizeManager } from "./ResizeManager.js";
 import { CellSelectionManager } from "./CellSelectionManager.js";
 import { CellsManager } from "./CellsManager.js";
 import { UndoRedoManager } from "./UndoRedoManager.js";
+import { JSONUpload } from "./JSONUpload.js";
 /**
  * Main application class for initializing and managing the spreadsheet-like interface
  */
@@ -22,6 +23,7 @@ class App {
         this.ifTileSelectionOn = { value: false };
         this.ifRowSelectionOn = { value: false };
         this.ifColumnSelectionOn = { value: false };
+        this.outerInput = document.querySelector(".outerInputBar");
         this.selectionCoordinates = {
             selectionStartRow: 1,
             selectionEndRow: 1,
@@ -35,16 +37,17 @@ class App {
      */
     initialize() {
         const CellsManagerObj = new CellsManager();
-        CellsManagerObj.manageCellUpdate(2, 2, "Hi");
-        CellsManagerObj.manageCellUpdate(2, 3, "50");
-        CellsManagerObj.manageCellUpdate(3, 5, "Zeus");
+        // CellsManagerObj.manageCellUpdate(2, 2, "Hi");
+        // CellsManagerObj.manageCellUpdate(2, 3, "50");
+        // CellsManagerObj.manageCellUpdate(3, 5, "Zeus");
+        const JSONUploadObj = new JSONUpload();
         const undoRedoManager = new UndoRedoManager();
         const ScrollManagerObj = new ScrollManager();
-        const RowsManagerObj = new RowsManager({ [5]: { height: 100 }, [30]: { height: 200 }, [55]: { height: 300 } }, 0, ScrollManagerObj.verticalNum, this.ifRowResizeOn, this.ifRowResizePointerDown, this.selectionCoordinates);
-        const ColumnsManagerObj = new ColumnsManager({ [5]: { width: 200 }, [30]: { width: 300 }, [55]: { width: 400 } }, 0, ScrollManagerObj.horizontalNum, this.ifColumnResizeOn, this.ifColumnResizePointerDown, this.selectionCoordinates);
+        const RowsManagerObj = new RowsManager(new Map(), 0, ScrollManagerObj.verticalNum, this.ifRowResizeOn, this.ifRowResizePointerDown, this.selectionCoordinates);
+        const ColumnsManagerObj = new ColumnsManager(new Map(), 0, ScrollManagerObj.horizontalNum, this.ifColumnResizeOn, this.ifColumnResizePointerDown, this.selectionCoordinates);
         const TilesManagerObj = new TilesManager(RowsManagerObj.rowsPositionPrefixSumArr, ColumnsManagerObj.visibleColumnsPrefixSum, ScrollManagerObj.verticalNum, ScrollManagerObj.horizontalNum, this.selectionCoordinates, CellsManagerObj, undefined, undefined, RowsManagerObj.marginTop, ColumnsManagerObj.marginLeft);
         const ResizeManagerObj = new ResizeManager(RowsManagerObj, TilesManagerObj, ColumnsManagerObj, this.ifRowResizeOn, this.ifRowResizePointerDown, this.ifColumnResizeOn, this.ifColumnResizePointerDown);
-        const CellSelectionManagerObj = new CellSelectionManager(RowsManagerObj, TilesManagerObj, ColumnsManagerObj, this.ifTileSelectionOn, this.ifRowSelectionOn, this.ifColumnSelectionOn, this.selectionCoordinates, CellsManagerObj, undoRedoManager);
+        const CellSelectionManagerObj = new CellSelectionManager(RowsManagerObj, TilesManagerObj, ColumnsManagerObj, this.ifTileSelectionOn, this.ifRowSelectionOn, this.ifColumnSelectionOn, this.selectionCoordinates, CellsManagerObj, undoRedoManager, ResizeManagerObj, this.outerInput);
         ScrollManagerObj.initializeManager(ColumnsManagerObj, RowsManagerObj, TilesManagerObj);
         // Keyboard and click events
         window.addEventListener("keydown", (event) => {

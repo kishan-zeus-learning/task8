@@ -1,132 +1,59 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Scroll & Select Target Under Cursor</title>
+  <meta charset="UTF-8">
+  <title>Clickable Right-Angled Triangle</title>
   <style>
-    body { margin: 0; }
-    #sheet {
-      width: 400px;
-      height: 300px;
-      overflow: auto;
-      border: 2px solid black;
-      margin: 50px auto;
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      background-color: #f0f0f0;
+    }
+
+    .triangle {
+      width: 0;
+      height: 0;
+      border-left: 150px solid transparent;
+      border-bottom: 150px solid #007bff;
+      cursor: pointer;
       position: relative;
     }
-    .content {
-      width: 800px;
-      height: 1200px;
-      background: repeating-linear-gradient(
-        white,
-        white 24px,
-        #eee 25px
-      );
+
+    .tooltip {
+      position: absolute;
+      top: -30px;
+      left: 0;
+      color: #fff;
+      background-color: #007bff;
+      padding: 5px 10px;
+      font-family: Arial, sans-serif;
+      font-size: 14px;
+      border-radius: 4px;
+      display: none;
     }
-    .cell {
-      width: 100px;
-      height: 25px;
-      box-sizing: border-box;
-      border: 1px solid #ccc;
-      float: left;
-    }
-    .cell.selected {
-      background-color: yellow;
+
+    .triangle:hover .tooltip {
+      display: block;
     }
   </style>
 </head>
 <body>
 
-<div id="sheet">
-  <div class="content" id="content"></div>
-</div>
+  <div class="triangle" id="triangle">
+    <div class="tooltip">Click me!</div>
+  </div>
 
-<script>
-  const sheet = document.getElementById('sheet');
-  const content = document.getElementById('content');
+  <script>
+    const triangle = document.getElementById("triangle");
 
-  // Generate grid of "cells"
-  for (let i = 0; i < 40 * 8; i++) {
-    const cell = document.createElement('div');
-    cell.className = 'cell';
-    content.appendChild(cell);
-  }
-
-  let isSelecting = false;
-  let pointerX = 0;
-  let pointerY = 0;
-  let scrollId = null;
-
-  const maxSpeed = 15;
-  const maxDistance = 100;
-
-  function calculateSpeed(distance) {
-    return Math.min(distance / maxDistance, 1) * maxSpeed;
-  }
-
-  function startAutoScroll() {
-    if (scrollId !== null) return;
-
-    function autoScroll() {
-      if (!isSelecting) {
-        scrollId = null;
-        return;
-      }
-
-      const rect = sheet.getBoundingClientRect();
-      let dx = 0, dy = 0;
-
-      if (pointerY > rect.bottom) {
-        dy = calculateSpeed(pointerY - rect.bottom);
-      } else if (pointerY < rect.top) {
-        dy = -calculateSpeed(rect.top - pointerY);
-      }
-
-      if (pointerX > rect.right) {
-        dx = calculateSpeed(pointerX - rect.right);
-      } else if (pointerX < rect.left) {
-        dx = -calculateSpeed(rect.left - pointerX);
-      }
-
-      sheet.scrollBy(dx, dy);
-
-      // Get the element currently under pointer
-      const clampedX = Math.min(Math.max(pointerX, rect.left), rect.right - 1);
-      const clampedY = Math.min(Math.max(pointerY, rect.top), rect.bottom - 1);
-      const target = document.elementFromPoint(clampedX, clampedY);
-
-      if (target?.classList.contains('cell')) {
-        target.classList.add('selected');  // Mark as selected
-      }
-
-      scrollId = requestAnimationFrame(autoScroll);
-    }
-
-    scrollId = requestAnimationFrame(autoScroll);
-  }
-
-  // Start selection
-  sheet.addEventListener('pointerdown', (e) => {
-    isSelecting = true;
-    pointerX = e.clientX;
-    pointerY = e.clientY;
-    const target = document.elementFromPoint(pointerX, pointerY);
-    if (target?.classList.contains('cell')) {
-      target.classList.add('selected');
-    }
-    startAutoScroll();
-  });
-
-  window.addEventListener('pointermove', (e) => {
-    if (!isSelecting) return;
-    pointerX = e.clientX;
-    pointerY = e.clientY;
-  });
-
-  window.addEventListener('pointerup', () => {
-    isSelecting = false;
-  });
-</script>
+    triangle.addEventListener("click", () => {
+      alert("Triangle clicked!");
+      // You can trigger any function here
+    });
+  </script>
 
 </body>
 </html>

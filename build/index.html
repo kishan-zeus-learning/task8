@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,14 +8,28 @@
     <link rel="stylesheet" href="styles/style.css">
     <link rel="icon" href="./img/ExcelIcon.png" type="img/png">
 </head>
+
 <body>
     <div class="upperDiv">
-  <div class="excel-theme-placeholder">
-    <img src="./img/ExcelIcon.png" alt="Excel Icon" class="excel-icon" />
-    <p class="excel-text">Excel</p>
-  </div>
-</div>
-</div>
+        <div class="excel-theme-placeholder">
+            <img src="./img/ExcelIcon.png" alt="Excel Icon" class="excel-icon" />
+            <p class="excel-text">Excel Clone</p>
+        </div>
+
+        <div class="inputBar">
+            <div class="uploaddiv">
+
+                <label class="upload-label" for="jsonUpload">Load JSON Data</label>
+                <input type="file" id="jsonUpload" accept=".json" />
+            </div>
+            <div class="outerInputDiv">
+                <input type="text" name="outerInputBar" id="outerInputBar" class="outerInputBar">
+            </div>
+
+
+        </div>
+    </div>
+    </div>
 
     <div class="sheet" id="sheet">
         <div class="corner"></div>
@@ -31,6 +46,7 @@
         </div>
     </div>
 
-<script src="js/app.js" type="module"></script>
+    <script src="js/app.js" type="module"></script>
 </body>
+
 </html>

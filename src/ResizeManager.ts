@@ -17,16 +17,16 @@ export class ResizeManager {
     private columnsManager: ColumnsManager;
 
     /** @type {GlobalBoolean} Indicates if row resize mode is active */
-    private ifRowResizeOn: GlobalBoolean;
+     ifRowResizeOn: GlobalBoolean;
 
     /** @type {GlobalBoolean} Indicates if a row is currently being resized (pointer down) */
-    private ifRowResizePointerDown: GlobalBoolean;
+     ifRowResizePointerDown: GlobalBoolean;
 
     /** @type {GlobalBoolean} Indicates if column resize mode is active */
-    private ifColumnResizeOn: GlobalBoolean;
+    ifColumnResizeOn: GlobalBoolean;
 
     /** @type {GlobalBoolean} Indicates if a column is currently being resized (pointer down) */
-    private ifColumnResizePointerDown: GlobalBoolean;
+    ifColumnResizePointerDown: GlobalBoolean;
 
     /**
      * Initializes the ResizeManager with references to all required managers and global flags.

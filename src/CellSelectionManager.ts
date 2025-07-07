@@ -7,6 +7,7 @@ import { CellsManager } from "./CellsManager";
 import { UndoRedoManager } from "./UndoRedoManager";
 import { Operation } from "./types/Operation.js";
 import { TextEditOperation } from "./TextEditOperation.js";
+import { ResizeManager } from "./ResizeManager";
 
 /**
  * Manages cell, row, and column selection, editing, and input interactions
@@ -68,7 +69,14 @@ export class CellSelectionManager {
 
     private undoRedoManager:UndoRedoManager;
 
+    private resizeManager:ResizeManager;
+
     private ifCellEdited:boolean=false;
+
+    private outerInput:HTMLInputElement;
+
+    private outerInputFocus:boolean=false;
+    
 
     /**
      * Initializes CellSelectionManager
@@ -91,8 +99,13 @@ export class CellSelectionManager {
         selectionCoordinates: MultipleSelectionCoordinates,
         cellsManager: CellsManager,
         undoRedoManager:UndoRedoManager,
+        resizeManager: ResizeManager,
+        outerInput:HTMLInputElement,
+        
     ) {
         this.undoRedoManager=undoRedoManager;
+        this.outerInput=outerInput;
+        console.log("from constructor",this.outerInput);
         this.cellsManager = cellsManager;
         this.ifTileSelectionOn = ifTilesSelectionOn;
         this.ifRowSelectionOn = ifRowsSelectionOn;
@@ -101,6 +114,7 @@ export class CellSelectionManager {
         this.columnsManager = columnsManager;
         this.tilesManager = tilesManager;
         this.selectionCoordinates = selectionCoordinates;
+        this.resizeManager=resizeManager;
         this.autoScroll = this.autoScroll.bind(this);
         this.init();
     }
@@ -129,6 +143,10 @@ export class CellSelectionManager {
      * @param {KeyboardEvent} event 
      */
     handleKeyDown(event: KeyboardEvent) {
+        console.log(this.outerInputFocus);
+        console.log("hello ji");
+        if(this.outerInputFocus) return ;
+        console.log("hello world");
          const arrowKeys = ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"];
 
         if (arrowKeys.includes(event.key)) {
@@ -178,10 +196,15 @@ export class CellSelectionManager {
 
     /** Moves selection one row up */
     private handleArrowUp() {
-        this.selectionCoordinates.selectionStartRow = Math.max(1, this.selectionCoordinates.selectionStartRow - 1);
-        this.selectionCoordinates.selectionEndRow = this.selectionCoordinates.selectionStartRow;
-        this.selectionCoordinates.selectionEndColumn = this.selectionCoordinates.selectionStartColumn;
-        this.saveInput();
+        if(this.ifShiftDown.value){
+            this.selectionCoordinates.selectionEndRow=Math.max(1,this.selectionCoordinates.selectionEndRow-1);
+        }else{
+
+            this.selectionCoordinates.selectionStartRow = Math.max(1, this.selectionCoordinates.selectionStartRow - 1);
+            this.selectionCoordinates.selectionEndRow = this.selectionCoordinates.selectionStartRow;
+            this.selectionCoordinates.selectionEndColumn = this.selectionCoordinates.selectionStartColumn;
+            this.saveInput();
+        }
         this.rerender();
         this.handleArrowKeyScroll();
     }
@@ -215,30 +238,45 @@ export class CellSelectionManager {
 
     /** Moves selection one row down */
     private handleArrowDown() {
-        this.selectionCoordinates.selectionStartRow = Math.min(1000000, this.selectionCoordinates.selectionStartRow + 1);
-        this.selectionCoordinates.selectionEndRow = this.selectionCoordinates.selectionStartRow;
-        this.selectionCoordinates.selectionEndColumn = this.selectionCoordinates.selectionStartColumn;
-        this.saveInput();
+        if(this.ifShiftDown.value){
+            this.selectionCoordinates.selectionEndRow=Math.min(1000000,this.selectionCoordinates.selectionEndRow+1);
+        }else{
+
+            this.selectionCoordinates.selectionStartRow = Math.min(1000000, this.selectionCoordinates.selectionStartRow + 1);
+            this.selectionCoordinates.selectionEndRow = this.selectionCoordinates.selectionStartRow;
+            this.selectionCoordinates.selectionEndColumn = this.selectionCoordinates.selectionStartColumn;
+            this.saveInput();
+        }
         this.rerender();
         this.handleArrowKeyScroll();
     }
 
     /** Moves selection one column left */
     private handleArrowLeft() {
-        this.selectionCoordinates.selectionEndRow = this.selectionCoordinates.selectionStartRow;
-        this.selectionCoordinates.selectionStartColumn = Math.max(1, this.selectionCoordinates.selectionStartColumn - 1);
-        this.selectionCoordinates.selectionEndColumn = this.selectionCoordinates.selectionStartColumn;
-        this.saveInput();
+        if(this.ifShiftDown.value){
+            this.selectionCoordinates.selectionEndColumn=Math.max(1,this.selectionCoordinates.selectionEndColumn-1);   
+        }else{
+
+            this.selectionCoordinates.selectionEndRow = this.selectionCoordinates.selectionStartRow;
+            this.selectionCoordinates.selectionStartColumn = Math.max(1, this.selectionCoordinates.selectionStartColumn - 1);
+            this.selectionCoordinates.selectionEndColumn = this.selectionCoordinates.selectionStartColumn;
+            this.saveInput();
+        }
         this.rerender();
         this.handleArrowKeyScroll();
     }
 
     /** Moves selection one column right */
     private handleArrowRight() {
-        this.selectionCoordinates.selectionEndRow = this.selectionCoordinates.selectionStartRow;
-        this.selectionCoordinates.selectionStartColumn = Math.min(1000, this.selectionCoordinates.selectionStartColumn + 1);
-        this.selectionCoordinates.selectionEndColumn = this.selectionCoordinates.selectionStartColumn;
-        this.saveInput();
+        if(this.ifShiftDown.value){
+            this.selectionCoordinates.selectionEndColumn=Math.min(1000,this.selectionCoordinates.selectionEndColumn+1);
+        }else{
+
+            this.selectionCoordinates.selectionEndRow = this.selectionCoordinates.selectionStartRow;
+            this.selectionCoordinates.selectionStartColumn = Math.min(1000, this.selectionCoordinates.selectionStartColumn + 1);
+            this.selectionCoordinates.selectionEndColumn = this.selectionCoordinates.selectionStartColumn;
+            this.saveInput();
+        }
         this.rerender();
         this.handleArrowKeyScroll();
     }
@@ -248,6 +286,14 @@ export class CellSelectionManager {
      * @param {MouseEvent} event 
      */
     handleWindowClick(event: MouseEvent) {
+        console.log("clicked : ",event.target);
+        console.log(this.outerInput);
+        if(event.target===this.outerInput){
+            this.outerInputFocus=true;
+        }else{
+            this.outerInputFocus=false;
+        }
+        console.log("outerInputFocus",this.outerInputFocus);
         if (!this.inputDiv || event.target === this.inputDiv) return;
         this.saveInput();
         this.rerender();
@@ -311,7 +357,7 @@ export class CellSelectionManager {
      * @param {PointerEvent} event 
      */
     private columnPointerDown(event: PointerEvent) {
-        if (this.ifColumnResize(event)) return;
+        if (this.resizeManager.ifColumnResizeOn.value || this.resizeManager.ifColumnResizePointerDown.value) return;
 
         const startColumn = this.getColumn(event.target as HTMLElement, event.clientX, event.clientY);
         if (!startColumn) return console.log("Not a valid canvas element in column pointer down");
@@ -334,7 +380,7 @@ export class CellSelectionManager {
      * @param {PointerEvent} event 
      */
     private rowPointerDown(event: PointerEvent) {
-        if (this.ifRowResize(event)) return;
+        if (this.resizeManager.ifRowResizeOn.value || this.resizeManager.ifRowResizePointerDown.value) return;
 
         const startRow = this.getRow(event.target as HTMLElement, event.clientX, event.clientY);
         if (!startRow) return console.log("Not a valid canvas element in row pointer down");
@@ -456,6 +502,7 @@ export class CellSelectionManager {
         }
 
         if (this.ifRowSelectionOn.value) {
+            console.log("inside if statement selection on for row resizing");
             const canvasX = this.rowsManager.defaultWidth / 2;
             const canvasY = Math.min(rect.bottom - 18, Math.max(this.coordinateY, this.columnsManager.defaultHeight + 1 + rect.top));
             const endRow = this.getRow(document.elementFromPoint(canvasX, canvasY) as HTMLElement, canvasX, canvasY);
@@ -549,17 +596,17 @@ export class CellSelectionManager {
     /**
      * Checks if column resize handle is targeted
      */
-    private ifColumnResize(event: PointerEvent): boolean {
-        const target = event.target as HTMLElement;
-        return target.tagName === "CANVAS" && target.classList.contains("columnResizeCanvas");
-    }
+    // private ifColumnResize(event: PointerEvent): boolean {
+    //     const target = event.target as HTMLElement;
+    //     return target.tagName === "CANVAS" && target.classList.contains("columnResizeCanvas");
+    // }
 
     /**
      * Checks if row resize handle is targeted
      */
-    private ifRowResize(event: PointerEvent): boolean {
-        const target = event.target as HTMLElement;
-        return target.tagName === "CANVAS" && target.classList.contains("rowResizeCanvas");
-    }
+    // private ifRowResize(event: PointerEvent): boolean {
+    //     const target = event.target as HTMLElement;
+    //     return target.tagName === "CANVAS" && target.classList.contains("rowResizeCanvas");
+    // }
 }
 
