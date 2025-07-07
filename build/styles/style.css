@@ -64,6 +64,11 @@
   position: absolute;
   top: 0;
   left: 0;
+  box-sizing: border-box;
+}
+.tileDiv .cellInput:focus {
+  outline: none;
+  border: 2px solid #137E43;
 }
 
 * {
@@ -127,4 +132,41 @@
   cursor: ew-resize;
   pointer-events: none;
   display: none;
+}
+
+.upperDiv {
+  height: 216px;
+  width: 100vw;
+  background: linear-gradient(to bottom, #f0f0f0, #e6e6e6);
+  border-bottom: 1px solid #ccc;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-family: "Segoe UI", Tahoma, sans-serif;
+}
+
+.excel-theme-placeholder {
+  width: 90%;
+  height: 80%;
+  border: 1px solid #cfcfcf;
+  background-color: #ffffff;
+  box-shadow: inset 0 0 3px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 20px;
+  color: #217346;
+  font-size: 18px;
+  border-radius: 4px;
+}
+
+.excel-icon {
+  width: 32px;
+  height: 32px;
+}
+
+.excel-text {
+  margin: 0;
+  font-weight: 500;
 }/*# sourceMappingURL=style.css.map */

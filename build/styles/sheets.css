@@ -64,4 +64,9 @@
   position: absolute;
   top: 0;
   left: 0;
+  box-sizing: border-box;
+}
+.tileDiv .cellInput:focus {
+  outline: none;
+  border: 2px solid #137E43;
 }/*# sourceMappingURL=sheets.css.map */
