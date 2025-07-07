@@ -1,4 +1,4 @@
-import { Operation } from "./types/Operation";
+import { Operation } from "./types/Operation.js";
 export class TextEditOperation extends Operation {
     constructor(cellsManager, row, col, prevValue, newValue, tilesManager) {
         super();

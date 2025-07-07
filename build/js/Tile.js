@@ -65,7 +65,7 @@ export class Tile {
             this.tileDiv.appendChild(this.inputDiv);
             this.inputDiv.classList.add("cellInput");
             this.inputDiv.id = `input_r${this.row}_c${this.col}`;
-            this.inputDiv.style.display = "none";
+            this.inputDiv.style.visibility = "hidden";
         }
         else {
             // Remove input if present but selection is outside this tile

@@ -1,3 +1,4 @@
+import { TextEditOperation } from "./TextEditOperation.js";
 /**
  * Manages cell, row, and column selection, editing, and input interactions
  */
@@ -13,7 +14,7 @@ export class CellSelectionManager {
      * @param {MultipleSelectionCoordinates} selectionCoordinates
      * @param {CellsManager} cellsManager
      */
-    constructor(rowsManager, tilesManager, columnsManager, ifTilesSelectionOn, ifRowsSelectionOn, ifColumnSelectionOn, selectionCoordinates, cellsManager) {
+    constructor(rowsManager, tilesManager, columnsManager, ifTilesSelectionOn, ifRowsSelectionOn, ifColumnSelectionOn, selectionCoordinates, cellsManager, undoRedoManager) {
         /** @type {number} X coordinate for selection or auto-scroll */
         this.coordinateX = 0;
         /** @type {number} Y coordinate for selection or auto-scroll */
@@ -30,8 +31,11 @@ export class CellSelectionManager {
         this.inputDiv = null;
         /** @type {GlobalBoolean} Whether Shift key is currently pressed */
         this.ifShiftDown = { value: false };
+        this.ifCtrlDown = { value: false };
         /** @type {HTMLDivElement} The main sheet container element */
         this.sheetDiv = document.getElementById('sheet');
+        this.ifCellEdited = false;
+        this.undoRedoManager = undoRedoManager;
         this.cellsManager = cellsManager;
         this.ifTileSelectionOn = ifTilesSelectionOn;
         this.ifRowSelectionOn = ifRowsSelectionOn;
@@ -59,14 +63,19 @@ export class CellSelectionManager {
     handleKeyUp(event) {
         if (event.key === "Shift")
             this.ifShiftDown.value = false;
+        if (event.key === "Control")
+            this.ifCtrlDown.value = false;
     }
     /**
      * Handles key press for cell navigation and editing
      * @param {KeyboardEvent} event
      */
     handleKeyDown(event) {
-        if (event.key === "Meta")
-            return;
+        const arrowKeys = ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"];
+        if (arrowKeys.includes(event.key)) {
+            event.preventDefault();
+        }
+        console.log(event.key);
         switch (event.key) {
             case "ArrowUp":
                 this.handleArrowUp();
@@ -86,6 +95,21 @@ export class CellSelectionManager {
             case "Shift":
                 this.ifShiftDown.value = true;
                 return;
+            case "Control":
+                this.ifCtrlDown.value = true;
+                return;
+            case "z":
+            case "Z":
+                if (this.ifCtrlDown.value && !this.inputFocus.value) {
+                    this.undoRedoManager.undo();
+                    return;
+                }
+            case "y":
+            case "Y":
+                if (this.ifCtrlDown.value && !this.inputFocus.value) {
+                    this.undoRedoManager.redo();
+                    return;
+                }
             default:
                 if (!this.inputFocus.value)
                     this.directInput();
@@ -98,6 +122,30 @@ export class CellSelectionManager {
         this.selectionCoordinates.selectionEndColumn = this.selectionCoordinates.selectionStartColumn;
         this.saveInput();
         this.rerender();
+        this.handleArrowKeyScroll();
+    }
+    handleArrowKeyScroll() {
+        this.inputDiv = document.querySelector(".cellInput");
+        if (this.inputDiv) {
+            const containerRect = this.sheetDiv.getBoundingClientRect();
+            const inputRect = (this.inputDiv).getBoundingClientRect();
+            // console.log("inputRect: ",inputRect);
+            // console.log("containerRect: ",containerRect);
+            if (containerRect.top - inputRect.top >= 0) {
+                // console.log("inside container rect : ");
+                // console.log(containerRect.top+25 - inputRect.top);
+                this.sheetDiv.scrollBy(0, inputRect.top - containerRect.top - 25);
+            }
+            if (inputRect.bottom - containerRect.bottom >= 0) {
+                this.sheetDiv.scrollBy(0, inputRect.bottom + 18 - containerRect.bottom);
+            }
+            if (containerRect.left - inputRect.left >= 0) {
+                this.sheetDiv.scrollBy(inputRect.left - containerRect.left - 50, 0);
+            }
+            if (inputRect.right - containerRect.right >= 0) {
+                this.sheetDiv.scrollBy(inputRect.right + 18 - containerRect.right, 0);
+            }
+        }
     }
     /** Moves selection one row down */
     handleArrowDown() {
@@ -106,6 +154,7 @@ export class CellSelectionManager {
         this.selectionCoordinates.selectionEndColumn = this.selectionCoordinates.selectionStartColumn;
         this.saveInput();
         this.rerender();
+        this.handleArrowKeyScroll();
     }
     /** Moves selection one column left */
     handleArrowLeft() {
@@ -114,6 +163,7 @@ export class CellSelectionManager {
         this.selectionCoordinates.selectionEndColumn = this.selectionCoordinates.selectionStartColumn;
         this.saveInput();
         this.rerender();
+        this.handleArrowKeyScroll();
     }
     /** Moves selection one column right */
     handleArrowRight() {
@@ -122,6 +172,7 @@ export class CellSelectionManager {
         this.selectionCoordinates.selectionEndColumn = this.selectionCoordinates.selectionStartColumn;
         this.saveInput();
         this.rerender();
+        this.handleArrowKeyScroll();
     }
     /**
      * Handles global click to commit input if clicked outside
@@ -139,34 +190,39 @@ export class CellSelectionManager {
      */
     handleDoubleClick(event) {
         this.inputDiv = document.querySelector(".cellInput");
-        this.inputDiv.style.display = "block";
-        this.inputDiv.focus();
+        this.inputDiv.style.visibility = "visible";
+        this.inputDiv.focus({ preventScroll: true });
         this.putInput();
         this.inputFocus.value = true;
+        this.ifCellEdited = true;
     }
     /**
      * Activates direct input without double-click
      */
     directInput() {
         this.inputDiv = document.querySelector(".cellInput");
-        this.inputDiv.style.display = "block";
+        this.inputDiv.style.visibility = "visible";
         this.inputDiv.value = "";
-        this.inputDiv.focus();
+        this.inputDiv.focus({ preventScroll: true });
         this.inputFocus.value = true;
+        this.ifCellEdited = true;
     }
     /**
      * Saves the current input back to cell data
      */
     saveInput() {
-        if (!this.inputDiv)
+        if (!this.inputDiv || !this.ifCellEdited)
             return;
         const r = parseInt(this.inputDiv.getAttribute('row'));
         const c = parseInt(this.inputDiv.getAttribute('col'));
-        this.cellsManager.manageCellUpdate(r, c, this.inputDiv.value);
+        // this.cellsManager.manageCellUpdate(r, c, this.inputDiv.value);
+        const operation = new TextEditOperation(this.cellsManager, r, c, this.cellsManager.getCellValue(r, c), this.inputDiv.value, this.tilesManager);
+        this.undoRedoManager.execute(operation);
         this.inputDiv.value = "";
-        this.inputDiv.style.display = "none";
+        this.inputDiv.style.visibility = "hidden";
         this.inputDiv = null;
         this.inputFocus.value = false;
+        this.ifCellEdited = false;
     }
     /**
      * Fills input box with cell value when editing starts
@@ -346,7 +402,7 @@ export class CellSelectionManager {
             const c = parseInt(this.inputDiv.getAttribute('col'));
             if (rc.row === r && rc.col === c)
                 return;
-            this.inputDiv.style.display = "none";
+            this.inputDiv.style.visibility = "hidden";
             this.saveInput();
         }
         this.selectionCoordinates.selectionStartRow = rc.row;

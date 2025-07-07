@@ -54,6 +54,17 @@ export class ScrollManager {
         let lastScrollTop = this.sheetDiv.scrollTop;
         let lastScrollLeft = this.sheetDiv.scrollLeft;
         this.sheetDiv.addEventListener("scroll", (event) => {
+            //     console.log("scroll event triggered", this.scrollByKeyboard);
+            //     if(this.scrollByKeyboard.value) {
+            //     // this.scrollByKeyboard.value=false;
+            //     this.sheetDiv.scrollTop=lastScrollTop;
+            //     this.sheetDiv.scrollLeft=lastScrollLeft;
+            //     setTimeout(()=>{
+            //         this.scrollByKeyboard.value=false;
+            //     },100)
+            //     return ;
+            // }
+            console.log("crossed the return statement");
             const currentScrollTop = this.sheetDiv.scrollTop;
             const currentScrollLeft = this.sheetDiv.scrollLeft;
             if (currentScrollTop > lastScrollTop) {
@@ -78,6 +89,7 @@ export class ScrollManager {
      */
     handleScrollDown(event) {
         var _a, _b, _c;
+        console.log("scroll down executed ");
         const lastRow = (_a = this.rowsManager) === null || _a === void 0 ? void 0 : _a.visibleRows[this.rowsManager.visibleRows.length - 1];
         const bufferRect = lastRow.rowCanvasDiv.getBoundingClientRect();
         const isVisible = (bufferRect.top < this.containerDivRect.bottom &&

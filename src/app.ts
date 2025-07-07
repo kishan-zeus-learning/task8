@@ -39,6 +39,7 @@ class App {
     private selectionCoordinates: MultipleSelectionCoordinates;
 
 
+
     /**
      * Initializes the App
      */
@@ -125,7 +126,7 @@ class App {
             this.ifColumnSelectionOn,
             this.selectionCoordinates,
             CellsManagerObj,
-            // undoRedoManager
+            undoRedoManager,
         );
 
         ScrollManagerObj.initializeManager(ColumnsManagerObj, RowsManagerObj, TilesManagerObj);

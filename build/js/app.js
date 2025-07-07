@@ -44,7 +44,7 @@ class App {
         const ColumnsManagerObj = new ColumnsManager({ [5]: { width: 200 }, [30]: { width: 300 }, [55]: { width: 400 } }, 0, ScrollManagerObj.horizontalNum, this.ifColumnResizeOn, this.ifColumnResizePointerDown, this.selectionCoordinates);
         const TilesManagerObj = new TilesManager(RowsManagerObj.rowsPositionPrefixSumArr, ColumnsManagerObj.visibleColumnsPrefixSum, ScrollManagerObj.verticalNum, ScrollManagerObj.horizontalNum, this.selectionCoordinates, CellsManagerObj, undefined, undefined, RowsManagerObj.marginTop, ColumnsManagerObj.marginLeft);
         const ResizeManagerObj = new ResizeManager(RowsManagerObj, TilesManagerObj, ColumnsManagerObj, this.ifRowResizeOn, this.ifRowResizePointerDown, this.ifColumnResizeOn, this.ifColumnResizePointerDown);
-        const CellSelectionManagerObj = new CellSelectionManager(RowsManagerObj, TilesManagerObj, ColumnsManagerObj, this.ifTileSelectionOn, this.ifRowSelectionOn, this.ifColumnSelectionOn, this.selectionCoordinates, CellsManagerObj);
+        const CellSelectionManagerObj = new CellSelectionManager(RowsManagerObj, TilesManagerObj, ColumnsManagerObj, this.ifTileSelectionOn, this.ifRowSelectionOn, this.ifColumnSelectionOn, this.selectionCoordinates, CellsManagerObj, undoRedoManager);
         ScrollManagerObj.initializeManager(ColumnsManagerObj, RowsManagerObj, TilesManagerObj);
         // Keyboard and click events
         window.addEventListener("keydown", (event) => {

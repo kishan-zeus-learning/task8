@@ -1,6 +1,6 @@
-import { CellsManager } from "./CellsManager";
-import { Operation } from "./types/Operation";
-import { TilesManager } from "./TilesManager";
+import { CellsManager } from "./CellsManager.js";
+import { Operation } from "./types/Operation.js";
+import { TilesManager } from "./TilesManager.js";
 export class TextEditOperation extends Operation {
     constructor(
         private cellsManager: CellsManager,
