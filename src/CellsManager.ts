@@ -10,19 +10,10 @@ export class CellsManager {
      */
     CellsMap: CellsMap;
 
-    constructor() {
-        this.CellsMap = this.initializeMap();
+    constructor(CellsMap:CellsMap) {
+        this.CellsMap = CellsMap;
     }
 
-    /**
-     * Initializes the cell map, optionally from provided JSON data
-     * @param {JSON | null} data - Optional initial data (not implemented yet)
-     * @returns {CellsMap} A nested Map representing spreadsheet cells
-     */
-    private initializeMap(data: JSON | null = null): CellsMap {
-        // TODO: Deserialize from data if needed
-        return new Map<number, Map<number, Cell>>();
-    }
 
     /**
      * Updates or deletes a cell at the given row and column

@@ -3,17 +3,8 @@ import { Cell } from "./Cell.js";
  * Manages the creation, update, and retrieval of cell data
  */
 export class CellsManager {
-    constructor() {
-        this.CellsMap = this.initializeMap();
-    }
-    /**
-     * Initializes the cell map, optionally from provided JSON data
-     * @param {JSON | null} data - Optional initial data (not implemented yet)
-     * @returns {CellsMap} A nested Map representing spreadsheet cells
-     */
-    initializeMap(data = null) {
-        // TODO: Deserialize from data if needed
-        return new Map();
+    constructor(CellsMap) {
+        this.CellsMap = CellsMap;
     }
     /**
      * Updates or deletes a cell at the given row and column

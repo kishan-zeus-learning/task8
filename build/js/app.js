@@ -23,6 +23,9 @@ class App {
         this.ifTileSelectionOn = { value: false };
         this.ifRowSelectionOn = { value: false };
         this.ifColumnSelectionOn = { value: false };
+        this.cellData = new Map();
+        this.columnData = new Map();
+        this.rowData = new Map();
         this.outerInput = document.querySelector(".outerInputBar");
         this.selectionCoordinates = {
             selectionStartRow: 1,
@@ -36,16 +39,16 @@ class App {
      * Main setup function to initialize all managers and event listeners
      */
     initialize() {
-        const CellsManagerObj = new CellsManager();
+        const CellsManagerObj = new CellsManager(this.cellData);
         // CellsManagerObj.manageCellUpdate(2, 2, "Hi");
         // CellsManagerObj.manageCellUpdate(2, 3, "50");
         // CellsManagerObj.manageCellUpdate(3, 5, "Zeus");
-        const JSONUploadObj = new JSONUpload();
         const undoRedoManager = new UndoRedoManager();
         const ScrollManagerObj = new ScrollManager();
-        const RowsManagerObj = new RowsManager(new Map(), 0, ScrollManagerObj.verticalNum, this.ifRowResizeOn, this.ifRowResizePointerDown, this.selectionCoordinates);
-        const ColumnsManagerObj = new ColumnsManager(new Map(), 0, ScrollManagerObj.horizontalNum, this.ifColumnResizeOn, this.ifColumnResizePointerDown, this.selectionCoordinates);
+        const RowsManagerObj = new RowsManager(this.rowData, 0, ScrollManagerObj.verticalNum, this.ifRowResizeOn, this.ifRowResizePointerDown, this.selectionCoordinates);
+        const ColumnsManagerObj = new ColumnsManager(this.columnData, 0, ScrollManagerObj.horizontalNum, this.ifColumnResizeOn, this.ifColumnResizePointerDown, this.selectionCoordinates);
         const TilesManagerObj = new TilesManager(RowsManagerObj.rowsPositionPrefixSumArr, ColumnsManagerObj.visibleColumnsPrefixSum, ScrollManagerObj.verticalNum, ScrollManagerObj.horizontalNum, this.selectionCoordinates, CellsManagerObj, undefined, undefined, RowsManagerObj.marginTop, ColumnsManagerObj.marginLeft);
+        const JSONUploadObj = new JSONUpload(this.cellData, TilesManagerObj, RowsManagerObj, ColumnsManagerObj);
         const ResizeManagerObj = new ResizeManager(RowsManagerObj, TilesManagerObj, ColumnsManagerObj, this.ifRowResizeOn, this.ifRowResizePointerDown, this.ifColumnResizeOn, this.ifColumnResizePointerDown);
         const CellSelectionManagerObj = new CellSelectionManager(RowsManagerObj, TilesManagerObj, ColumnsManagerObj, this.ifTileSelectionOn, this.ifRowSelectionOn, this.ifColumnSelectionOn, this.selectionCoordinates, CellsManagerObj, undoRedoManager, ResizeManagerObj, this.outerInput);
         ScrollManagerObj.initializeManager(ColumnsManagerObj, RowsManagerObj, TilesManagerObj);

@@ -10,6 +10,9 @@ import { MultipleSelectionCoordinates } from "./types/MultipleSelectionCoordinat
 import { CellsManager } from "./CellsManager.js";
 import { UndoRedoManager } from "./UndoRedoManager.js";
 import { JSONUpload } from "./JSONUpload.js";
+import { CellsMap } from "./types/CellsMap.js";
+import { ColumnData } from "./types/ColumnRows.js";
+import { RowData } from "./types/RowsColumn.js";
 
 /**
  * Main application class for initializing and managing the spreadsheet-like interface
@@ -41,6 +44,12 @@ class App {
 
     private outerInput:HTMLInputElement;
 
+    private cellData:CellsMap;
+
+    private columnData:ColumnData;
+
+    private rowData:RowData;
+
 
 
     /**
@@ -54,6 +63,9 @@ class App {
         this.ifTileSelectionOn = { value: false };
         this.ifRowSelectionOn = { value: false };
         this.ifColumnSelectionOn = { value: false };
+        this.cellData=new Map();
+        this.columnData=new Map();
+        this.rowData= new Map();
         this.outerInput=document.querySelector(".outerInputBar") as HTMLInputElement;
         
 
@@ -71,34 +83,33 @@ class App {
      * Main setup function to initialize all managers and event listeners
      */
     private initialize() {
-        const CellsManagerObj = new CellsManager();
+        const CellsManagerObj = new CellsManager(this.cellData);
         // CellsManagerObj.manageCellUpdate(2, 2, "Hi");
         // CellsManagerObj.manageCellUpdate(2, 3, "50");
         // CellsManagerObj.manageCellUpdate(3, 5, "Zeus");
-        const JSONUploadObj= new JSONUpload();
         
         const undoRedoManager= new UndoRedoManager();
-
+        
         const ScrollManagerObj = new ScrollManager();
-
+        
         const RowsManagerObj = new RowsManager(
-            new Map(),
+            this.rowData,
             0,
             ScrollManagerObj.verticalNum,
             this.ifRowResizeOn,
             this.ifRowResizePointerDown,
             this.selectionCoordinates
         );
-
+        
         const ColumnsManagerObj = new ColumnsManager(
-            new Map(),
+            this.columnData,
             0,
             ScrollManagerObj.horizontalNum,
             this.ifColumnResizeOn,
             this.ifColumnResizePointerDown,
             this.selectionCoordinates
         );
-
+        
         const TilesManagerObj = new TilesManager(
             RowsManagerObj.rowsPositionPrefixSumArr,
             ColumnsManagerObj.visibleColumnsPrefixSum,
@@ -111,6 +122,7 @@ class App {
             RowsManagerObj.marginTop,
             ColumnsManagerObj.marginLeft
         );
+        const JSONUploadObj= new JSONUpload(this.cellData,TilesManagerObj,RowsManagerObj,ColumnsManagerObj);
 
         const ResizeManagerObj = new ResizeManager(
             RowsManagerObj,

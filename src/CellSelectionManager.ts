@@ -164,7 +164,7 @@ export class CellSelectionManager {
             case "ArrowRight":
                 this.handleArrowRight(); return;
             case "Enter":
-                this.ifShiftDown.value ? this.handleArrowUp() : this.handleArrowDown();
+                this.ifShiftDown.value ? this.handleArrowUp(true) : this.handleArrowDown();
                 return;
             case "Shift":
                 this.ifShiftDown.value = true;
@@ -195,8 +195,8 @@ export class CellSelectionManager {
     
 
     /** Moves selection one row up */
-    private handleArrowUp() {
-        if(this.ifShiftDown.value){
+    private handleArrowUp(ifEnter:boolean=false) {
+        if(this.ifShiftDown.value && !ifEnter){
             this.selectionCoordinates.selectionEndRow=Math.max(1,this.selectionCoordinates.selectionEndRow-1);
         }else{
 
