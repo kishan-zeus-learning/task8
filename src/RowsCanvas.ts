@@ -1,5 +1,5 @@
-import { GlobalBoolean } from "./types/GlobalBoolean";
-import { GlobalNumber } from "./types/GlobalNumber";
+import { BooleanObj } from "./types/BooleanObj.js";
+import { NumberObj } from "./types/NumberObj.js";
 import { MultipleSelectionCoordinates } from "./types/MultipleSelectionCoordinates";
 import { RowData } from "./types/RowsColumn";
 
@@ -37,7 +37,7 @@ private rowHeights: RowData;
     private ifResizeOn: { value: boolean };
 
     /** Global shared variable storing the currently resizing row ID */
-    private currentResizingRow: GlobalNumber;
+    private currentResizingRow: NumberObj;
 
     /** Global flag indicating if the pointer is pressed during resize */
     private ifResizePointerDown: { value: boolean };
@@ -62,9 +62,9 @@ private rowHeights: RowData;
         rowHeights: RowData,
         defaultWidth: number,
         defaultHeight: number,
-        ifResizeOn: GlobalBoolean,
-        ifResizePointerDown: GlobalBoolean,
-        currentResizingRow: GlobalNumber,
+        ifResizeOn: BooleanObj,
+        ifResizePointerDown: BooleanObj,
+        currentResizingRow: NumberObj,
         selectionCoordinates:MultipleSelectionCoordinates
     ) {
         this.rowHeights = rowHeights;
@@ -97,12 +97,12 @@ private rowHeights: RowData;
             
             this.hoverIdx = this.binarySearchRange(event.offsetY);
             if (this.hoverIdx !== -1) {
-                (this.ifResizeOn as GlobalBoolean).value = true;
+                (this.ifResizeOn as BooleanObj).value = true;
                 this.resizeDiv.style.display = "block";
                 this.resizeDiv.style.top = `${this.rowsPositionArr[this.hoverIdx] - 1.5}px`;
                 this.resizeDiv.style.zIndex = `10`;
             } else {
-                if (!(this.ifResizePointerDown as GlobalBoolean).value) {
+                if (!(this.ifResizePointerDown as BooleanObj).value) {
                     if (this.resizeDiv) this.resizeDiv.style.display = "none";
                 }
                 this.ifResizeOn.value = false;
@@ -110,10 +110,10 @@ private rowHeights: RowData;
         });
 
         this.rowCanvasDiv.addEventListener("pointerout", (event) => {
-            if (!(this.ifResizePointerDown as GlobalBoolean).value) {
+            if (!(this.ifResizePointerDown as BooleanObj).value) {
                 if (this.resizeDiv) this.resizeDiv.style.display = "none";
             }
-            (this.ifResizeOn as GlobalBoolean).value = false;
+            (this.ifResizeOn as BooleanObj).value = false;
         });
     }
 
@@ -170,7 +170,6 @@ private rowHeights: RowData;
         this.setRowsPositionArr();
         this.drawCanvas();
 
-        // console.log(this.rowHeights);
     }
 
     /**

@@ -3,7 +3,7 @@ import { ColumnsManager } from "./ColumnsManager.js";
 import { RowsCanvas } from "./RowsCanvas.js";
 import { RowsManager } from "./RowsManager.js";
 import { TilesManager } from "./TilesManager.js";
-import { GlobalBoolean } from "./types/GlobalBoolean.js";
+// import { BooleanObj } from "./types/BooleanObj.js";
 
 /**
  * Manages scrolling behavior and coordinates updates to rows, columns, and tile data.
@@ -85,22 +85,7 @@ export class ScrollManager {
         let lastScrollLeft = this.sheetDiv.scrollLeft;
 
         this.sheetDiv.addEventListener("scroll", (event) => {
-        //     console.log("scroll event triggered", this.scrollByKeyboard);
-        //     if(this.scrollByKeyboard.value) {
-        //     // this.scrollByKeyboard.value=false;
-        //     this.sheetDiv.scrollTop=lastScrollTop;
-        //     this.sheetDiv.scrollLeft=lastScrollLeft;
-        //     setTimeout(()=>{
 
-        //         this.scrollByKeyboard.value=false;
-
-        //     },100)
-        //     return ;
-        // }
-
-        
-
-        console.log("crossed the return statement");
             const currentScrollTop = this.sheetDiv.scrollTop;
             const currentScrollLeft = this.sheetDiv.scrollLeft;
 
@@ -127,7 +112,6 @@ export class ScrollManager {
      * @param {Event} event - The scroll event.
      */
     private handleScrollDown(event: Event) {
-        console.log("scroll down executed " );
         const lastRow = this.rowsManager?.visibleRows[this.rowsManager.visibleRows.length - 1] as RowsCanvas;
         const bufferRect = lastRow.rowCanvasDiv.getBoundingClientRect();
 

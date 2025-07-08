@@ -8,10 +8,10 @@ export class ResizeManager {
      * @param {RowsManager} rowsManager - Manager handling row operations.
      * @param {TilesManager} tilesManager - Manager handling tile redraws.
      * @param {ColumnsManager} columnsManager - Manager handling column operations.
-     * @param {GlobalBoolean} ifRowResizeOn - Flag indicating if row resize is active.
-     * @param {GlobalBoolean} ifRowResizePointerDown - Flag indicating if row resize is in progress.
-     * @param {GlobalBoolean} ifColumnResizeOn - Flag indicating if column resize is active.
-     * @param {GlobalBoolean} ifColumnPointerDown - Flag indicating if column resize is in progress.
+     * @param {BooleanObj} ifRowResizeOn - Flag indicating if row resize is active.
+     * @param {BooleanObj} ifRowResizePointerDown - Flag indicating if row resize is in progress.
+     * @param {BooleanObj} ifColumnResizeOn - Flag indicating if column resize is active.
+     * @param {BooleanObj} ifColumnPointerDown - Flag indicating if column resize is in progress.
      */
     constructor(rowsManager, tilesManager, columnsManager, ifRowResizeOn, ifRowResizePointerDown, ifColumnResizeOn, ifColumnPointerDown) {
         this.rowsManager = rowsManager;
@@ -60,7 +60,7 @@ export class ResizeManager {
             return;
         // Resize row if active
         if (this.ifRowResizePointerDown.value) {
-            console.log(event.clientY);
+            // console.log(event.clientY);
             this.rowsManager.currentResizingRowCanvas.resizeRow(event.clientY);
         }
         // Resize column if active

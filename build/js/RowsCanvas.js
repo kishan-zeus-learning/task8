@@ -117,7 +117,6 @@ export class RowsCanvas {
         }
         this.setRowsPositionArr();
         this.drawCanvas();
-        // console.log(this.rowHeights);
     }
     /**
      * Finds the row index near the given vertical coordinate using binary search.

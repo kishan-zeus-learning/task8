@@ -1,7 +1,7 @@
 import { ColumnsManager } from "./ColumnsManager";
 import { RowsManager } from "./RowsManager";
 import { TilesManager } from "./TilesManager";
-import { GlobalBoolean } from "./types/GlobalBoolean";
+import { BooleanObj } from "./types/BooleanObj.js";
 
 /**
  * Manages resizing behavior for rows and columns.
@@ -16,17 +16,17 @@ export class ResizeManager {
     /** @type {ColumnsManager} Manages column operations and resizing */
     private columnsManager: ColumnsManager;
 
-    /** @type {GlobalBoolean} Indicates if row resize mode is active */
-     ifRowResizeOn: GlobalBoolean;
+    /** @type {BooleanObj} Indicates if row resize mode is active */
+     ifRowResizeOn: BooleanObj;
 
-    /** @type {GlobalBoolean} Indicates if a row is currently being resized (pointer down) */
-     ifRowResizePointerDown: GlobalBoolean;
+    /** @type {BooleanObj} Indicates if a row is currently being resized (pointer down) */
+     ifRowResizePointerDown: BooleanObj;
 
-    /** @type {GlobalBoolean} Indicates if column resize mode is active */
-    ifColumnResizeOn: GlobalBoolean;
+    /** @type {BooleanObj} Indicates if column resize mode is active */
+    ifColumnResizeOn: BooleanObj;
 
-    /** @type {GlobalBoolean} Indicates if a column is currently being resized (pointer down) */
-    ifColumnResizePointerDown: GlobalBoolean;
+    /** @type {BooleanObj} Indicates if a column is currently being resized (pointer down) */
+    ifColumnResizePointerDown: BooleanObj;
 
     /**
      * Initializes the ResizeManager with references to all required managers and global flags.
@@ -34,19 +34,19 @@ export class ResizeManager {
      * @param {RowsManager} rowsManager - Manager handling row operations.
      * @param {TilesManager} tilesManager - Manager handling tile redraws.
      * @param {ColumnsManager} columnsManager - Manager handling column operations.
-     * @param {GlobalBoolean} ifRowResizeOn - Flag indicating if row resize is active.
-     * @param {GlobalBoolean} ifRowResizePointerDown - Flag indicating if row resize is in progress.
-     * @param {GlobalBoolean} ifColumnResizeOn - Flag indicating if column resize is active.
-     * @param {GlobalBoolean} ifColumnPointerDown - Flag indicating if column resize is in progress.
+     * @param {BooleanObj} ifRowResizeOn - Flag indicating if row resize is active.
+     * @param {BooleanObj} ifRowResizePointerDown - Flag indicating if row resize is in progress.
+     * @param {BooleanObj} ifColumnResizeOn - Flag indicating if column resize is active.
+     * @param {BooleanObj} ifColumnPointerDown - Flag indicating if column resize is in progress.
      */
     constructor(
         rowsManager: RowsManager,
         tilesManager: TilesManager,
         columnsManager: ColumnsManager,
-        ifRowResizeOn: GlobalBoolean,
-        ifRowResizePointerDown: GlobalBoolean,
-        ifColumnResizeOn: GlobalBoolean,
-        ifColumnPointerDown: GlobalBoolean
+        ifRowResizeOn: BooleanObj,
+        ifRowResizePointerDown: BooleanObj,
+        ifColumnResizeOn: BooleanObj,
+        ifColumnPointerDown: BooleanObj
     ) {
         this.rowsManager = rowsManager;
         this.tilesManager = tilesManager;
@@ -101,7 +101,7 @@ export class ResizeManager {
 
         // Resize row if active
         if (this.ifRowResizePointerDown.value) {
-            console.log(event.clientY);
+            // console.log(event.clientY);
             this.rowsManager.currentResizingRowCanvas.resizeRow(event.clientY);
         }
 

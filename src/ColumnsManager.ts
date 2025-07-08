@@ -1,7 +1,7 @@
 import { ColumnsCanvas } from "./ColumnsCanvas.js";
 import { ColumnData } from "./types/ColumnRows.js";
-import { GlobalBoolean } from "./types/GlobalBoolean.js";
-import { GlobalNumber } from "./types/GlobalNumber.js";
+import { BooleanObj } from "./types/BooleanObj.js";
+import { NumberObj } from "./types/NumberObj.js";
 import { MultipleSelectionCoordinates } from "./types/MultipleSelectionCoordinates.js";
 
 /**
@@ -25,7 +25,7 @@ export class ColumnsManager {
     readonly visibleColumns: ColumnsCanvas[];
 
     /** Shared global number used to track the left margin of the columns container */
-    readonly marginLeft: GlobalNumber;
+    readonly marginLeft: NumberObj;
 
     /** HTML container where column canvas divs are mounted */
     readonly columnsDivContainer: HTMLDivElement;
@@ -40,13 +40,13 @@ export class ColumnsManager {
     private columnCanvasLimit: number;
 
     /** Global flag used to show/hide the resize line on hover */
-    private _ifResizeOn: GlobalBoolean;
+    private _ifResizeOn: BooleanObj;
 
     /** Global flag indicating if pointer is down during a resize operation */
-    private _ifResizePointerDown: GlobalBoolean;
+    private _ifResizePointerDown: BooleanObj;
 
     /** Global number tracking the currently resizing column group index */
-    private currentResizingColumn: GlobalNumber;
+    private currentResizingColumn: NumberObj;
 
     /** Shared selection coordinates for column highlighting */
     private selectionCoordinates: MultipleSelectionCoordinates;
@@ -55,13 +55,13 @@ export class ColumnsManager {
         columnWidths: ColumnData,
         startColumnIdx: number,
         visibleColumnCnt: number,
-        ifResizeOn: GlobalBoolean,
-        ifResizePointerDown: GlobalBoolean,
+        ifResizeOn: BooleanObj,
+        ifResizePointerDown: BooleanObj,
         selectionCoordinates: MultipleSelectionCoordinates,
         columnCanvasLimit: number = 40,
         defaultHeight: number = 25,
         defaultWidth: number = 100,
-        marginLeft: GlobalNumber = { value: 0 }
+        marginLeft: NumberObj = { value: 0 }
     ) {
         this.columnWidths = columnWidths;
         this._ifResizeOn = ifResizeOn;

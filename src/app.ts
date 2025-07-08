@@ -4,7 +4,7 @@ import { RowsManager } from "./RowsManager.js";
 import { ColumnsManager } from "./ColumnsManager.js";
 import { TilesManager } from "./TilesManager.js";
 import { ResizeManager } from "./ResizeManager.js";
-import { GlobalBoolean } from "./types/GlobalBoolean.js";
+import { BooleanObj } from "./types/BooleanObj.js";
 import { CellSelectionManager } from "./CellSelectionManager.js";
 import { MultipleSelectionCoordinates } from "./types/MultipleSelectionCoordinates.js";
 import { CellsManager } from "./CellsManager.js";
@@ -18,26 +18,26 @@ import { RowData } from "./types/RowsColumn.js";
  * Main application class for initializing and managing the spreadsheet-like interface
  */
 class App {
-    /**@type {GlobalBoolean} Indicates if row resizing is active */
-    private ifRowResizeOn: GlobalBoolean;
+    /**@type {BooleanObj} Indicates if row resizing is active */
+    private ifRowResizeOn: BooleanObj;
 
-    /**@type {GlobalBoolean} Indicates if row resize pointer is held down */
-    private ifRowResizePointerDown: GlobalBoolean;
+    /**@type {BooleanObj} Indicates if row resize pointer is held down */
+    private ifRowResizePointerDown: BooleanObj;
 
-    /**@type {GlobalBoolean} Indicates if column resizing is active */
-    private ifColumnResizeOn: GlobalBoolean;
+    /**@type {BooleanObj} Indicates if column resizing is active */
+    private ifColumnResizeOn: BooleanObj;
 
-    /**@type {GlobalBoolean} Indicates if column resize pointer is held down */
-    private ifColumnResizePointerDown: GlobalBoolean;
+    /**@type {BooleanObj} Indicates if column resize pointer is held down */
+    private ifColumnResizePointerDown: BooleanObj;
 
-    /**@type {GlobalBoolean} Indicates if tile (cell) selection is active */
-    private ifTileSelectionOn: GlobalBoolean;
+    /**@type {BooleanObj} Indicates if tile (cell) selection is active */
+    private ifTileSelectionOn: BooleanObj;
 
-    /**@type {GlobalBoolean} Indicates if row selection is active */
-    private ifRowSelectionOn: GlobalBoolean;
+    /**@type {BooleanObj} Indicates if row selection is active */
+    private ifRowSelectionOn: BooleanObj;
 
-    /**@type {GlobalBoolean} Indicates if column selection is active */
-    private ifColumnSelectionOn: GlobalBoolean;
+    /**@type {BooleanObj} Indicates if column selection is active */
+    private ifColumnSelectionOn: BooleanObj;
 
     /**@type {MultipleSelectionCoordinates} Stores the selection start and end coordinates */
     private selectionCoordinates: MultipleSelectionCoordinates;

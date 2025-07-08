@@ -1,7 +1,7 @@
 // Imports remain unchanged
 import { ColumnData } from "./types/ColumnRows";
-import { GlobalBoolean } from "./types/GlobalBoolean";
-import { GlobalNumber } from "./types/GlobalNumber";
+import { BooleanObj } from "./types/BooleanObj.js";
+import { NumberObj } from "./types/NumberObj";
 import { MultipleSelectionCoordinates } from "./types/MultipleSelectionCoordinates";
 
 export class ColumnsCanvas {
@@ -13,9 +13,9 @@ export class ColumnsCanvas {
     private defaultWidth: number;
     private defaultHeight: number;
     private resizeDiv: HTMLDivElement = document.createElement("div");
-    private ifResizeOn: GlobalBoolean;
-    private currentResizingColumn: GlobalNumber;
-    private ifResizePointerDown: GlobalBoolean;
+    private ifResizeOn: BooleanObj;
+    private currentResizingColumn: NumberObj;
+    private ifResizePointerDown: BooleanObj;
     private hoverIdx: number = -1;
     private selectionCoordinates: MultipleSelectionCoordinates;
 
@@ -24,9 +24,9 @@ export class ColumnsCanvas {
         columnWidths: ColumnData,
         defaultWidth: number,
         defaultHeight: number,
-        ifResizeOn: GlobalBoolean,
-        ifResizePointerDown: GlobalBoolean,
-        currentResizingColumn: GlobalNumber,
+        ifResizeOn: BooleanObj,
+        ifResizePointerDown: BooleanObj,
+        currentResizingColumn: NumberObj,
         selectionCoordinates: MultipleSelectionCoordinates
     ) {
         this.columnWidths = columnWidths;

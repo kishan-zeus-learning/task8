@@ -1,7 +1,7 @@
 import { RowData } from "./types/RowsColumn.js";
 import { RowsCanvas } from "./RowsCanvas.js";
-import { GlobalBoolean } from "./types/GlobalBoolean.js";
-import { GlobalNumber } from "./types/GlobalNumber.js";
+import { BooleanObj } from "./types/BooleanObj.js";
+import { NumberObj } from "./types/NumberObj.js";
 import { MultipleSelectionCoordinates } from "./types/MultipleSelectionCoordinates.js";
 
 /**
@@ -25,7 +25,7 @@ export class RowsManager {
     readonly visibleRows: RowsCanvas[];
 
     /** Global shared variable representing vertical scroll offset in pixels */
-    readonly marginTop: GlobalNumber;
+    readonly marginTop: NumberObj;
 
     /** DOM references to currently visible row block divs */
     private rowsDivArr: HTMLDivElement[];
@@ -43,13 +43,13 @@ export class RowsManager {
     private rowCanvasLimit: number;
 
     /** Shared boolean flag for showing resize indicator line */
-    private _ifResizeOn: GlobalBoolean;
+    private _ifResizeOn: BooleanObj;
 
     /** Shared boolean flag to track if pointer is down during resize */
-    private _ifResizePointerDown: GlobalBoolean;
+    private _ifResizePointerDown: BooleanObj;
 
     /** Currently active resizing row block index */
-    private currentResizingRow: GlobalNumber;
+    private currentResizingRow: NumberObj;
 
     private  selectionCoordinates:MultipleSelectionCoordinates;
 
@@ -69,13 +69,13 @@ export class RowsManager {
         rowHeights: RowData,
         startRowIdx: number,
         visibleRowCnt: number,
-        ifResizeOn: GlobalBoolean,
-        ifResizePointerDown: GlobalBoolean,
+        ifResizeOn: BooleanObj,
+        ifResizePointerDown: BooleanObj,
         selectionCoordinates:MultipleSelectionCoordinates,
         rowCanvasLimit: number = 40000,
         defaultHeight: number = 25,
         defaultWidth: number = 50,
-        marginTop: GlobalNumber = { value: 0 }
+        marginTop: NumberObj = { value: 0 }
     ) {
         this.rowHeights = rowHeights;
         this._ifResizeOn = ifResizeOn;

@@ -8,9 +8,9 @@ export class CellSelectionManager {
      * @param {RowsManager} rowsManager
      * @param {TilesManager} tilesManager
      * @param {ColumnsManager} columnsManager
-     * @param {GlobalBoolean} ifTilesSelectionOn
-     * @param {GlobalBoolean} ifRowsSelectionOn
-     * @param {GlobalBoolean} ifColumnSelectionOn
+     * @param {BooleanObj} ifTilesSelectionOn
+     * @param {BooleanObj} ifRowsSelectionOn
+     * @param {BooleanObj} ifColumnSelectionOn
      * @param {MultipleSelectionCoordinates} selectionCoordinates
      * @param {CellsManager} cellsManager
      */
@@ -25,11 +25,11 @@ export class CellSelectionManager {
         this.maxDistance = 100;
         /** @type {number} Max auto-scroll speed */
         this.maxSpeed = 10;
-        /** @type {GlobalBoolean} Tracks focus state of input */
+        /** @type {BooleanObj} Tracks focus state of input */
         this.inputFocus = { value: false };
         /** @type {HTMLInputElement | null} Editable input box for cell editing */
         this.inputDiv = null;
-        /** @type {GlobalBoolean} Whether Shift key is currently pressed */
+        /** @type {BooleanObj} Whether Shift key is currently pressed */
         this.ifShiftDown = { value: false };
         this.ifCtrlDown = { value: false };
         /** @type {HTMLDivElement} The main sheet container element */
@@ -38,7 +38,6 @@ export class CellSelectionManager {
         this.outerInputFocus = false;
         this.undoRedoManager = undoRedoManager;
         this.outerInput = outerInput;
-        console.log("from constructor", this.outerInput);
         this.cellsManager = cellsManager;
         this.ifTileSelectionOn = ifTilesSelectionOn;
         this.ifRowSelectionOn = ifRowsSelectionOn;
@@ -75,11 +74,8 @@ export class CellSelectionManager {
      * @param {KeyboardEvent} event
      */
     handleKeyDown(event) {
-        console.log(this.outerInputFocus);
-        console.log("hello ji");
         if (this.outerInputFocus)
             return;
-        console.log("hello world");
         const arrowKeys = ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"];
         if (arrowKeys.includes(event.key)) {
             event.preventDefault();
@@ -143,11 +139,7 @@ export class CellSelectionManager {
         if (this.inputDiv) {
             const containerRect = this.sheetDiv.getBoundingClientRect();
             const inputRect = (this.inputDiv).getBoundingClientRect();
-            // console.log("inputRect: ",inputRect);
-            // console.log("containerRect: ",containerRect);
             if (containerRect.top - inputRect.top >= 0) {
-                // console.log("inside container rect : ");
-                // console.log(containerRect.top+25 - inputRect.top);
                 this.sheetDiv.scrollBy(0, inputRect.top - containerRect.top - 25);
             }
             if (inputRect.bottom - containerRect.bottom >= 0) {
@@ -208,15 +200,13 @@ export class CellSelectionManager {
      * @param {MouseEvent} event
      */
     handleWindowClick(event) {
-        console.log("clicked : ", event.target);
-        console.log(this.outerInput);
+        // console.log("clicked : ",event.target);
         if (event.target === this.outerInput) {
             this.outerInputFocus = true;
         }
         else {
             this.outerInputFocus = false;
         }
-        console.log("outerInputFocus", this.outerInputFocus);
         if (!this.inputDiv || event.target === this.inputDiv)
             return;
         this.saveInput();
@@ -403,7 +393,6 @@ export class CellSelectionManager {
             }
         }
         if (this.ifRowSelectionOn.value) {
-            console.log("inside if statement selection on for row resizing");
             const canvasX = this.rowsManager.defaultWidth / 2;
             const canvasY = Math.min(rect.bottom - 18, Math.max(this.coordinateY, this.columnsManager.defaultHeight + 1 + rect.top));
             const endRow = this.getRow(document.elementFromPoint(canvasX, canvasY), canvasX, canvasY);
@@ -461,7 +450,6 @@ export class CellSelectionManager {
         this.ifTileSelectionOn.value = false;
         this.ifRowSelectionOn.value = false;
         this.ifColumnSelectionOn.value = false;
-        console.log("selection coordinates : ", this.selectionCoordinates);
     }
     /**
      * Forces re-render of tiles, rows, and columns

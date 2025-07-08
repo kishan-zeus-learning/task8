@@ -1,7 +1,7 @@
 import { RowsManager } from "./RowsManager";
 import { TilesManager } from "./TilesManager";
 import { ColumnsManager } from "./ColumnsManager";
-import { GlobalBoolean } from "./types/GlobalBoolean";
+import { BooleanObj } from "./types/BooleanObj.js";
 import { MultipleSelectionCoordinates } from "./types/MultipleSelectionCoordinates";
 import { CellsManager } from "./CellsManager";
 import { UndoRedoManager } from "./UndoRedoManager";
@@ -22,14 +22,14 @@ export class CellSelectionManager {
     /** @type {number | null} Stores requestAnimationFrame ID for auto-scrolling */
     scrollId: number | null = null;
 
-    /** @type {GlobalBoolean} Controls tile selection activity */
-    ifTileSelectionOn: GlobalBoolean;
+    /** @type {BooleanObj} Controls tile selection activity */
+    ifTileSelectionOn: BooleanObj;
 
-    /** @type {GlobalBoolean} Controls row selection activity */
-    ifRowSelectionOn: GlobalBoolean;
+    /** @type {BooleanObj} Controls row selection activity */
+    ifRowSelectionOn: BooleanObj;
 
-    /** @type {GlobalBoolean} Controls column selection activity */
-    ifColumnSelectionOn: GlobalBoolean;
+    /** @type {BooleanObj} Controls column selection activity */
+    ifColumnSelectionOn: BooleanObj;
 
     /** @type {number} Max distance used to calculate auto-scroll speed */
     readonly maxDistance: number = 100;
@@ -52,16 +52,16 @@ export class CellSelectionManager {
     /** @type {CellsManager} Manages cell data and updates */
     private cellsManager: CellsManager;
 
-    /** @type {GlobalBoolean} Tracks focus state of input */
-    private inputFocus: GlobalBoolean = { value: false };
+    /** @type {BooleanObj} Tracks focus state of input */
+    private inputFocus: BooleanObj = { value: false };
 
     /** @type {HTMLInputElement | null} Editable input box for cell editing */
     private inputDiv: HTMLInputElement | null = null;
 
-    /** @type {GlobalBoolean} Whether Shift key is currently pressed */
-    private ifShiftDown: GlobalBoolean = { value: false };
+    /** @type {BooleanObj} Whether Shift key is currently pressed */
+    private ifShiftDown: BooleanObj = { value: false };
 
-    private ifCtrlDown: GlobalBoolean = {value:false};
+    private ifCtrlDown: BooleanObj = {value:false};
 
     /** @type {HTMLDivElement} The main sheet container element */
     private sheetDiv = document.getElementById('sheet') as HTMLDivElement;
@@ -83,9 +83,9 @@ export class CellSelectionManager {
      * @param {RowsManager} rowsManager 
      * @param {TilesManager} tilesManager 
      * @param {ColumnsManager} columnsManager 
-     * @param {GlobalBoolean} ifTilesSelectionOn 
-     * @param {GlobalBoolean} ifRowsSelectionOn 
-     * @param {GlobalBoolean} ifColumnSelectionOn 
+     * @param {BooleanObj} ifTilesSelectionOn 
+     * @param {BooleanObj} ifRowsSelectionOn 
+     * @param {BooleanObj} ifColumnSelectionOn 
      * @param {MultipleSelectionCoordinates} selectionCoordinates 
      * @param {CellsManager} cellsManager 
      */
@@ -93,9 +93,9 @@ export class CellSelectionManager {
         rowsManager: RowsManager,
         tilesManager: TilesManager,
         columnsManager: ColumnsManager,
-        ifTilesSelectionOn: GlobalBoolean,
-        ifRowsSelectionOn: GlobalBoolean,
-        ifColumnSelectionOn: GlobalBoolean,
+        ifTilesSelectionOn: BooleanObj,
+        ifRowsSelectionOn: BooleanObj,
+        ifColumnSelectionOn: BooleanObj,
         selectionCoordinates: MultipleSelectionCoordinates,
         cellsManager: CellsManager,
         undoRedoManager:UndoRedoManager,
@@ -105,7 +105,6 @@ export class CellSelectionManager {
     ) {
         this.undoRedoManager=undoRedoManager;
         this.outerInput=outerInput;
-        console.log("from constructor",this.outerInput);
         this.cellsManager = cellsManager;
         this.ifTileSelectionOn = ifTilesSelectionOn;
         this.ifRowSelectionOn = ifRowsSelectionOn;
@@ -143,10 +142,8 @@ export class CellSelectionManager {
      * @param {KeyboardEvent} event 
      */
     handleKeyDown(event: KeyboardEvent) {
-        console.log(this.outerInputFocus);
-        console.log("hello ji");
+
         if(this.outerInputFocus) return ;
-        console.log("hello world");
          const arrowKeys = ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"];
 
         if (arrowKeys.includes(event.key)) {
@@ -214,11 +211,7 @@ export class CellSelectionManager {
         if(this.inputDiv){
             const containerRect=this.sheetDiv.getBoundingClientRect();
             const inputRect=(this.inputDiv).getBoundingClientRect();
-            // console.log("inputRect: ",inputRect);
-            // console.log("containerRect: ",containerRect);
             if(containerRect.top - inputRect.top>=0){
-                // console.log("inside container rect : ");
-                // console.log(containerRect.top+25 - inputRect.top);
                 this.sheetDiv.scrollBy(0,inputRect.top - containerRect.top-25);
             }
 
@@ -286,14 +279,12 @@ export class CellSelectionManager {
      * @param {MouseEvent} event 
      */
     handleWindowClick(event: MouseEvent) {
-        console.log("clicked : ",event.target);
-        console.log(this.outerInput);
+        // console.log("clicked : ",event.target);
         if(event.target===this.outerInput){
             this.outerInputFocus=true;
         }else{
             this.outerInputFocus=false;
         }
-        console.log("outerInputFocus",this.outerInputFocus);
         if (!this.inputDiv || event.target === this.inputDiv) return;
         this.saveInput();
         this.rerender();
@@ -502,7 +493,6 @@ export class CellSelectionManager {
         }
 
         if (this.ifRowSelectionOn.value) {
-            console.log("inside if statement selection on for row resizing");
             const canvasX = this.rowsManager.defaultWidth / 2;
             const canvasY = Math.min(rect.bottom - 18, Math.max(this.coordinateY, this.columnsManager.defaultHeight + 1 + rect.top));
             const endRow = this.getRow(document.elementFromPoint(canvasX, canvasY) as HTMLElement, canvasX, canvasY);
@@ -564,7 +554,6 @@ export class CellSelectionManager {
         this.ifTileSelectionOn.value = false;
         this.ifRowSelectionOn.value = false;
         this.ifColumnSelectionOn.value = false;
-        console.log("selection coordinates : ", this.selectionCoordinates);
     }
 
     /**
