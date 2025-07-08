@@ -31,13 +31,13 @@ export class RowsManager {
     private rowsDivArr: HTMLDivElement[];
 
     /** Container element that holds all the visible row divs */
-    public rowsDivContainer: HTMLDivElement;
+    readonly rowsDivContainer: HTMLDivElement;
 
     /** Default height for a single row */
-    public defaultHeight: number;
+    readonly defaultHeight: number;
 
     /** Default width for a single row */
-    public defaultWidth: number;
+    readonly defaultWidth: number;
 
     /** Maximum row canvas blocks (hard limit for scrolling) */
     private rowCanvasLimit: number;

@@ -13,7 +13,7 @@ private rowHeights: RowData;
 
 
     /** Prefix sum of each row's vertical position */
-    public rowsPositionArr: number[];
+    readonly rowsPositionArr: number[];
 
     /** Row block ID (each block represents 25 rows) */
     readonly rowID: number;
@@ -22,7 +22,7 @@ private rowHeights: RowData;
     readonly rowCanvasDiv: HTMLDivElement;
 
     /** The canvas element used to render rows */
-    public rowCanvas: HTMLCanvasElement = document.createElement("canvas");
+    readonly rowCanvas: HTMLCanvasElement = document.createElement("canvas");
 
     /** Default width of each row (in pixels) */
     private defaultWidth: number;
@@ -121,7 +121,7 @@ private rowHeights: RowData;
      * Resizes a specific row when dragged, clamps height, and redraws.
      * @param newPosition The new Y position of the mouse
      */
-    public resizeRow(newPosition: number) {
+    resizeRow(newPosition: number) {
         newPosition = newPosition - this.rowCanvasDiv.getBoundingClientRect().top;
         let newHeight=25;
         if(isNaN(newHeight)){

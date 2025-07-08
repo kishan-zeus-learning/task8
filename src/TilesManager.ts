@@ -4,7 +4,7 @@ import { MultipleSelectionCoordinates } from "./types/MultipleSelectionCoordinat
 
 export class TilesManager {
     // 2D array of currently visible tiles
-    public visibleTiles: Tile[][];
+    readonly visibleTiles: Tile[][];
 
     // Array of row container divs for visible tile rows
     private visibleTilesRowDivArr: HTMLDivElement[];

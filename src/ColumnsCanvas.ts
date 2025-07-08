@@ -6,10 +6,10 @@ import { MultipleSelectionCoordinates } from "./types/MultipleSelectionCoordinat
 
 export class ColumnsCanvas {
     private columnWidths: ColumnData;
-    public columnsPositionArr: number[];
+    readonly columnsPositionArr: number[];
     readonly columnID: number;
     readonly columnCanvasDiv: HTMLDivElement;
-    public columnCanvas: HTMLCanvasElement = document.createElement("canvas");
+    private columnCanvas: HTMLCanvasElement = document.createElement("canvas");
     private defaultWidth: number;
     private defaultHeight: number;
     private resizeDiv: HTMLDivElement = document.createElement("div");
@@ -78,7 +78,7 @@ export class ColumnsCanvas {
         });
     }
 
-    public resizeColumn(newPosition: number) {
+    resizeColumn(newPosition: number) {
         newPosition = newPosition - this.columnCanvasDiv.getBoundingClientRect().left;
 
         let newWidth;
