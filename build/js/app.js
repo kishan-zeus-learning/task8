@@ -33,112 +33,84 @@ class App {
             selectionStartColumn: 1,
             selectionEndColumn: 1
         };
+        this.CellsManagerObj = new CellsManager(this.cellData);
+        // CellsManagerObj.manageCellUpdate(2, 2, "Hi");
+        // CellsManagerObj.manageCellUpdate(2, 3, "50");
+        // CellsManagerObj.manageCellUpdate(3, 5, "Zeus");
+        this.undoRedoManager = new UndoRedoManager();
+        this.ScrollManagerObj = new ScrollManager();
+        this.RowsManagerObj = new RowsManager(this.rowData, 0, this.ScrollManagerObj.verticalNum, this.ifRowResizeOn, this.ifRowResizePointerDown, this.selectionCoordinates, this.undoRedoManager);
+        this.ColumnsManagerObj = new ColumnsManager(this.columnData, 0, this.ScrollManagerObj.horizontalNum, this.ifColumnResizeOn, this.ifColumnResizePointerDown, this.selectionCoordinates);
+        this.TilesManagerObj = new TilesManager(this.RowsManagerObj.rowsPositionPrefixSumArr, this.ColumnsManagerObj.visibleColumnsPrefixSum, this.ScrollManagerObj.verticalNum, this.ScrollManagerObj.horizontalNum, this.selectionCoordinates, this.CellsManagerObj, undefined, undefined, this.RowsManagerObj.marginTop, this.ColumnsManagerObj.marginLeft);
+        this.JSONUploadObj = new JSONUpload(this.cellData, this.TilesManagerObj, this.RowsManagerObj, this.ColumnsManagerObj);
+        this.ResizeManagerObj = new ResizeManager(this.RowsManagerObj, this.TilesManagerObj, this.ColumnsManagerObj, this.ifRowResizeOn, this.ifRowResizePointerDown, this.ifColumnResizeOn, this.ifColumnResizePointerDown, this.undoRedoManager);
+        this.CellSelectionManagerObj = new CellSelectionManager(this.RowsManagerObj, this.TilesManagerObj, this.ColumnsManagerObj, this.ifTileSelectionOn, this.ifRowSelectionOn, this.ifColumnSelectionOn, this.selectionCoordinates, this.CellsManagerObj, this.undoRedoManager, this.ResizeManagerObj, this.outerInput);
+        this.ScrollManagerObj.initializeManager(this.ColumnsManagerObj, this.RowsManagerObj, this.TilesManagerObj);
         this.initialize();
     }
     /**
      * Main setup function to initialize all managers and event listeners
      */
     initialize() {
-        const CellsManagerObj = new CellsManager(this.cellData);
-        // CellsManagerObj.manageCellUpdate(2, 2, "Hi");
-        // CellsManagerObj.manageCellUpdate(2, 3, "50");
-        // CellsManagerObj.manageCellUpdate(3, 5, "Zeus");
-        const undoRedoManager = new UndoRedoManager();
-        const ScrollManagerObj = new ScrollManager();
-        const RowsManagerObj = new RowsManager(this.rowData, 0, ScrollManagerObj.verticalNum, this.ifRowResizeOn, this.ifRowResizePointerDown, this.selectionCoordinates);
-        const ColumnsManagerObj = new ColumnsManager(this.columnData, 0, ScrollManagerObj.horizontalNum, this.ifColumnResizeOn, this.ifColumnResizePointerDown, this.selectionCoordinates);
-        const TilesManagerObj = new TilesManager(RowsManagerObj.rowsPositionPrefixSumArr, ColumnsManagerObj.visibleColumnsPrefixSum, ScrollManagerObj.verticalNum, ScrollManagerObj.horizontalNum, this.selectionCoordinates, CellsManagerObj, undefined, undefined, RowsManagerObj.marginTop, ColumnsManagerObj.marginLeft);
-        const JSONUploadObj = new JSONUpload(this.cellData, TilesManagerObj, RowsManagerObj, ColumnsManagerObj);
-        const ResizeManagerObj = new ResizeManager(RowsManagerObj, TilesManagerObj, ColumnsManagerObj, this.ifRowResizeOn, this.ifRowResizePointerDown, this.ifColumnResizeOn, this.ifColumnResizePointerDown);
-        const CellSelectionManagerObj = new CellSelectionManager(RowsManagerObj, TilesManagerObj, ColumnsManagerObj, this.ifTileSelectionOn, this.ifRowSelectionOn, this.ifColumnSelectionOn, this.selectionCoordinates, CellsManagerObj, undoRedoManager, ResizeManagerObj, this.outerInput);
-        ScrollManagerObj.initializeManager(ColumnsManagerObj, RowsManagerObj, TilesManagerObj);
         // Keyboard and click events
         window.addEventListener("keydown", (event) => {
-            CellSelectionManagerObj.handleKeyDown(event);
+            this.CellSelectionManagerObj.handleKeyDown(event);
         });
         window.addEventListener("keyup", (event) => {
-            CellSelectionManagerObj.handleKeyUp(event);
+            this.CellSelectionManagerObj.handleKeyUp(event);
         });
         window.addEventListener("click", (event) => {
-            CellSelectionManagerObj.handleWindowClick(event);
+            this.CellSelectionManagerObj.handleWindowClick(event);
         });
         // Pointer up event
         window.addEventListener("pointerup", (event) => {
-            ResizeManagerObj.pointerUpEventHandler(event);
-            CellSelectionManagerObj.pointerUp(event);
-            switch (true) {
-                case this.ifRowResizePointerDown.value:
-                    document.body.style.cursor = "ns-resize";
-                    break;
-                case this.ifColumnResizePointerDown.value:
-                    document.body.style.cursor = "ew-resize";
-                    break;
-                case this.ifRowSelectionOn.value:
-                    document.body.style.cursor = "url('./img/ArrowRight.png'), auto";
-                    break;
-                case this.ifColumnSelectionOn.value:
-                    document.body.style.cursor = "url('./img/ArrowDown.png'), auto";
-                    break;
-                case this.ifRowResizeOn.value:
-                    document.body.style.cursor = "ns-resize";
-                    break;
-                case this.ifColumnResizeOn.value:
-                    document.body.style.cursor = "ew-resize";
-                    break;
-                case this.ifRowHover(event, RowsManagerObj):
-                    document.body.style.cursor = "url('./img/ArrowRight.png'), auto";
-                    break;
-                case this.ifColumnHover(event, ColumnsManagerObj):
-                    document.body.style.cursor = "url('./img/ArrowDown.png'), auto";
-                    break;
-                case this.ifTileHover(event, TilesManagerObj):
-                    document.body.style.cursor = "cell";
-                    break;
-                default:
-                    document.body.style.cursor = "default";
-                    break;
-            }
+            this.ResizeManagerObj.pointerUpEventHandler(event);
+            this.CellSelectionManagerObj.pointerUp(event);
+            this.cursorType(event);
         });
         // Pointer move event
         window.addEventListener("pointermove", (event) => {
-            ResizeManagerObj.pointerMove(event);
-            CellSelectionManagerObj.pointerMove(event);
-            switch (true) {
-                case this.ifRowResizePointerDown.value:
-                    document.body.style.cursor = "ns-resize";
-                    break;
-                case this.ifColumnResizePointerDown.value:
-                    document.body.style.cursor = "ew-resize";
-                    break;
-                case this.ifRowSelectionOn.value:
-                    document.body.style.cursor = "url('./img/ArrowRight.png'), auto";
-                    break;
-                case this.ifColumnSelectionOn.value:
-                    document.body.style.cursor = "url('./img/ArrowDown.png'), auto";
-                    break;
-                case this.ifTileSelectionOn.value:
-                    document.body.style.cursor = "cell";
-                    break;
-                case this.ifRowResizeOn.value:
-                    document.body.style.cursor = "ns-resize";
-                    break;
-                case this.ifColumnResizeOn.value:
-                    document.body.style.cursor = "ew-resize";
-                    break;
-                case this.ifRowHover(event, RowsManagerObj):
-                    document.body.style.cursor = "url('./img/ArrowRight.png'), auto";
-                    break;
-                case this.ifColumnHover(event, ColumnsManagerObj):
-                    document.body.style.cursor = "url('./img/ArrowDown.png'), auto";
-                    break;
-                case this.ifTileHover(event, TilesManagerObj):
-                    document.body.style.cursor = "cell";
-                    break;
-                default:
-                    document.body.style.cursor = "default";
-                    break;
-            }
+            this.ResizeManagerObj.pointerMove(event);
+            this.CellSelectionManagerObj.pointerMove(event);
+            this.cursorType(event);
         });
+    }
+    cursorType(event) {
+        switch (true) {
+            case this.ifRowResizePointerDown.value:
+                document.body.style.cursor = "ns-resize";
+                break;
+            case this.ifColumnResizePointerDown.value:
+                document.body.style.cursor = "ew-resize";
+                break;
+            case this.ifRowSelectionOn.value:
+                document.body.style.cursor = "url('./img/ArrowRight.png'), auto";
+                break;
+            case this.ifColumnSelectionOn.value:
+                document.body.style.cursor = "url('./img/ArrowDown.png'), auto";
+                break;
+            case this.ifTileSelectionOn.value:
+                document.body.style.cursor = "cell";
+                break;
+            case this.ifRowResizeOn.value:
+                document.body.style.cursor = "ns-resize";
+                break;
+            case this.ifColumnResizeOn.value:
+                document.body.style.cursor = "ew-resize";
+                break;
+            case this.ifRowHover(event, this.RowsManagerObj):
+                document.body.style.cursor = "url('./img/ArrowRight.png'), auto";
+                break;
+            case this.ifColumnHover(event, this.ColumnsManagerObj):
+                document.body.style.cursor = "url('./img/ArrowDown.png'), auto";
+                break;
+            case this.ifTileHover(event, this.TilesManagerObj):
+                document.body.style.cursor = "cell";
+                break;
+            default:
+                document.body.style.cursor = "default";
+                break;
+        }
     }
     /**
      * Checks whether the pointer is currently hovering over a tile (cell area)

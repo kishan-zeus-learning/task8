@@ -476,8 +476,8 @@ export class CellSelectionManager {
 
         if (this.coordinateX > rect.right - 30) {
             dx = this.calculateSpeed(this.coordinateX - rect.right + 30);
-        } else if (this.coordinateX < rect.left) {
-            dx = -this.calculateSpeed(rect.left - this.coordinateX);
+        } else if (this.coordinateX < rect.left+50) {
+            dx = -this.calculateSpeed(rect.left+50 - this.coordinateX);
         }
 
         this.sheetDiv.scrollBy(dx, dy);

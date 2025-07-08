@@ -1,3 +1,5 @@
+import { ColumnResizingOperation } from "./ColumnResizingOperation.js";
+import { RowResizingOperation } from "./RowResizingOperation.js";
 /**
  * Manages resizing behavior for rows and columns.
  */
@@ -13,7 +15,8 @@ export class ResizeManager {
      * @param {BooleanObj} ifColumnResizeOn - Flag indicating if column resize is active.
      * @param {BooleanObj} ifColumnPointerDown - Flag indicating if column resize is in progress.
      */
-    constructor(rowsManager, tilesManager, columnsManager, ifRowResizeOn, ifRowResizePointerDown, ifColumnResizeOn, ifColumnPointerDown) {
+    constructor(rowsManager, tilesManager, columnsManager, ifRowResizeOn, ifRowResizePointerDown, ifColumnResizeOn, ifColumnPointerDown, undoRedoManager) {
+        this.undoRedoManager = undoRedoManager;
         this.rowsManager = rowsManager;
         this.tilesManager = tilesManager;
         this.columnsManager = columnsManager;
@@ -36,6 +39,8 @@ export class ResizeManager {
             resizeDiv.style.display = "none";
         });
         if (this.ifRowResizePointerDown.value) {
+            const rowResizeOperation = new RowResizingOperation(this.rowsManager.currentResizingRowCanvas.getRowKey(), this.rowsManager.currentResizingRowCanvas.getPrevValue(), this.rowsManager.currentResizingRowCanvas.getNewValue(), this.rowsManager.currentResizingRowCanvas.rowHeights, this.rowsManager, this.tilesManager, this.rowsManager.currentResizingRowCanvas);
+            this.undoRedoManager.execute(rowResizeOperation);
             this.tilesManager.redrawRow(this.rowsManager.currentResizingRowCanvas.rowID);
             this.ifRowResizePointerDown.value = false;
         }
@@ -46,6 +51,8 @@ export class ResizeManager {
             resizeDiv.style.display = "none";
         });
         if (this.ifColumnResizePointerDown.value) {
+            const ColumnResizeOperationObject = new ColumnResizingOperation(this.columnsManager.currentResizingColumnCanvas.getColumnKey(), this.columnsManager.currentResizingColumnCanvas.getPrevValue(), this.columnsManager.currentResizingColumnCanvas.getNewValue(), this.columnsManager.currentResizingColumnCanvas.columnWidths, this.columnsManager, this.tilesManager, this.columnsManager.currentResizingColumnCanvas);
+            this.undoRedoManager.execute(ColumnResizeOperationObject);
             this.tilesManager.redrawColumn(this.columnsManager.currentResizingColumnCanvas.columnID);
             this.ifColumnResizePointerDown.value = false;
         }

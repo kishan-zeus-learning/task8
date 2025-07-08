@@ -9,7 +9,7 @@ import { RowData } from "./types/RowsColumn";
  */
 export class RowsCanvas {
     /** Map that stores custom row heights keyed by row number */
-private rowHeights: RowData;
+readonly rowHeights: RowData;
 
 
     /** Prefix sum of each row's vertical position */
@@ -47,6 +47,10 @@ private rowHeights: RowData;
 
     private  selectionCoordinates:MultipleSelectionCoordinates;
 
+    private prevValue:number=25;
+    private newValue:number=25;
+    private rowKey:number=-1;
+
     /**
      * Initializes the RowsCanvas with layout and resize behavior.
      * @param rowID Index of this row block
@@ -81,12 +85,31 @@ private rowHeights: RowData;
         this.handleResize();
     }
 
+
+    getPrevValue(){
+        return this.prevValue;
+    }
+
+    getNewValue(){
+        return this.newValue;
+    }
+
+    getRowKey(){
+        return this.rowKey;
+    }
+
     /**
      * Adds resize behavior and hover logic to row borders.
      */
     private handleResize() {
         this.rowCanvasDiv.addEventListener("pointerdown", (event) => {
-            if(this.binarySearchRange(event.offsetY)!==-1) this.ifResizePointerDown.value = true;
+            this.hoverIdx=this.binarySearchRange(event.offsetY);
+            if(this.hoverIdx!==-1){
+                this.ifResizePointerDown.value = true;
+                const rowKey=this.rowID*25+1+this.hoverIdx;
+                this.prevValue= this.rowHeights.get(rowKey)?.height || 25;
+                this.newValue=this.prevValue;
+            }
         });
 
         this.rowCanvasDiv.addEventListener("pointermove", (event) => {
@@ -155,7 +178,14 @@ private rowHeights: RowData;
         }
 
         
-        const rowKey = this.rowID * 25 + this.hoverIdx + 1;
+        this.rowKey = this.rowID * 25 + this.hoverIdx + 1;
+        this.changeHeight(newHeight,this.rowKey);
+
+    }
+
+
+    changeHeight(newHeight:number,rowKey:number){
+        this.newValue=newHeight;
         if (newHeight === 25) {
             this.rowHeights.delete(rowKey);
         } else {
@@ -169,7 +199,6 @@ private rowHeights: RowData;
 
         this.setRowsPositionArr();
         this.drawCanvas();
-
     }
 
     /**
@@ -200,7 +229,7 @@ private rowHeights: RowData;
     /**
      * Recalculates and stores vertical positions of rows using prefix sum.
      */
-    private setRowsPositionArr() {
+    setRowsPositionArr() {
         let startNum = this.rowID * 25 + 1;
         let prefixSum = 0;
 

@@ -3,6 +3,9 @@ export class ColumnsCanvas {
         this.columnCanvas = document.createElement("canvas");
         this.resizeDiv = document.createElement("div");
         this.hoverIdx = -1;
+        this.prevValue = 100;
+        this.newValue = 100;
+        this.columnKey = -1;
         this.columnWidths = columnWidths;
         this.columnID = columnID;
         this.defaultHeight = defaultHeight;
@@ -16,10 +19,25 @@ export class ColumnsCanvas {
         this.columnCanvasDiv = this.createcolumnCanvas();
         this.handleResize();
     }
+    getPrevValue() {
+        return this.prevValue;
+    }
+    getNewValue() {
+        return this.newValue;
+    }
+    getColumnKey() {
+        return this.columnKey;
+    }
     handleResize() {
         this.columnCanvasDiv.addEventListener("pointerdown", (event) => {
-            if (this.binarySearchRange(event.offsetX) !== -1)
+            var _a;
+            this.hoverIdx = this.binarySearchRange(event.offsetX);
+            if (this.hoverIdx !== -1) {
                 this.ifResizePointerDown.value = true;
+                const columnKey = this.columnID * 25 + 1 + this.hoverIdx;
+                this.prevValue = ((_a = this.columnWidths.get(columnKey)) === null || _a === void 0 ? void 0 : _a.width) || 100;
+                this.newValue = this.prevValue;
+            }
         });
         this.columnCanvasDiv.addEventListener("pointermove", (event) => {
             if (this.ifResizePointerDown.value) {
@@ -64,12 +82,16 @@ export class ColumnsCanvas {
         else {
             this.resizeDiv.style.left = `${newWidth}px`;
         }
-        const colNum = this.columnID * 25 + this.hoverIdx + 1;
+        this.columnKey = this.columnID * 25 + this.hoverIdx + 1;
+        this.changeWidth(newWidth, this.columnKey);
+    }
+    changeWidth(newWidth, columnKey) {
+        this.newValue = newWidth;
         if (newWidth === this.defaultWidth) {
-            this.columnWidths.delete(colNum);
+            this.columnWidths.delete(columnKey);
         }
         else {
-            this.columnWidths.set(colNum, { width: newWidth });
+            this.columnWidths.set(columnKey, { width: newWidth });
         }
         this.setColumnsPositionArr();
         this.drawCanvas();

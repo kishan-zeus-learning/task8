@@ -1,20 +1,23 @@
-import { ColumnsManager } from "./ColumnsManager";
-import { RowsManager } from "./RowsManager";
-import { TilesManager } from "./TilesManager";
+import { ColumnResizingOperation } from "./ColumnResizingOperation.js";
+import { ColumnsManager } from "./ColumnsManager.js";
+import { RowResizingOperation } from "./RowResizingOperation.js";
+import { RowsManager } from "./RowsManager.js";
+import { TilesManager } from "./TilesManager.js";
 import { BooleanObj } from "./types/BooleanObj.js";
+import { UndoRedoManager } from "./UndoRedoManager.js";
 
 /**
  * Manages resizing behavior for rows and columns.
  */
 export class ResizeManager {
     /** @type {RowsManager} Manages row operations and resizing */
-    private rowsManager: RowsManager;
+    readonly rowsManager: RowsManager;
 
     /** @type {TilesManager} Manages tile operations and updates */
-    private tilesManager: TilesManager;
+    readonly tilesManager: TilesManager;
 
     /** @type {ColumnsManager} Manages column operations and resizing */
-    private columnsManager: ColumnsManager;
+    readonly columnsManager: ColumnsManager;
 
     /** @type {BooleanObj} Indicates if row resize mode is active */
      ifRowResizeOn: BooleanObj;
@@ -27,6 +30,8 @@ export class ResizeManager {
 
     /** @type {BooleanObj} Indicates if a column is currently being resized (pointer down) */
     ifColumnResizePointerDown: BooleanObj;
+
+    private undoRedoManager:UndoRedoManager;
 
     /**
      * Initializes the ResizeManager with references to all required managers and global flags.
@@ -46,8 +51,10 @@ export class ResizeManager {
         ifRowResizeOn: BooleanObj,
         ifRowResizePointerDown: BooleanObj,
         ifColumnResizeOn: BooleanObj,
-        ifColumnPointerDown: BooleanObj
+        ifColumnPointerDown: BooleanObj,
+        undoRedoManager:UndoRedoManager
     ) {
+        this.undoRedoManager=undoRedoManager;
         this.rowsManager = rowsManager;
         this.tilesManager = tilesManager;
         this.columnsManager = columnsManager;
@@ -73,6 +80,18 @@ export class ResizeManager {
         });
 
         if (this.ifRowResizePointerDown.value) {
+            const rowResizeOperation= new RowResizingOperation(
+            this.rowsManager.currentResizingRowCanvas.getRowKey(),
+            this.rowsManager.currentResizingRowCanvas.getPrevValue(),
+            this.rowsManager.currentResizingRowCanvas.getNewValue(),
+            this.rowsManager.currentResizingRowCanvas.rowHeights,
+            this.rowsManager,
+            this.tilesManager,
+            this.rowsManager.currentResizingRowCanvas
+        );
+
+            this.undoRedoManager.execute(rowResizeOperation);
+            
             this.tilesManager.redrawRow(this.rowsManager.currentResizingRowCanvas.rowID);
             this.ifRowResizePointerDown.value = false;
         }
@@ -85,6 +104,19 @@ export class ResizeManager {
         });
 
         if (this.ifColumnResizePointerDown.value) {
+
+            const ColumnResizeOperationObject= new ColumnResizingOperation(
+                this.columnsManager.currentResizingColumnCanvas.getColumnKey(),
+                this.columnsManager.currentResizingColumnCanvas.getPrevValue(),
+                this.columnsManager.currentResizingColumnCanvas.getNewValue(),
+                this.columnsManager.currentResizingColumnCanvas.columnWidths,
+                this.columnsManager,
+                this.tilesManager,
+                this.columnsManager.currentResizingColumnCanvas
+            );
+
+            this.undoRedoManager.execute(ColumnResizeOperationObject);
+            
             this.tilesManager.redrawColumn(this.columnsManager.currentResizingColumnCanvas.columnID);
             this.ifColumnResizePointerDown.value = false;
         }

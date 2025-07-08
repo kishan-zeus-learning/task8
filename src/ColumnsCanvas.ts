@@ -5,7 +5,7 @@ import { NumberObj } from "./types/NumberObj";
 import { MultipleSelectionCoordinates } from "./types/MultipleSelectionCoordinates";
 
 export class ColumnsCanvas {
-    private columnWidths: ColumnData;
+    readonly columnWidths: ColumnData;
     readonly columnsPositionArr: number[];
     readonly columnID: number;
     readonly columnCanvasDiv: HTMLDivElement;
@@ -19,6 +19,9 @@ export class ColumnsCanvas {
     private hoverIdx: number = -1;
     private selectionCoordinates: MultipleSelectionCoordinates;
 
+    private prevValue:number=100;
+    private newValue:number=100;
+    private columnKey:number=-1;
     constructor(
         columnID: number,
         columnWidths: ColumnData,
@@ -43,10 +46,27 @@ export class ColumnsCanvas {
         this.handleResize();
     }
 
+    getPrevValue(){
+        return this.prevValue;
+    }
+
+    getNewValue(){
+        return this.newValue;
+    }
+
+    getColumnKey(){
+        return this.columnKey;
+    }
+
     private handleResize() {
         this.columnCanvasDiv.addEventListener("pointerdown", (event) => {
-            if (this.binarySearchRange(event.offsetX) !== -1)
+            this.hoverIdx=this.binarySearchRange(event.offsetX);
+            if ( this.hoverIdx!== -1){
                 this.ifResizePointerDown.value = true;
+                const columnKey=this.columnID*25+1+this.hoverIdx;
+                this.prevValue=this.columnWidths.get(columnKey)?.width || 100;
+                this.newValue=this.prevValue;
+            }
         });
 
         this.columnCanvasDiv.addEventListener("pointermove", (event) => {
@@ -97,11 +117,18 @@ export class ColumnsCanvas {
             this.resizeDiv.style.left = `${newWidth}px`;
         }
 
-        const colNum = this.columnID * 25 + this.hoverIdx + 1;
-        if (newWidth === this.defaultWidth) {
-            this.columnWidths.delete(colNum);
-        } else {
-            this.columnWidths.set(colNum, { width: newWidth });
+        this.columnKey = this.columnID * 25 + this.hoverIdx + 1;
+        
+        this.changeWidth(newWidth,this.columnKey);
+        
+    }
+
+    changeWidth(newWidth:number,columnKey:number){
+        this.newValue=newWidth;
+        if(newWidth===this.defaultWidth){
+            this.columnWidths.delete(columnKey);
+        }else{
+            this.columnWidths.set(columnKey,{width:newWidth});
         }
 
         this.setColumnsPositionArr();
@@ -253,7 +280,7 @@ export class ColumnsCanvas {
         return canvasStartRow === 1 && canvasEndRow === 1000000;
     }
 
-    private setColumnsPositionArr() {
+    setColumnsPositionArr() {
         const startNum = this.columnID * 25 + 1;
         let prefixSum = 0;
         this.columnsPositionArr.length = 0;

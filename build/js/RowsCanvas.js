@@ -20,6 +20,9 @@ export class RowsCanvas {
         this.resizeDiv = document.createElement("div");
         /** Index of the row currently being hovered near a resize boundary */
         this.hoverIdx = -1;
+        this.prevValue = 25;
+        this.newValue = 25;
+        this.rowKey = -1;
         this.rowHeights = rowHeights;
         this.rowID = rowID;
         this.defaultHeight = defaultHeight;
@@ -33,13 +36,28 @@ export class RowsCanvas {
         this.rowCanvasDiv = this.createRowCanvas();
         this.handleResize();
     }
+    getPrevValue() {
+        return this.prevValue;
+    }
+    getNewValue() {
+        return this.newValue;
+    }
+    getRowKey() {
+        return this.rowKey;
+    }
     /**
      * Adds resize behavior and hover logic to row borders.
      */
     handleResize() {
         this.rowCanvasDiv.addEventListener("pointerdown", (event) => {
-            if (this.binarySearchRange(event.offsetY) !== -1)
+            var _a;
+            this.hoverIdx = this.binarySearchRange(event.offsetY);
+            if (this.hoverIdx !== -1) {
                 this.ifResizePointerDown.value = true;
+                const rowKey = this.rowID * 25 + 1 + this.hoverIdx;
+                this.prevValue = ((_a = this.rowHeights.get(rowKey)) === null || _a === void 0 ? void 0 : _a.height) || 25;
+                this.newValue = this.prevValue;
+            }
         });
         this.rowCanvasDiv.addEventListener("pointermove", (event) => {
             if (this.ifResizePointerDown.value) {
@@ -105,7 +123,11 @@ export class RowsCanvas {
         if (isNaN(newHeight)) {
             console.log("nan at 4");
         }
-        const rowKey = this.rowID * 25 + this.hoverIdx + 1;
+        this.rowKey = this.rowID * 25 + this.hoverIdx + 1;
+        this.changeHeight(newHeight, this.rowKey);
+    }
+    changeHeight(newHeight, rowKey) {
+        this.newValue = newHeight;
         if (newHeight === 25) {
             this.rowHeights.delete(rowKey);
         }
