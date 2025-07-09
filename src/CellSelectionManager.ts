@@ -14,22 +14,22 @@ import { ResizeManager } from "./ResizeManager";
  */
 export class CellSelectionManager {
     /** @type {number} X coordinate for selection or auto-scroll */
-    coordinateX = 0;
+    private coordinateX = 0;
 
     /** @type {number} Y coordinate for selection or auto-scroll */
-    coordinateY = 0;
+    private coordinateY = 0;
 
     /** @type {number | null} Stores requestAnimationFrame ID for auto-scrolling */
-    scrollId: number | null = null;
+    private scrollId: number | null = null;
 
     /** @type {BooleanObj} Controls tile selection activity */
-    ifTileSelectionOn: BooleanObj;
+    readonly ifTileSelectionOn: BooleanObj;
 
     /** @type {BooleanObj} Controls row selection activity */
-    ifRowSelectionOn: BooleanObj;
+    readonly ifRowSelectionOn: BooleanObj;
 
     /** @type {BooleanObj} Controls column selection activity */
-    ifColumnSelectionOn: BooleanObj;
+    readonly ifColumnSelectionOn: BooleanObj;
 
     /** @type {number} Max distance used to calculate auto-scroll speed */
     readonly maxDistance: number = 100;
@@ -38,7 +38,7 @@ export class CellSelectionManager {
     readonly maxSpeed: number = 10;
 
     /** @type {MultipleSelectionCoordinates} Holds selection range coordinates */
-    selectionCoordinates: MultipleSelectionCoordinates;
+    private selectionCoordinates: MultipleSelectionCoordinates;
 
     /** @type {RowsManager} Manages rows and related logic */
     private rowsManager: RowsManager;
@@ -348,6 +348,7 @@ export class CellSelectionManager {
      * @param {PointerEvent} event 
      */
     private columnPointerDown(event: PointerEvent) {
+        if(event.button===1) return ;
         if (this.resizeManager.ifColumnResizeOn.value || this.resizeManager.ifColumnResizePointerDown.value) return;
 
         const startColumn = this.getColumn(event.target as HTMLElement, event.clientX, event.clientY);
@@ -371,6 +372,7 @@ export class CellSelectionManager {
      * @param {PointerEvent} event 
      */
     private rowPointerDown(event: PointerEvent) {
+        if(event.button===1) return ;
         if (this.resizeManager.ifRowResizeOn.value || this.resizeManager.ifRowResizePointerDown.value) return;
 
         const startRow = this.getRow(event.target as HTMLElement, event.clientX, event.clientY);
@@ -523,6 +525,7 @@ export class CellSelectionManager {
      * Handles pointer down on grid to start selection
      */
     tilePointerDown(event: PointerEvent) {
+        if(event.button===1) return ;
         const rc = this.getTileRowColumn(event.target as HTMLElement, event.clientX, event.clientY);
         if (!rc) return;
 

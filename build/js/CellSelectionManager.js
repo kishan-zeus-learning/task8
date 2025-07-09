@@ -267,6 +267,8 @@ export class CellSelectionManager {
      * @param {PointerEvent} event
      */
     columnPointerDown(event) {
+        if (event.button === 1)
+            return;
         if (this.resizeManager.ifColumnResizeOn.value || this.resizeManager.ifColumnResizePointerDown.value)
             return;
         const startColumn = this.getColumn(event.target, event.clientX, event.clientY);
@@ -287,6 +289,8 @@ export class CellSelectionManager {
      * @param {PointerEvent} event
      */
     rowPointerDown(event) {
+        if (event.button === 1)
+            return;
         if (this.resizeManager.ifRowResizeOn.value || this.resizeManager.ifRowResizePointerDown.value)
             return;
         const startRow = this.getRow(event.target, event.clientX, event.clientY);
@@ -422,6 +426,8 @@ export class CellSelectionManager {
      * Handles pointer down on grid to start selection
      */
     tilePointerDown(event) {
+        if (event.button === 1)
+            return;
         const rc = this.getTileRowColumn(event.target, event.clientX, event.clientY);
         if (!rc)
             return;

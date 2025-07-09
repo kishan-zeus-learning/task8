@@ -60,6 +60,7 @@ export class ColumnsCanvas {
 
     private handleResize() {
         this.columnCanvasDiv.addEventListener("pointerdown", (event) => {
+            if(event.button===1) return ;
             this.hoverIdx=this.binarySearchRange(event.offsetX);
             if ( this.hoverIdx!== -1){
                 this.ifResizePointerDown.value = true;

@@ -8,6 +8,7 @@ import { CellSelectionManager } from "./CellSelectionManager.js";
 import { CellsManager } from "./CellsManager.js";
 import { UndoRedoManager } from "./UndoRedoManager.js";
 import { JSONUpload } from "./JSONUpload.js";
+import { CalculationEngine } from "./CalculationEngine.js";
 /**
  * Main application class for initializing and managing the spreadsheet-like interface
  */
@@ -33,6 +34,7 @@ class App {
             selectionStartColumn: 1,
             selectionEndColumn: 1
         };
+        this.CalculationEngineObj = new CalculationEngine(this.cellData, this.ifTileSelectionOn, this.ifRowSelectionOn, this.ifColumnSelectionOn, this.selectionCoordinates);
         this.CellsManagerObj = new CellsManager(this.cellData);
         // CellsManagerObj.manageCellUpdate(2, 2, "Hi");
         // CellsManagerObj.manageCellUpdate(2, 3, "50");
@@ -47,6 +49,7 @@ class App {
         this.CellSelectionManagerObj = new CellSelectionManager(this.RowsManagerObj, this.TilesManagerObj, this.ColumnsManagerObj, this.ifTileSelectionOn, this.ifRowSelectionOn, this.ifColumnSelectionOn, this.selectionCoordinates, this.CellsManagerObj, this.undoRedoManager, this.ResizeManagerObj, this.outerInput);
         this.ScrollManagerObj.initializeManager(this.ColumnsManagerObj, this.RowsManagerObj, this.TilesManagerObj);
         this.initialize();
+        // this.sheetDivListener();
     }
     /**
      * Main setup function to initialize all managers and event listeners
@@ -65,6 +68,7 @@ class App {
         // Pointer up event
         window.addEventListener("pointerup", (event) => {
             this.ResizeManagerObj.pointerUpEventHandler(event);
+            this.CalculationEngineObj.handlePointerUpEvent(event);
             this.CellSelectionManagerObj.pointerUp(event);
             this.cursorType(event);
         });

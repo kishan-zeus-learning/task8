@@ -103,6 +103,9 @@ readonly rowHeights: RowData;
      */
     private handleResize() {
         this.rowCanvasDiv.addEventListener("pointerdown", (event) => {
+            if(event.button===1){
+                return;
+            }
             this.hoverIdx=this.binarySearchRange(event.offsetY);
             if(this.hoverIdx!==-1){
                 this.ifResizePointerDown.value = true;

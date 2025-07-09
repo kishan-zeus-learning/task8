@@ -1,9 +1,10 @@
 .sheet {
   position: relative;
+  scrollbar-color: #e7e7e7;
   display: grid;
   grid-template-columns: auto 1fr;
   grid-template-rows: auto 1fr;
-  height: calc(100vh - 216px);
+  height: calc(100vh - 216px - 55px);
   width: calc(100vw);
   overflow-y: scroll;
   overflow-x: scroll;

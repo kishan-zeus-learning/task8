@@ -6,6 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Excel Clone</title>
     <link rel="stylesheet" href="styles/style.css">
+    <link rel="stylesheet" href="styles/sheetBottom.css">
+    <link rel="stylesheet" href="styles/sheets.css">
     <link rel="icon" href="./img/ExcelIcon.png" type="img/png">
 </head>
 
@@ -43,6 +45,40 @@
             </div>
         </div>
         <div class="grid" id="grid">
+        </div>
+    </div>
+
+
+    <div id="pageBottom" class="pageBottom">
+        <div class="sheetManager">
+
+        </div>
+        <div class="statusBar" id="statusBar">
+            <div class="left">Workbook Statistics</div>
+            <div class="right">
+                <div class="calculations">
+                    <div class="calculationsValues">
+                        abc
+                    </div>
+                    <div class="calculationsOptions">
+                        <div class="dropdownIcon">
+                            <img src="img/dropdownicon.png" alt="dropdown">
+                        </div>
+                        <div class="dropDownOptions">
+                            <div class="option" id="optionAverage">
+                                <div class="selectedBox">
+                                    <img src="img/tick-green.png" alt="greentick">
+                                </div>
+
+                                <div class="optionType">
+                                    Average <span class="optionvalue"> </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="zoomManager">Zoom</div>
+            </div>
         </div>
     </div>
 

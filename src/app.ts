@@ -13,6 +13,7 @@ import { JSONUpload } from "./JSONUpload.js";
 import { CellsMap } from "./types/CellsMap.js";
 import { ColumnData } from "./types/ColumnRows.js";
 import { RowData } from "./types/RowsColumn.js";
+import { CalculationEngine } from "./CalculationEngine.js";
 
 /**
  * Main application class for initializing and managing the spreadsheet-like interface
@@ -68,6 +69,8 @@ class App {
 
     private CellSelectionManagerObj:CellSelectionManager;
 
+    private CalculationEngineObj:CalculationEngine;
+
 
 
     /**
@@ -86,13 +89,14 @@ class App {
         this.rowData= new Map();
         this.outerInput=document.querySelector(".outerInputBar") as HTMLInputElement;
         
-
+        
         this.selectionCoordinates = {
             selectionStartRow: 1,
             selectionEndRow: 1,
             selectionStartColumn: 1,
             selectionEndColumn: 1
         };
+        this.CalculationEngineObj= new CalculationEngine(this.cellData,this.ifTileSelectionOn,this.ifRowSelectionOn,this.ifColumnSelectionOn,this.selectionCoordinates);
         this.CellsManagerObj = new CellsManager(this.cellData);
         // CellsManagerObj.manageCellUpdate(2, 2, "Hi");
         // CellsManagerObj.manageCellUpdate(2, 3, "50");
@@ -163,6 +167,7 @@ class App {
         this.ScrollManagerObj.initializeManager(this.ColumnsManagerObj, this.RowsManagerObj, this.TilesManagerObj);
 
         this.initialize();
+        // this.sheetDivListener();
     }
 
     /**
@@ -187,6 +192,8 @@ class App {
         // Pointer up event
         window.addEventListener("pointerup", (event) => {
             this.ResizeManagerObj.pointerUpEventHandler(event);
+
+            this.CalculationEngineObj.handlePointerUpEvent(event);
             this.CellSelectionManagerObj.pointerUp(event);
 
             this.cursorType(event);
@@ -201,7 +208,6 @@ class App {
 
         });
     }
-
 
     private cursorType(event:PointerEvent){
                     switch (true) {

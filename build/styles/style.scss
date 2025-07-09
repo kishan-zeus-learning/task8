@@ -1,10 +1,15 @@
 @use './sheets.scss';
- 
+@use './sheetBottom.scss';
+
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
   line-height: 0;
+  scrollbar-color: #e7e7e7;
+  scrollbar-base-color: #e7e7e7;
+  // -ms-scrollbar-base-color: #e7e7e7;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 .upperDiv {
@@ -15,9 +20,6 @@
   // align-items: center;
 }
   
-
-
- 
 .subRow{
 
   width: fit-content;
@@ -178,3 +180,7 @@
     }
   }
 }
+
+
+
+
