@@ -1,10 +1,10 @@
-import { ColumnResizingOperation } from "./ColumnResizingOperation.js";
 import { ColumnsManager } from "./ColumnsManager.js";
-import { RowResizingOperation } from "./RowResizingOperation.js";
 import { RowsManager } from "./RowsManager.js";
 import { TilesManager } from "./TilesManager.js";
 import { BooleanObj } from "./types/BooleanObj.js";
 import { UndoRedoManager } from "./UndoRedoManager.js";
+import { RowResizeHandler } from "./RowResizeHandler.js";
+import { ColumnResizeHandler } from "./ColumnResizeHandler.js";
 
 /**
  * Manages resizing behavior for rows and columns.
@@ -20,10 +20,10 @@ export class ResizeManager {
     readonly columnsManager: ColumnsManager;
 
     /** @type {BooleanObj} Indicates if row resize mode is active */
-     ifRowResizeOn: BooleanObj;
+    ifRowResizeOn: BooleanObj;
 
     /** @type {BooleanObj} Indicates if a row is currently being resized (pointer down) */
-     ifRowResizePointerDown: BooleanObj;
+    ifRowResizePointerDown: BooleanObj;
 
     /** @type {BooleanObj} Indicates if column resize mode is active */
     ifColumnResizeOn: BooleanObj;
@@ -31,7 +31,14 @@ export class ResizeManager {
     /** @type {BooleanObj} Indicates if a column is currently being resized (pointer down) */
     ifColumnResizePointerDown: BooleanObj;
 
-    private undoRedoManager:UndoRedoManager;
+    /** @type {UndoRedoManager} Manages undo/redo operations */
+    private undoRedoManager: UndoRedoManager;
+
+    /** @type {RowResizeHandler} Handles row resizing logic */
+    private rowResizeHandler: RowResizeHandler;
+
+    /** @type {ColumnResizeHandler} Handles column resizing logic */
+    private columnResizeHandler: ColumnResizeHandler;
 
     /**
      * Initializes the ResizeManager with references to all required managers and global flags.
@@ -43,6 +50,7 @@ export class ResizeManager {
      * @param {BooleanObj} ifRowResizePointerDown - Flag indicating if row resize is in progress.
      * @param {BooleanObj} ifColumnResizeOn - Flag indicating if column resize is active.
      * @param {BooleanObj} ifColumnPointerDown - Flag indicating if column resize is in progress.
+     * @param {UndoRedoManager} undoRedoManager - Manager for undo/redo operations.
      */
     constructor(
         rowsManager: RowsManager,
@@ -52,9 +60,9 @@ export class ResizeManager {
         ifRowResizePointerDown: BooleanObj,
         ifColumnResizeOn: BooleanObj,
         ifColumnPointerDown: BooleanObj,
-        undoRedoManager:UndoRedoManager
+        undoRedoManager: UndoRedoManager
     ) {
-        this.undoRedoManager=undoRedoManager;
+        this.undoRedoManager = undoRedoManager;
         this.rowsManager = rowsManager;
         this.tilesManager = tilesManager;
         this.columnsManager = columnsManager;
@@ -62,64 +70,36 @@ export class ResizeManager {
         this.ifRowResizePointerDown = ifRowResizePointerDown;
         this.ifColumnResizeOn = ifColumnResizeOn;
         this.ifColumnResizePointerDown = ifColumnPointerDown;
+
+        // Create specialized handlers for row and column resizing
+        this.rowResizeHandler = new RowResizeHandler(
+            rowsManager,
+            tilesManager,
+            ifRowResizeOn,
+            ifRowResizePointerDown,
+            undoRedoManager
+        );
+
+        this.columnResizeHandler = new ColumnResizeHandler(
+            columnsManager,
+            tilesManager,
+            ifColumnResizeOn,
+            ifColumnPointerDown,
+            undoRedoManager
+        );
     }
 
     /**
      * Handles logic on pointer up (mouse release), finalizing any resize actions.
      * 
-     * @param {Event} event - The pointerup event.
+     * @param {PointerEvent} event - The pointerup event.
      */
-    pointerUpEventHandler(event: PointerEvent) {
+    pointerUpEventHandler(event: PointerEvent): void {
         document.body.style.cursor = "default";
 
-        // Hide row resize handles
-        const rowCanvasDivs = document.querySelectorAll(".subRow") as NodeListOf<HTMLDivElement>;
-        rowCanvasDivs.forEach(rowCanvasDiv => {
-            const resizeDiv = rowCanvasDiv.lastElementChild as HTMLDivElement;
-            resizeDiv.style.display = "none";
-        });
-
-        if (this.ifRowResizePointerDown.value) {
-            const rowResizeOperation= new RowResizingOperation(
-            this.rowsManager.currentResizingRowCanvas.getRowKey(),
-            this.rowsManager.currentResizingRowCanvas.getPrevValue(),
-            this.rowsManager.currentResizingRowCanvas.getNewValue(),
-            this.rowsManager.currentResizingRowCanvas.rowHeights,
-            this.rowsManager,
-            this.tilesManager,
-            this.rowsManager.currentResizingRowCanvas
-        );
-
-            this.undoRedoManager.execute(rowResizeOperation);
-            
-            this.tilesManager.redrawRow(this.rowsManager.currentResizingRowCanvas.rowID);
-            this.ifRowResizePointerDown.value = false;
-        }
-
-        // Hide column resize handles
-        const columnCanvasDivs = document.querySelectorAll(".subColumn") as NodeListOf<HTMLDivElement>;
-        columnCanvasDivs.forEach(columnCanvasDiv => {
-            const resizeDiv = columnCanvasDiv.lastElementChild as HTMLDivElement;
-            resizeDiv.style.display = "none";
-        });
-
-        if (this.ifColumnResizePointerDown.value) {
-
-            const ColumnResizeOperationObject= new ColumnResizingOperation(
-                this.columnsManager.currentResizingColumnCanvas.getColumnKey(),
-                this.columnsManager.currentResizingColumnCanvas.getPrevValue(),
-                this.columnsManager.currentResizingColumnCanvas.getNewValue(),
-                this.columnsManager.currentResizingColumnCanvas.columnWidths,
-                this.columnsManager,
-                this.tilesManager,
-                this.columnsManager.currentResizingColumnCanvas
-            );
-
-            this.undoRedoManager.execute(ColumnResizeOperationObject);
-            
-            this.tilesManager.redrawColumn(this.columnsManager.currentResizingColumnCanvas.columnID);
-            this.ifColumnResizePointerDown.value = false;
-        }
+        // Delegate to specialized handlers
+        this.rowResizeHandler.handlePointerUp();
+        this.columnResizeHandler.handlePointerUp();
     }
 
     /**
@@ -127,19 +107,14 @@ export class ResizeManager {
      * 
      * @param {PointerEvent} event - The pointermove event.
      */
-    pointerMove(event: PointerEvent) {
-
-        if(!this.ifRowResizeOn.value && !this.ifRowResizePointerDown.value && !this.ifColumnResizeOn.value && !this.ifColumnResizePointerDown.value) return ;
-
-        // Resize row if active
-        if (this.ifRowResizePointerDown.value) {
-            // console.log(event.clientY);
-            this.rowsManager.currentResizingRowCanvas.resizeRow(event.clientY);
+    pointerMove(event: PointerEvent): void {
+        // Early return if no resize operations are active
+        if (!this.rowResizeHandler.isResizing() && !this.columnResizeHandler.isResizing()) {
+            return;
         }
 
-        // Resize column if active
-        if (this.ifColumnResizePointerDown.value) {
-            this.columnsManager.currentResizingColumnCanvas.resizeColumn(event.clientX);
-        }
+        // Delegate to specialized handlers
+        this.rowResizeHandler.handlePointerMove(event);
+        this.columnResizeHandler.handlePointerMove(event);
     }
 }
