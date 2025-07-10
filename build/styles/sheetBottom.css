@@ -34,9 +34,11 @@
   gap: 15px;
 }
 .pageBottom .statusBar .right .calculations .calculationsValues {
+  color: gray;
   height: 100%;
   display: flex;
   align-items: center;
+  gap: 15px;
 }
 .pageBottom .statusBar .right .calculations .calculationsOptions {
   position: relative;

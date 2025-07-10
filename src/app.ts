@@ -43,32 +43,46 @@ class App {
     /**@type {MultipleSelectionCoordinates} Stores the selection start and end coordinates */
     private selectionCoordinates: MultipleSelectionCoordinates;
 
+    /** @type {HTMLInputElement} Reference to the outer input bar HTML element. */
     private outerInput:HTMLInputElement;
 
+    /** @type {CellsMap} A map holding all the cell data. */
     private cellData:CellsMap;
 
+    /** @type {ColumnData} A map holding column-specific data. */
     private columnData:ColumnData;
 
+    /** @type {RowData} A map holding row-specific data. */
     private rowData:RowData;
 
+    /** @type {CellsManager} Instance of the CellsManager to handle cell data. */
     private CellsManagerObj:CellsManager;
 
+    /** @type {UndoRedoManager} Instance of the UndoRedoManager for managing undo/redo operations. */
     private undoRedoManager:UndoRedoManager;
 
+    /** @type {ScrollManager} Instance of the ScrollManager to handle scrolling. */
     private ScrollManagerObj:ScrollManager;
 
+    /** @type {RowsManager} Instance of the RowsManager to handle row-related operations. */
     private RowsManagerObj:RowsManager;
 
+    /** @type {ColumnsManager} Instance of the ColumnsManager to handle column-related operations. */
     private ColumnsManagerObj:ColumnsManager;
 
+    /** @type {TilesManager} Instance of the TilesManager to handle cell rendering and interaction. */
     private TilesManagerObj:TilesManager;
 
+    /** @type {JSONUpload} Instance of the JSONUpload to handle JSON file operations. */
     private JSONUploadObj:JSONUpload;
 
+    /** @type {ResizeManager} Instance of the ResizeManager to handle row and column resizing. */
     private ResizeManagerObj:ResizeManager;
 
+    /** @type {CellSelectionManager} Instance of the CellSelectionManager to handle cell selections. */
     private CellSelectionManagerObj:CellSelectionManager;
 
+    /** @type {CalculationEngine} Instance of the CalculationEngine to perform calculations on selected cells. */
     private CalculationEngineObj:CalculationEngine;
 
 
@@ -77,6 +91,7 @@ class App {
      * Initializes the App
      */
     constructor() {
+        // Initialize boolean flags for various states
         this.ifRowResizeOn = { value: false };
         this.ifRowResizePointerDown = { value: false };
         this.ifColumnResizeOn = { value: false };
@@ -87,25 +102,31 @@ class App {
         this.cellData=new Map();
         this.columnData=new Map();
         this.rowData= new Map();
+        // Get reference to the outer input bar element
         this.outerInput=document.querySelector(".outerInputBar") as HTMLInputElement;
         
-        
+        // Initialize selection coordinates with default values
         this.selectionCoordinates = {
             selectionStartRow: 1,
             selectionEndRow: 1,
             selectionStartColumn: 1,
             selectionEndColumn: 1
         };
+        // Initialize CalculationEngine
         this.CalculationEngineObj= new CalculationEngine(this.cellData,this.ifTileSelectionOn,this.ifRowSelectionOn,this.ifColumnSelectionOn,this.selectionCoordinates);
+        // Initialize CellsManager
         this.CellsManagerObj = new CellsManager(this.cellData);
-        // CellsManagerObj.manageCellUpdate(2, 2, "Hi");
-        // CellsManagerObj.manageCellUpdate(2, 3, "50");
-        // CellsManagerObj.manageCellUpdate(3, 5, "Zeus");
+        // CellsManagerObj.manageCellUpdate(2, 2, "Hi"); // Example cell updates (commented out)
+        // CellsManagerObj.manageCellUpdate(2, 3, "50"); // Example cell updates (commented out)
+        // CellsManagerObj.manageCellUpdate(3, 5, "Zeus"); // Example cell updates (commented out)
         
+        // Initialize UndoRedoManager
         this.undoRedoManager= new UndoRedoManager();
         
+        // Initialize ScrollManager
         this.ScrollManagerObj = new ScrollManager();
         
+        // Initialize RowsManager
         this.RowsManagerObj = new RowsManager(
             this.rowData,
             0,
@@ -116,6 +137,7 @@ class App {
             this.undoRedoManager
         );
         
+        // Initialize ColumnsManager
         this.ColumnsManagerObj = new ColumnsManager(
             this.columnData,
             0,
@@ -125,6 +147,7 @@ class App {
             this.selectionCoordinates
         );
         
+        // Initialize TilesManager
         this.TilesManagerObj = new TilesManager(
             this.RowsManagerObj.rowsPositionPrefixSumArr,
             this.ColumnsManagerObj.visibleColumnsPrefixSum,
@@ -132,13 +155,15 @@ class App {
             this.ScrollManagerObj.horizontalNum,
             this.selectionCoordinates,
             this.CellsManagerObj,
-            undefined,
-            undefined,
+            undefined, // Placeholder for future use
+            undefined, // Placeholder for future use
             this.RowsManagerObj.marginTop,
             this.ColumnsManagerObj.marginLeft
         );
+        // Initialize JSONUpload
         this.JSONUploadObj= new JSONUpload(this.cellData,this.TilesManagerObj,this.RowsManagerObj,this.ColumnsManagerObj);
 
+        // Initialize ResizeManager
         this.ResizeManagerObj = new ResizeManager(
             this.RowsManagerObj,
             this.TilesManagerObj,
@@ -150,6 +175,7 @@ class App {
             this.undoRedoManager
         );
 
+        // Initialize CellSelectionManager
         this.CellSelectionManagerObj = new CellSelectionManager(
             this.RowsManagerObj,
             this.TilesManagerObj,
@@ -164,10 +190,12 @@ class App {
             this.outerInput
         );
 
+        // Initialize ScrollManager with other managers
         this.ScrollManagerObj.initializeManager(this.ColumnsManagerObj, this.RowsManagerObj, this.TilesManagerObj);
 
+        // Call the main initialization method
         this.initialize();
-        // this.sheetDivListener();
+        // this.sheetDivListener(); // Commented out listener
     }
 
     /**
@@ -175,8 +203,7 @@ class App {
      */
     private initialize() {
         
-
-        // Keyboard and click events
+        // Add keyboard event listeners for keydown and keyup
         window.addEventListener("keydown", (event) => {
             this.CellSelectionManagerObj.handleKeyDown(event);
         });
@@ -185,76 +212,90 @@ class App {
             this.CellSelectionManagerObj.handleKeyUp(event);
         });
 
+        // Add click event listener to the window
         window.addEventListener("click", (event) => {
             this.CellSelectionManagerObj.handleWindowClick(event);
         });
 
-        // Pointer up event
+        // Add pointer up event listener to the window
         window.addEventListener("pointerup", (event) => {
-            this.ResizeManagerObj.pointerUpEventHandler(event);
+            this.ResizeManagerObj.pointerUpEventHandler(event); // Handle resize end
+            this.CalculationEngineObj.handlePointerUpEvent(event); // Trigger calculations
+            this.CellSelectionManagerObj.pointerUp(event); // Handle cell selection end
 
-            this.CalculationEngineObj.handlePointerUpEvent(event);
-            this.CellSelectionManagerObj.pointerUp(event);
-
-            this.cursorType(event);
+            this.cursorType(event); // Update cursor type
         });
 
-        // Pointer move event
+        // Add pointer move event listener to the window
         window.addEventListener("pointermove", (event) => {
-            this.ResizeManagerObj.pointerMove(event);
-            this.CellSelectionManagerObj.pointerMove(event);
+            this.ResizeManagerObj.pointerMove(event); // Handle resize movement
+            this.CellSelectionManagerObj.pointerMove(event); // Handle cell selection movement
 
-            this.cursorType(event);
-
+            this.cursorType(event); // Update cursor type
         });
     }
 
+    /**
+     * Sets the cursor type based on the current interaction state.
+     * @param {PointerEvent} event - The pointer event.
+     */
     private cursorType(event:PointerEvent){
-                    switch (true) {
-                case this.ifRowResizePointerDown.value:
-                    document.body.style.cursor = "ns-resize";
-                    break;
+        switch (true) {
+            // If row resize pointer is held down, show vertical resize cursor
+            case this.ifRowResizePointerDown.value:
+                document.body.style.cursor = "ns-resize";
+                break;
 
-                case this.ifColumnResizePointerDown.value:
-                    document.body.style.cursor = "ew-resize";
-                    break;
+            // If column resize pointer is held down, show horizontal resize cursor
+            case this.ifColumnResizePointerDown.value:
+                document.body.style.cursor = "ew-resize";
+                break;
 
-                case this.ifRowSelectionOn.value:
-                    document.body.style.cursor = "url('./img/ArrowRight.png'), auto";
-                    break;
+            // If row selection is active, show row selection cursor
+            case this.ifRowSelectionOn.value:
+                document.body.style.cursor = "url('./img/ArrowRight.png'), auto";
+                break;
 
-                case this.ifColumnSelectionOn.value:
-                    document.body.style.cursor = "url('./img/ArrowDown.png'), auto";
-                    break;
+            // If column selection is active, show column selection cursor
+            case this.ifColumnSelectionOn.value:
+                document.body.style.cursor = "url('./img/ArrowDown.png'), auto";
+                break;
 
-                case this.ifTileSelectionOn.value:
-                    document.body.style.cursor = "cell";
-                    break;
+            // If tile selection is active, show cell selection cursor
+            case this.ifTileSelectionOn.value:
+                document.body.style.cursor = "cell";
+                break;
 
-                case this.ifRowResizeOn.value:
-                    document.body.style.cursor = "ns-resize";
-                    break;
+            // If row resize is active (but not necessarily pointer down), show vertical resize cursor
+            case this.ifRowResizeOn.value:
+                document.body.style.cursor = "ns-resize";
+                break;
 
-                case this.ifColumnResizeOn.value:
-                    document.body.style.cursor = "ew-resize";
-                    break;
+            // If column resize is active (but not necessarily pointer down), show horizontal resize cursor
+            case this.ifColumnResizeOn.value:
+                document.body.style.cursor = "ew-resize";
+                break;
 
-                case this.ifRowHover(event, this.RowsManagerObj):
-                    document.body.style.cursor = "url('./img/ArrowRight.png'), auto";
-                    break;
+            // If hovering over a row, show row selection cursor
+            case this.ifRowHover(event, this.RowsManagerObj):
+                document.body.style.cursor = "url('./img/ArrowRight.png'), auto";
+                break;
 
-                case this.ifColumnHover(event, this.ColumnsManagerObj):
-                    document.body.style.cursor = "url('./img/ArrowDown.png'), auto";
-                    break;
+            // If hovering over a column, show column selection cursor
+            case this.ifColumnHover(event, this.ColumnsManagerObj):
+                document.body.style.cursor = "url('./img/ArrowDown.png'), auto";
+                break;
 
-                case this.ifTileHover(event, this.TilesManagerObj):
-                    document.body.style.cursor = "cell";
-                    break;
+            // If hovering over a tile, show cell selection cursor
+            case this.ifTileHover(event, this.TilesManagerObj):
+                document.body.style.cursor = "cell";
+                break;
 
-                default:
-                    document.body.style.cursor = "default";
-                    break;
-            }
+            // Default cursor
+            default:
+                document.body.style.cursor = "default";
+                break;
+        }
     }
 
 

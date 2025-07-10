@@ -13,6 +13,9 @@ export class CellSelectionManager {
      * @param {BooleanObj} ifColumnSelectionOn
      * @param {MultipleSelectionCoordinates} selectionCoordinates
      * @param {CellsManager} cellsManager
+     * @param {UndoRedoManager} undoRedoManager
+     * @param {ResizeManager} resizeManager
+     * @param {HTMLInputElement} outerInput
      */
     constructor(rowsManager, tilesManager, columnsManager, ifTilesSelectionOn, ifRowsSelectionOn, ifColumnSelectionOn, selectionCoordinates, cellsManager, undoRedoManager, resizeManager, outerInput) {
         /** @type {number} X coordinate for selection or auto-scroll */
@@ -31,10 +34,13 @@ export class CellSelectionManager {
         this.inputDiv = null;
         /** @type {BooleanObj} Whether Shift key is currently pressed */
         this.ifShiftDown = { value: false };
+        /** @type {BooleanObj} Whether Control key is currently pressed */
         this.ifCtrlDown = { value: false };
         /** @type {HTMLDivElement} The main sheet container element */
         this.sheetDiv = document.getElementById('sheet');
+        /** @type {boolean} Flag indicating if a cell is currently being edited */
         this.ifCellEdited = false;
+        /** @type {boolean} Tracks focus state of the outer input element */
         this.outerInputFocus = false;
         this.undoRedoManager = undoRedoManager;
         this.outerInput = outerInput;
@@ -109,12 +115,14 @@ export class CellSelectionManager {
                     this.undoRedoManager.undo();
                     return;
                 }
+            // Fallthrough intended for 'y'/'Y' if Ctrl is not pressed or input is focused
             case "y":
             case "Y":
                 if (this.ifCtrlDown.value && !this.inputFocus.value) {
                     this.undoRedoManager.redo();
                     return;
                 }
+                break; // Break added to prevent unintended fallthrough
             default:
                 if (!this.inputFocus.value)
                     this.directInput();
@@ -134,6 +142,7 @@ export class CellSelectionManager {
         this.rerender();
         this.handleArrowKeyScroll();
     }
+    /** Adjusts scroll position based on arrow key navigation to keep the active cell in view */
     handleArrowKeyScroll() {
         this.inputDiv = document.querySelector(".cellInput");
         if (this.inputDiv) {
@@ -268,7 +277,7 @@ export class CellSelectionManager {
      */
     columnPointerDown(event) {
         if (event.button === 1)
-            return;
+            return; // Ignore middle-click
         if (this.resizeManager.ifColumnResizeOn.value || this.resizeManager.ifColumnResizePointerDown.value)
             return;
         const startColumn = this.getColumn(event.target, event.clientX, event.clientY);
@@ -290,7 +299,7 @@ export class CellSelectionManager {
      */
     rowPointerDown(event) {
         if (event.button === 1)
-            return;
+            return; // Ignore middle-click
         if (this.resizeManager.ifRowResizeOn.value || this.resizeManager.ifRowResizePointerDown.value)
             return;
         const startRow = this.getRow(event.target, event.clientX, event.clientY);
@@ -308,6 +317,10 @@ export class CellSelectionManager {
     }
     /**
      * Calculates column number under cursor
+     * @param {HTMLElement} canvas The canvas element that was clicked
+     * @param {number} clientX X-coordinate of the pointer event
+     * @param {number} clientY Y-coordinate of the pointer event
+     * @returns {number | null} The column ID or null if not a valid canvas
      */
     getColumn(canvas, clientX, clientY) {
         if (!canvas || canvas.tagName !== "CANVAS")
@@ -317,10 +330,15 @@ export class CellSelectionManager {
         const currentCol = parseInt(canvas.getAttribute('col'));
         const arrIdx = currentCol - this.columnsManager.visibleColumns[0].columnID;
         const colBlock = this.columnsManager.visibleColumns[arrIdx];
+        // Assuming each column has a default width of 25 pixels and then using binary search within the block
         return currentCol * 25 + this.binarySearchUpperBound(colBlock.columnsPositionArr, offsetX) + 1;
     }
     /**
      * Calculates row number under cursor
+     * @param {HTMLElement} canvas The canvas element that was clicked
+     * @param {number} clientX X-coordinate of the pointer event
+     * @param {number} clientY Y-coordinate of the pointer event
+     * @returns {number | null} The row ID or null if not a valid canvas
      */
     getRow(canvas, clientX, clientY) {
         if (!canvas || canvas.tagName !== "CANVAS")
@@ -330,10 +348,15 @@ export class CellSelectionManager {
         const currentRow = parseInt(canvas.getAttribute('row'));
         const arrIdx = currentRow - this.rowsManager.visibleRows[0].rowID;
         const rowBlock = this.rowsManager.visibleRows[arrIdx];
+        // Assuming each row has a default height of 25 pixels and then using binary search within the block
         return currentRow * 25 + this.binarySearchUpperBound(rowBlock.rowsPositionArr, offsetY) + 1;
     }
     /**
      * Gets the row and column within a tile (grid cell canvas)
+     * @param {HTMLElement} canvas The tile canvas element
+     * @param {number} clientX X-coordinate of the pointer event
+     * @param {number} clientY Y-coordinate of the pointer event
+     * @returns {{row: number, col: number} | null} The row and column IDs within the tile, or null
      */
     getTileRowColumn(canvas, clientX, clientY) {
         if (!canvas || canvas.tagName !== 'CANVAS')
@@ -352,6 +375,8 @@ export class CellSelectionManager {
     }
     /**
      * Returns speed based on how far cursor is from edge
+     * @param {number} distance Distance from the edge
+     * @returns {number} Calculated scroll speed
      */
     calculateSpeed(distance) {
         return Math.min(distance / this.maxDistance, 1) * this.maxSpeed;
@@ -405,7 +430,7 @@ export class CellSelectionManager {
         }
         if (this.ifColumnSelectionOn.value) {
             const canvasX = Math.min(rect.right - 18, Math.max(this.coordinateX, rect.left + 1 + this.rowsManager.defaultWidth));
-            const canvasY = 216 + this.columnsManager.defaultHeight / 2;
+            const canvasY = 216 + this.columnsManager.defaultHeight / 2; // Fixed Y-coordinate for column header
             const endColumn = this.getColumn(document.elementFromPoint(canvasX, canvasY), canvasX, canvasY);
             if (endColumn)
                 this.selectionCoordinates.selectionEndColumn = endColumn;
@@ -415,6 +440,7 @@ export class CellSelectionManager {
     }
     /**
      * Stores pointer position and updates if selection is active
+     * @param {PointerEvent} event
      */
     pointerMove(event) {
         if (!this.ifTileSelectionOn.value && !this.ifRowSelectionOn.value && !this.ifColumnSelectionOn.value)
@@ -424,10 +450,11 @@ export class CellSelectionManager {
     }
     /**
      * Handles pointer down on grid to start selection
+     * @param {PointerEvent} event
      */
     tilePointerDown(event) {
         if (event.button === 1)
-            return;
+            return; // Ignore middle-click
         const rc = this.getTileRowColumn(event.target, event.clientX, event.clientY);
         if (!rc)
             return;
@@ -435,7 +462,7 @@ export class CellSelectionManager {
             const r = parseInt(this.inputDiv.getAttribute('row'));
             const c = parseInt(this.inputDiv.getAttribute('col'));
             if (rc.row === r && rc.col === c)
-                return;
+                return; // If clicking on the same cell that has the input open, do nothing
             this.inputDiv.style.visibility = "hidden";
             this.saveInput();
         }
@@ -451,6 +478,7 @@ export class CellSelectionManager {
     }
     /**
      * Ends selection drag and finalizes range
+     * @param {PointerEvent} _event
      */
     pointerUp(_event) {
         this.ifTileSelectionOn.value = false;
@@ -466,7 +494,12 @@ export class CellSelectionManager {
         this.columnsManager.rerender();
     }
     /**
-     * Finds index where arr[idx] >= target
+     * Finds the index in a sorted array where `arr[idx]` is the first element greater than or equal to `target`.
+     * If all elements are less than `target`, returns the last index (24 in this context).
+     * This is a standard upper bound binary search implementation.
+     * @param {number[]} arr The sorted array to search within.
+     * @param {number} target The value to search for.
+     * @returns {number} The index of the upper bound.
      */
     binarySearchUpperBound(arr, target) {
         let start = 0, end = 24, ans = -1;

@@ -36,9 +36,11 @@
                 display: flex;
                 gap:15px;
                 .calculationsValues{
+                    color: gray;
                     height: 100%;
                     display: flex;
                     align-items: center;
+                    gap:15px;
                 }
 
                 .calculationsOptions{
