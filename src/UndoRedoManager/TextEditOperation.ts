@@ -1,5 +1,5 @@
 import { CellsManager } from "../CellsManager.js";
-import { Operation } from "../types/Operation.js";
+import { Operation } from "./Operation.js";
 import { TilesManager } from "../TilesManager.js";
 
 /**

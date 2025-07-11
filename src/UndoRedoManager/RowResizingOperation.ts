@@ -2,7 +2,7 @@
 import { RowsCanvas } from "../RowsCanvas.js";
 import { RowsManager } from "../RowsManager.js";
 import { TilesManager } from "../TilesManager.js";
-import { Operation } from "../types/Operation.js";
+import { Operation } from "./Operation.js";
 import { RowData } from "../types/RowsColumn.js";
 
 /**

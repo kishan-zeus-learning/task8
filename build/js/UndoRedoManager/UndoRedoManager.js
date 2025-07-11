@@ -24,6 +24,7 @@ export class UndoRedoManager {
         operation.redo();
         this.undoStack.push(operation);
         this.redoStack = [];
+        console.log(this.undoStack);
     }
     /**
      * Undoes the last operation if available

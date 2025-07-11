@@ -3,7 +3,7 @@ import { RowsCanvas } from "./RowsCanvas.js";
 import { BooleanObj } from "./types/BooleanObj.js";
 import { NumberObj } from "./types/NumberObj.js";
 import { MultipleSelectionCoordinates } from "./types/MultipleSelectionCoordinates.js";
-import { UndoRedoManager } from "./UndoRedoManager.js";
+import { UndoRedoManager } from "./UndoRedoManager/UndoRedoManager.js";
 
 /**
  * Manages a scrolling set of visible row canvases, enabling efficient rendering
@@ -11,7 +11,7 @@ import { UndoRedoManager } from "./UndoRedoManager.js";
  */
 export class RowsManager {
     /** @type {RowData} Map of row indices to custom row height values */
-    private rowHeights: RowData;
+    readonly rowHeights: RowData;
 
     /** @type {number} The index of the first visible row block */
     private startRowIdx: number;
@@ -261,5 +261,16 @@ export class RowsManager {
         for (let row of this.visibleRows) {
             row.drawCanvas(); // Call drawCanvas method on each visible RowsCanvas instance
         }
+    }
+
+    getCurrentRowCanvas(rowID:number):RowsCanvas|null{
+        // for(const currentRowCanvas of this.visibleRows){
+        //     if(currentRowCanvas.rowID===rowID) return currentRowCanvas;
+        // }
+        const arrIdx=rowID - this.visibleRows[0].rowID;
+
+        if(arrIdx>=0 && arrIdx<this.visibleRows.length) return this.visibleRows[arrIdx];
+        alert("something went wrong inside rows manager");
+        return null;
     }
 }

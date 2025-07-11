@@ -4,11 +4,12 @@ import { RowsManager } from "./RowsManager.js";
 import { ColumnsManager } from "./ColumnsManager.js";
 import { TilesManager } from "./TilesManager.js";
 import { ResizeManager } from "./ResizeManager.js";
-import { CellSelectionManager } from "./CellSelectionManager.js";
+import { SelectionManager } from "./SelectionManager.js";
 import { CellsManager } from "./CellsManager.js";
-import { UndoRedoManager } from "./UndoRedoManager.js";
+import { UndoRedoManager } from "./UndoRedoManager/UndoRedoManager.js";
 import { JSONUpload } from "./JSONUpload.js";
 import { CalculationEngine } from "./CalculationEngine.js";
+import { InteractionManager } from "./DOMEventHandler/InteractionManager.js";
 /**
  * Main application class for initializing and managing the spreadsheet-like interface
  */
@@ -60,8 +61,9 @@ class App {
         this.JSONUploadObj = new JSONUpload(this.cellData, this.TilesManagerObj, this.RowsManagerObj, this.ColumnsManagerObj);
         // Initialize ResizeManager
         this.ResizeManagerObj = new ResizeManager(this.RowsManagerObj, this.TilesManagerObj, this.ColumnsManagerObj, this.ifRowResizeOn, this.ifRowResizePointerDown, this.ifColumnResizeOn, this.ifColumnResizePointerDown, this.undoRedoManager);
+        this.InteractionManagerObj = new InteractionManager(this.RowsManagerObj, this.ColumnsManagerObj, this.TilesManagerObj, this.selectionCoordinates, this.undoRedoManager);
         // Initialize CellSelectionManager
-        this.CellSelectionManagerObj = new CellSelectionManager(this.RowsManagerObj, this.TilesManagerObj, this.ColumnsManagerObj, this.ifTileSelectionOn, this.ifRowSelectionOn, this.ifColumnSelectionOn, this.selectionCoordinates, this.CellsManagerObj, this.undoRedoManager, this.ResizeManagerObj, this.outerInput);
+        this.CellSelectionManagerObj = new SelectionManager(this.RowsManagerObj, this.TilesManagerObj, this.ColumnsManagerObj, this.ifTileSelectionOn, this.ifRowSelectionOn, this.ifColumnSelectionOn, this.selectionCoordinates, this.CellsManagerObj, this.undoRedoManager, this.ResizeManagerObj, this.outerInput);
         // Initialize ScrollManager with other managers
         this.ScrollManagerObj.initializeManager(this.ColumnsManagerObj, this.RowsManagerObj, this.TilesManagerObj);
         // Call the main initialization method
@@ -85,16 +87,16 @@ class App {
         });
         // Add pointer up event listener to the window
         window.addEventListener("pointerup", (event) => {
-            this.ResizeManagerObj.pointerUpEventHandler(event); // Handle resize end
+            // this.ResizeManagerObj.pointerUpEventHandler(event); // Handle resize end
             this.CalculationEngineObj.handlePointerUpEvent(event); // Trigger calculations
-            this.CellSelectionManagerObj.pointerUp(event); // Handle cell selection end
-            this.cursorType(event); // Update cursor type
+            // this.CellSelectionManagerObj.pointerUp(event); // Handle cell selection end
+            // this.cursorType(event); // Update cursor type
         });
         // Add pointer move event listener to the window
         window.addEventListener("pointermove", (event) => {
-            this.ResizeManagerObj.pointerMove(event); // Handle resize movement
-            this.CellSelectionManagerObj.pointerMove(event); // Handle cell selection movement
-            this.cursorType(event); // Update cursor type
+            // this.ResizeManagerObj.pointerMove(event); // Handle resize movement
+            // this.CellSelectionManagerObj.pointerMove(event); // Handle cell selection movement
+            // this.cursorType(event); // Update cursor type
         });
     }
     /**

@@ -156,4 +156,14 @@ export class RowsManager {
             row.drawCanvas(); // Call drawCanvas method on each visible RowsCanvas instance
         }
     }
+    getCurrentRowCanvas(rowID) {
+        // for(const currentRowCanvas of this.visibleRows){
+        //     if(currentRowCanvas.rowID===rowID) return currentRowCanvas;
+        // }
+        const arrIdx = rowID - this.visibleRows[0].rowID;
+        if (arrIdx >= 0 && arrIdx < this.visibleRows.length)
+            return this.visibleRows[arrIdx];
+        alert("something went wrong inside rows manager");
+        return null;
+    }
 }

@@ -4,9 +4,9 @@ import { ColumnsManager } from "./ColumnsManager";
 import { BooleanObj } from "./types/BooleanObj.js";
 import { MultipleSelectionCoordinates } from "./types/MultipleSelectionCoordinates";
 import { CellsManager } from "./CellsManager";
-import { UndoRedoManager } from "./UndoRedoManager";
-import { Operation } from "./types/Operation.js";
-import { TextEditOperation } from "./TextEditOperation.js";
+import { UndoRedoManager } from "./UndoRedoManager/UndoRedoManager";
+import { Operation } from "./UndoRedoManager/Operation.js";
+import { TextEditOperation } from "./UndoRedoManager/TextEditOperation.js";
 import { ResizeManager } from "./ResizeManager";
 
 /**
@@ -130,9 +130,9 @@ export class SelectionManager {
      * Sets up DOM event listeners for selection handling
      */
     private init() {
-        this.tilesManager.gridDiv.addEventListener("pointerdown", (event) => this.tilePointerDown(event));
-        this.rowsManager.rowsDivContainer.addEventListener("pointerdown", (event) => this.rowPointerDown(event));
-        this.columnsManager.columnsDivContainer.addEventListener("pointerdown", (event) => this.columnPointerDown(event));
+        // this.tilesManager.gridDiv.addEventListener("pointerdown", (event) => this.tilePointerDown(event));
+        // this.rowsManager.rowsDivContainer.addEventListener("pointerdown", (event) => this.rowPointerDown(event));
+        // this.columnsManager.columnsDivContainer.addEventListener("pointerdown", (event) => this.columnPointerDown(event));
         this.tilesManager.gridDiv.addEventListener("dblclick", (event) => this.handleDoubleClick(event));
     }
 

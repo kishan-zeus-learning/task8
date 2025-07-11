@@ -10,7 +10,7 @@ import { MultipleSelectionCoordinates } from "./types/MultipleSelectionCoordinat
  */
 export class ColumnsManager {
     /** @type {ColumnData} Map that stores custom column widths keyed by column index */
-    private columnWidths: ColumnData;
+    columnWidths: ColumnData;
 
     /** @type {number} Index of the first visible column group (each group = 25 columns) */
     private startColumnIdx: number;
@@ -242,5 +242,15 @@ export class ColumnsManager {
         for (let column of this.visibleColumns) {
             column.drawCanvas(); // Call drawCanvas method on each visible ColumnsCanvas instance
         }
+    }
+
+    getCurrentColumnCanvas(columnID:number):ColumnsCanvas|null{
+
+        const arrIdx=columnID - this.visibleColumns[0].columnID;
+
+        if(arrIdx>=0 && arrIdx<this.visibleColumns.length) return this.visibleColumns[arrIdx];
+
+        alert("something went wrong inside columns manager");
+        return null;
     }
 }

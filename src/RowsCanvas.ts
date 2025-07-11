@@ -86,7 +86,7 @@ export class RowsCanvas {
         this.selectionCoordinates = selectionCoordinates;
         this.setRowsPositionArr(); // Calculate initial row positions
         this.rowCanvasDiv = this.createRowCanvas(); // Create the DOM elements for the row canvas
-        this.handleResize(); // Attach event listeners for row resizing
+        // this.handleResize(); // Attach event listeners for row resizing
     }
 
     /**
@@ -118,67 +118,67 @@ export class RowsCanvas {
      * This method sets up event listeners for pointer interactions (down, move, out)
      * to manage the visual resize indicator and update state variables for resizing.
      */
-    private handleResize(): void {
-        this.rowCanvasDiv.addEventListener("pointerdown", (event) => {
-            if (event.button === 1) { // Ignore middle-click
-                return;
-            }
-            this.hoverIdx = this.binarySearchRange(event.offsetY); // Determine which row boundary is hovered
-            if (this.hoverIdx !== -1) {
-                this.ifResizePointerDown.value = true; // Set flag when pointer is down on a resizable edge
-                const rowKey = this.rowID * 25 + 1 + this.hoverIdx; // Calculate global row key
-                // Store previous and current height for undo/redo
-                this.prevValue = this.rowHeights.get(rowKey)?.height || 25;
-                this.newValue = this.prevValue;
-                this.rowKey = rowKey; // Store the row key
-            }
-        });
+    // private handleResize(): void {
+    //     // this.rowCanvasDiv.addEventListener("pointerdown", (event) => {
+    //     //     if (event.button === 1) { // Ignore middle-click
+    //     //         return;
+    //     //     }
+    //     //     this.hoverIdx = this.binarySearchRange(event.offsetY); // Determine which row boundary is hovered
+    //     //     if (this.hoverIdx !== -1) {
+    //     //         this.ifResizePointerDown.value = true; // Set flag when pointer is down on a resizable edge
+    //     //         const rowKey = this.rowID * 25 + 1 + this.hoverIdx; // Calculate global row key
+    //     //         // Store previous and current height for undo/redo
+    //     //         this.prevValue = this.rowHeights.get(rowKey)?.height || 25;
+    //     //         this.newValue = this.prevValue;
+    //     //         this.rowKey = rowKey; // Store the row key
+    //     //     }
+    //     // });
 
-        this.rowCanvasDiv.addEventListener("pointermove", (event) => {
-            if (this.ifResizePointerDown.value) {
-                // If resize is active and pointer is down, indicate which row canvas is involved
-                this.currentResizingRow.value = this.rowID;
-                return;
-            }
+    //     // this.rowCanvasDiv.addEventListener("pointermove", (event) => {
+    //     //     if (this.ifResizePointerDown.value) {
+    //     //         // If resize is active and pointer is down, indicate which row canvas is involved
+    //     //         this.currentResizingRow.value = this.rowID;
+    //     //         return;
+    //     //     }
 
-            this.hoverIdx = this.binarySearchRange(event.offsetY); // Find hovered row boundary
-            if (this.hoverIdx !== -1) {
-                this.ifResizeOn.value = true; // Indicate that resizing is possible
-                this.resizeDiv.style.display = "block"; // Show the resize handle
-                // Position the resize handle at the row boundary
-                this.resizeDiv.style.top = `${this.rowsPositionArr[this.hoverIdx] - 1.5}px`;
-                this.resizeDiv.style.zIndex = `10`; // Bring resize handle to front
-            } else {
-                if (!this.ifResizePointerDown.value) {
-                    // Hide resize handle if not hovering and not currently resizing
-                    if (this.resizeDiv) this.resizeDiv.style.display = "none";
-                }
-                this.ifResizeOn.value = false; // Indicate that resizing is not possible
-            }
-        });
+    //     //     this.hoverIdx = this.binarySearchRange(event.offsetY); // Find hovered row boundary
+    //     //     if (this.hoverIdx !== -1) {
+    //     //         this.ifResizeOn.value = true; // Indicate that resizing is possible
+    //     //         this.resizeDiv.style.display = "block"; // Show the resize handle
+    //     //         // Position the resize handle at the row boundary
+    //     //         this.resizeDiv.style.top = `${this.rowsPositionArr[this.hoverIdx] - 1.5}px`;
+    //     //         this.resizeDiv.style.zIndex = `10`; // Bring resize handle to front
+    //     //     } else {
+    //     //         if (!this.ifResizePointerDown.value) {
+    //     //             // Hide resize handle if not hovering and not currently resizing
+    //     //             if (this.resizeDiv) this.resizeDiv.style.display = "none";
+    //     //         }
+    //     //         this.ifResizeOn.value = false; // Indicate that resizing is not possible
+    //     //     }
+    //     // });
 
-        this.rowCanvasDiv.addEventListener("pointerout", (event) => {
-            if (!this.ifResizePointerDown.value) {
-                // Hide resize handle when pointer leaves if not actively resizing
-                if (this.resizeDiv) this.resizeDiv.style.display = "none";
-            }
-            this.ifResizeOn.value = false; // Reset resize active flag
-        });
-    }
+    //     this.rowCanvasDiv.addEventListener("pointerout", (event) => {
+    //         if (!this.ifResizePointerDown.value) {
+    //             // Hide resize handle when pointer leaves if not actively resizing
+    //             if (this.resizeDiv) this.resizeDiv.style.display = "none";
+    //         }
+    //         this.ifResizeOn.value = false; // Reset resize active flag
+    //     });
+    // }
 
     /**
      * Resizes a specific row when dragged, clamps height, and redraws.
      * Updates the `resizeDiv`'s position and calls `changeHeight` to update row data.
      * @param {number} newPosition - The new Y-coordinate of the mouse relative to the viewport.
      */
-    resizeRow(newPosition: number): void {
+    resizeRow(newPosition: number,hoverIdx:number,rowKey:number): void {
         // Convert viewport position to position relative to the row canvas div
         newPosition = newPosition - this.rowCanvasDiv.getBoundingClientRect().top;
         let newHeight: number = 25; // Initialize with default
 
-        if (this.hoverIdx !== 0) {
+        if (hoverIdx !== 0) {
             // Calculate new height based on the previous row boundary
-            newHeight = newPosition - this.rowsPositionArr[this.hoverIdx - 1];
+            newHeight = newPosition - this.rowsPositionArr[hoverIdx - 1];
         } else {
             // If it's the first row, new height is simply the new position
             newHeight = newPosition;
@@ -189,15 +189,15 @@ export class RowsCanvas {
         newHeight = Math.min(500, newHeight);
 
         // Update the visual position of the resize handle
-        if (this.hoverIdx !== 0) {
-            this.resizeDiv.style.top = `${this.rowsPositionArr[this.hoverIdx - 1] + newHeight}px`;
+        if (hoverIdx !== 0) {
+            this.resizeDiv.style.top = `${this.rowsPositionArr[hoverIdx - 1] + newHeight}px`;
         } else {
             this.resizeDiv.style.top = `${newHeight}px`;
         }
 
         // Calculate the global row key for the resized row
-        this.rowKey = this.rowID * 25 + this.hoverIdx + 1;
-        this.changeHeight(newHeight, this.rowKey); // Apply the height change and trigger redraw
+        rowKey = this.rowID * 25 + hoverIdx + 1;
+        this.changeHeight(newHeight, rowKey); // Apply the height change and trigger redraw
     }
 
     /**
@@ -225,7 +225,7 @@ export class RowsCanvas {
      * @param {number} num - The Y offset to check within the canvas.
      * @returns {number} Row index if found near boundary (within +/- 5 pixels), else -1.
      */
-    private binarySearchRange(num: number): number {
+    binarySearchRange(num: number): number {
         let start = 0;
         let end = 24; // There are 25 rows per canvas (0-24 index)
         let mid: number;

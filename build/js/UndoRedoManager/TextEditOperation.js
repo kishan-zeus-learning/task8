@@ -1,4 +1,4 @@
-import { Operation } from "../types/Operation.js";
+import { Operation } from "./Operation.js";
 /**
  * Represents a text edit operation that supports undo and redo functionality.
  * Extends the Operation base class.

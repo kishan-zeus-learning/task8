@@ -19,7 +19,7 @@ export class ColumnsCanvas {
     readonly columnCanvasDiv: HTMLDivElement;
 
     /** @private @type {HTMLCanvasElement} The HTML canvas element used for drawing column headers. */
-    private columnCanvas: HTMLCanvasElement = document.createElement("canvas");
+    readonly columnCanvas: HTMLCanvasElement = document.createElement("canvas");
     /** @private @type {number} The default width for columns. */
     private defaultWidth: number;
     /** @private @type {number} The default height for column headers. */
@@ -76,7 +76,7 @@ export class ColumnsCanvas {
         this.selectionCoordinates = selectionCoordinates;
         this.setColumnsPositionArr(); // Initialize column positions
         this.columnCanvasDiv = this.createcolumnCanvas(); // Create the DOM elements
-        this.handleResize(); // Attach event listeners for resizing
+        // this.handleResize(); // Attach event listeners for resizing
     }
 
     /**
@@ -107,67 +107,67 @@ export class ColumnsCanvas {
      * Sets up event listeners for column resizing interactions (pointerdown, pointermove, pointerout).
      * This method manages the visual feedback of the resize handle and updates resize state flags.
      */
-    private handleResize() {
-        this.columnCanvasDiv.addEventListener("pointerdown", (event) => {
-            if (event.button === 1) return; // Ignore middle-click
-            this.hoverIdx = this.binarySearchRange(event.offsetX); // Determine which column boundary is hovered
-            if (this.hoverIdx !== -1) {
-                this.ifResizePointerDown.value = true; // Set flag when pointer is down on a resizable edge
-                // Calculate the global column key
-                const columnKey = this.columnID * 25 + 1 + this.hoverIdx;
-                // Store the previous width for undo/redo
-                this.prevValue = this.columnWidths.get(columnKey)?.width || 100;
-                this.newValue = this.prevValue; // Initialize newValue with prevValue
-                this.columnKey = columnKey; // Store the column key
-            }
-        });
+    // private handleResize() {
+    //     this.columnCanvasDiv.addEventListener("pointerdown", (event) => {
+    //         if (event.button === 1) return; // Ignore middle-click
+    //         this.hoverIdx = this.binarySearchRange(event.offsetX); // Determine which column boundary is hovered
+    //         if (this.hoverIdx !== -1) {
+    //             this.ifResizePointerDown.value = true; // Set flag when pointer is down on a resizable edge
+    //             // Calculate the global column key
+    //             const columnKey = this.columnID * 25 + 1 + this.hoverIdx;
+    //             // Store the previous width for undo/redo
+    //             this.prevValue = this.columnWidths.get(columnKey)?.width || 100;
+    //             this.newValue = this.prevValue; // Initialize newValue with prevValue
+    //             this.columnKey = columnKey; // Store the column key
+    //         }
+    //     });
 
-        this.columnCanvasDiv.addEventListener("pointermove", (event) => {
-            if (this.ifResizePointerDown.value) {
-                // If resize is active and pointer is down, indicate which column canvas is involved in resizing
-                this.currentResizingColumn.value = this.columnID;
-                return;
-            }
+    //     this.columnCanvasDiv.addEventListener("pointermove", (event) => {
+    //         if (this.ifResizePointerDown.value) {
+    //             // If resize is active and pointer is down, indicate which column canvas is involved in resizing
+    //             this.currentResizingColumn.value = this.columnID;
+    //             return;
+    //         }
 
-            this.hoverIdx = this.binarySearchRange(event.offsetX); // Find hovered column boundary
+    //         this.hoverIdx = this.binarySearchRange(event.offsetX); // Find hovered column boundary
 
-            if (this.hoverIdx !== -1) {
-                this.ifResizeOn.value = true; // Indicate that resizing is possible
-                this.resizeDiv.style.display = "block"; // Show the resize handle
-                // Position the resize handle at the column boundary
-                this.resizeDiv.style.left = `${this.columnsPositionArr[this.hoverIdx] - 1.5}px`;
-                this.resizeDiv.style.zIndex = `10`; // Bring resize handle to front
-            } else {
-                if (!this.ifResizePointerDown.value) {
-                    // Hide resize handle if not hovering and not currently resizing
-                    this.resizeDiv.style.display = "none";
-                }
-                this.ifResizeOn.value = false; // Indicate that resizing is not possible
-            }
-        });
+    //         if (this.hoverIdx !== -1) {
+    //             this.ifResizeOn.value = true; // Indicate that resizing is possible
+    //             this.resizeDiv.style.display = "block"; // Show the resize handle
+    //             // Position the resize handle at the column boundary
+    //             this.resizeDiv.style.left = `${this.columnsPositionArr[this.hoverIdx] - 1.5}px`;
+    //             this.resizeDiv.style.zIndex = `10`; // Bring resize handle to front
+    //         } else {
+    //             if (!this.ifResizePointerDown.value) {
+    //                 // Hide resize handle if not hovering and not currently resizing
+    //                 this.resizeDiv.style.display = "none";
+    //             }
+    //             this.ifResizeOn.value = false; // Indicate that resizing is not possible
+    //         }
+    //     });
 
-        this.columnCanvasDiv.addEventListener("pointerout", () => {
-            if (!this.ifResizePointerDown.value) {
-                // Hide resize handle when pointer leaves if not actively resizing
-                this.resizeDiv.style.display = "none";
-            }
-            this.ifResizeOn.value = false; // Reset resize active flag
-        });
-    }
+    //     this.columnCanvasDiv.addEventListener("pointerout", () => {
+    //         if (!this.ifResizePointerDown.value) {
+    //             // Hide resize handle when pointer leaves if not actively resizing
+    //             this.resizeDiv.style.display = "none";
+    //         }
+    //         this.ifResizeOn.value = false; // Reset resize active flag
+    //     });
+    // }
 
     /**
      * Resizes the column identified by `hoverIdx` based on the new pointer position.
      * Updates the `resizeDiv`'s position and calls `changeWidth` to update column data.
      * @param {number} newPosition - The new X-coordinate of the pointer relative to the viewport.
      */
-    resizeColumn(newPosition: number) {
+    resizeColumn(newPosition: number,hoverIdx:number,columnKey:number) {
         // Convert viewport position to position relative to the column canvas div
         newPosition = newPosition - this.columnCanvasDiv.getBoundingClientRect().left;
 
         let newWidth;
-        if (this.hoverIdx !== 0) {
+        if (hoverIdx !== 0) {
             // Calculate new width based on the previous column boundary
-            newWidth = newPosition - this.columnsPositionArr[this.hoverIdx - 1];
+            newWidth = newPosition - this.columnsPositionArr[hoverIdx - 1];
         } else {
             // If it's the first column, new width is simply the new position
             newWidth = newPosition;
@@ -178,17 +178,17 @@ export class ColumnsCanvas {
         newWidth = Math.min(500, newWidth);
 
         // Update the visual position of the resize handle
-        if (this.hoverIdx !== 0) {
-            this.resizeDiv.style.left = `${this.columnsPositionArr[this.hoverIdx - 1] + newWidth}px`;
+        if (hoverIdx !== 0) {
+            this.resizeDiv.style.left = `${this.columnsPositionArr[hoverIdx - 1] + newWidth}px`;
         } else {
             this.resizeDiv.style.left = `${newWidth}px`;
         }
 
         // Calculate the global column key for the resized column
-        this.columnKey = this.columnID * 25 + this.hoverIdx + 1;
+        columnKey = this.columnID * 25 + hoverIdx + 1;
         
         // Apply the width change and trigger canvas redraw
-        this.changeWidth(newWidth, this.columnKey);
+        this.changeWidth(newWidth, columnKey);
     }
 
     /**
@@ -218,7 +218,7 @@ export class ColumnsCanvas {
      * @param {number} num - The X-coordinate offset within the canvas.
      * @returns {number} The index of the column boundary if found, otherwise -1.
      */
-    private binarySearchRange(num: number): number {
+    binarySearchRange(num: number): number {
         let start = 0;
         let end = 24; // There are 25 columns per canvas (0-24 index)
         while (start <= end) {

@@ -1,4 +1,4 @@
-import { Operation } from "../types/Operation";
+import { Operation } from "./Operation";
 
 /**
  * Manages undo and redo operations using stacks
@@ -26,6 +26,7 @@ export class UndoRedoManager {
         operation.redo();
         this.undoStack.push(operation);
         this.redoStack = [];
+        console.log(this.undoStack);
     }
 
     /**

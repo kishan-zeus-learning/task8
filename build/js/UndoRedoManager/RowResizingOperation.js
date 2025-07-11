@@ -1,4 +1,4 @@
-import { Operation } from "../types/Operation.js";
+import { Operation } from "./Operation.js";
 /**
  * Represents a row resizing operation, designed to be used with an Undo/Redo manager.
  * This class extends the `Operation` abstract class, providing `undo` and `redo` capabilities.

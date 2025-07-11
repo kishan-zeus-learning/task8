@@ -1,8 +1,8 @@
-import { TextEditOperation } from "./TextEditOperation.js";
+import { TextEditOperation } from "./UndoRedoManager/TextEditOperation.js";
 /**
  * Manages cell, row, and column selection, editing, and input interactions
  */
-export class CellSelectionManager {
+export class SelectionManager {
     /**
      * Initializes CellSelectionManager
      * @param {RowsManager} rowsManager
@@ -60,9 +60,9 @@ export class CellSelectionManager {
      * Sets up DOM event listeners for selection handling
      */
     init() {
-        this.tilesManager.gridDiv.addEventListener("pointerdown", (event) => this.tilePointerDown(event));
-        this.rowsManager.rowsDivContainer.addEventListener("pointerdown", (event) => this.rowPointerDown(event));
-        this.columnsManager.columnsDivContainer.addEventListener("pointerdown", (event) => this.columnPointerDown(event));
+        // this.tilesManager.gridDiv.addEventListener("pointerdown", (event) => this.tilePointerDown(event));
+        // this.rowsManager.rowsDivContainer.addEventListener("pointerdown", (event) => this.rowPointerDown(event));
+        // this.columnsManager.columnsDivContainer.addEventListener("pointerdown", (event) => this.columnPointerDown(event));
         this.tilesManager.gridDiv.addEventListener("dblclick", (event) => this.handleDoubleClick(event));
     }
     /**

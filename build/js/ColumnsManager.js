@@ -150,4 +150,11 @@ export class ColumnsManager {
             column.drawCanvas(); // Call drawCanvas method on each visible ColumnsCanvas instance
         }
     }
+    getCurrentColumnCanvas(columnID) {
+        const arrIdx = columnID - this.visibleColumns[0].columnID;
+        if (arrIdx >= 0 && arrIdx < this.visibleColumns.length)
+            return this.visibleColumns[arrIdx];
+        alert("something went wrong inside columns manager");
+        return null;
+    }
 }

@@ -2,7 +2,7 @@ import { ColumnsManager } from "./ColumnsManager.js";
 import { RowsManager } from "./RowsManager.js";
 import { TilesManager } from "./TilesManager.js";
 import { BooleanObj } from "./types/BooleanObj.js";
-import { UndoRedoManager } from "./UndoRedoManager.js";
+import { UndoRedoManager } from "./UndoRedoManager/UndoRedoManager.js";
 import { RowResizeHandler } from "./RowResizeHandler.js";
 import { ColumnResizeHandler } from "./ColumnResizeHandler.js";
 
@@ -98,7 +98,7 @@ export class ResizeManager {
         document.body.style.cursor = "default";
 
         // Delegate to specialized handlers
-        this.rowResizeHandler.handlePointerUp();
+        // this.rowResizeHandler.handlePointerUp();
         this.columnResizeHandler.handlePointerUp();
     }
 
@@ -114,7 +114,7 @@ export class ResizeManager {
         }
 
         // Delegate to specialized handlers
-        this.rowResizeHandler.handlePointerMove(event);
+        // this.rowResizeHandler.handlePointerMove(event);
         this.columnResizeHandler.handlePointerMove(event);
     }
 }

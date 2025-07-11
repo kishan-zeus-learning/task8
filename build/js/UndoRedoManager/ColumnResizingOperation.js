@@ -1,4 +1,4 @@
-import { Operation } from "../types/Operation.js";
+import { Operation } from "./Operation.js";
 /**
  * Represents a column resizing operation for undo/redo functionality.
  * Extends the abstract `Operation` class.
@@ -34,6 +34,8 @@ export class ColumnResizingOperation extends Operation {
      * Redoes the column resizing operation by applying the column's new width.
      */
     redo() {
+        // console.log("old : ",this.prevValue);
+        // console.log("new : ",this.newValue);
         this.changeWidth(this.newValue);
     }
     /**
