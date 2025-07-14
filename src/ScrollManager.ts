@@ -90,14 +90,24 @@ export class ScrollManager {
             const currentScrollTop = this.sheetDiv.scrollTop;
             const currentScrollLeft = this.sheetDiv.scrollLeft;
 
+            
             if (currentScrollTop > lastScrollTop) this.handleScrollDown(event);
             else if (currentScrollTop < lastScrollTop) this.handleScrollUp(event);
-
+            
             if (currentScrollLeft > lastScrollLeft) this.handleScrollRight(event);
             else if (currentScrollLeft < lastScrollLeft) this.handleScrollLeft(event);
-
+            
             lastScrollLeft = currentScrollLeft;
             lastScrollTop = currentScrollTop;
+        if(currentScrollTop===0){
+            this.rowsManager!.rowsDivContainer.style.marginBottom="0";
+            this.rowsManager!.marginBottom.value=0;
+        }
+
+        if(currentScrollLeft===0){
+            this.columnsManager!.columnsDivContainer.style.marginRight="0";
+            this.columnsManager!.marginRight.value=0;
+        }
         });
     }
 

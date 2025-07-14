@@ -4,7 +4,7 @@
   display: grid;
   grid-template-columns: auto 1fr;
   grid-template-rows: auto 1fr;
-  height: calc(100vh - 216px - 55px);
+  height: calc(100vh - 100px - 55px);
   width: 100vw;
   overflow-y: scroll;
   overflow-x: scroll;
@@ -31,6 +31,7 @@
   z-index: 2;
   display: flex;
   background-color: #f1f1f1;
+  cursor: url("../img/ArrowDown.png"), auto;
 }
 .sheet .rowsColumnWrapper {
   grid-row: 2/3;
@@ -40,6 +41,7 @@
   z-index: 2;
   background-color: #f1f1f1;
   box-sizing: content-box;
+  cursor: url("../img/ArrowRight.png"), auto;
 }
 .sheet .gridContent {
   grid-row: 2/3;
@@ -61,6 +63,7 @@
 
 .tileDiv {
   position: relative;
+  cursor: cell;
 }
 .tileDiv .cellInput {
   position: absolute;

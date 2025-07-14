@@ -24,7 +24,7 @@ export class TilesManager {
     }
     /** Scrolls the grid one row down */
     scrollDown() {
-        this.gridDiv.style.marginTop = `${this.marginTop}px`;
+        this.gridDiv.style.marginTop = `${this.marginTop.value}px`;
         this.unmountTileTop();
         this.startRowIdx++;
         this.mountTileBottom();
@@ -38,7 +38,7 @@ export class TilesManager {
     }
     /** Scrolls the grid one row up */
     scrollUp() {
-        this.gridDiv.style.marginTop = `${this.marginTop}px`;
+        this.gridDiv.style.marginTop = `${this.marginTop.value}px`;
         this.unmountTileBottom();
         this.startRowIdx--;
         this.mountTileTop();

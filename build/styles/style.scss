@@ -8,81 +8,14 @@
   line-height: 0;
   scrollbar-color: #e7e7e7;
   scrollbar-base-color: #e7e7e7;
-  // -ms-scrollbar-base-color: #e7e7e7;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  // cursor: inherit !important;
 }
 
 .upperDiv {
-  height: 216px;
-  background-color: aliceblue;
-  // display: flex;
-  // justify-content: center;
-  // align-items: center;
-}
-  
-.subRow{
-
-  width: fit-content;
-  // border: black 1px solid;
-}
-
- 
-.subColumn{
-  width: fit-content;
-  // border: black 1px solid;
-}
-
-.columnsRow,.flex{
-  display: flex;
-}
-
-.testingClass{
-  height: 1000px;
-  width: 5000px;
-}
-
-.subRow{
-  position: relative;
-  .RowResizeDiv{
-    display: none;
-    position: absolute;
-    width: 30px;
-    left:10px;
-    height: 2px;
-    background-color: transparent;
-    border: 1px green solid;
-    cursor: ns-resize;
-    pointer-events: none;
-  }
-}
-
-
-.subColumn{
-  position: relative;
-  .ColumnResizeDiv{
-    position: absolute;
-    width: 2px;
-    top: 5px;
-    height: 15px;
-    background-color: transparent;
-    border: 1px green solid;
-    cursor: ew-resize;
-    pointer-events: none;
-    display: none;
-  } 
-
-}
-
-
-
-// temp code
-
-
-.upperDiv {
-  height: 216px;
+  height: 100px;  // Changed height to 100px
   width: 100vw;
   background: linear-gradient(to bottom, #f0f0f0, #e6e6e6);
-  // border-bottom: 1px solid #ccc;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -104,9 +37,7 @@
   font-size: 18px;
   border-radius: 4px;
   width: 80%;
-  
 }
-
 
 .excel-icon {
   width: 32px;
@@ -118,14 +49,12 @@
   font-weight: 500;
 }
 
-
 .inputBar {
   box-sizing: content-box;
   width: calc(100vw - 16px);
   padding: 4px 8px;
   height: 32px;
   display: flex;
-  // justify-content: center;
   gap: 20px;
   align-items: center;
 
@@ -140,7 +69,7 @@
     font-family: "Segoe UI", Tahoma, sans-serif;
     box-shadow: inset 0 0 2px rgba(0, 0, 0, 0.05);
 
-    .outerInputBar{
+    .outerInputBar {
       width: 100%;
       height: 100%;
       outline: none;
@@ -148,12 +77,11 @@
     }
   }
 
-  // Hides the ugly default file input
   input[type="file"] {
     display: none;
   }
 
-  .uploaddiv{
+  .uploaddiv {
     height: 90%;
   }
 
@@ -168,7 +96,7 @@
     cursor: pointer;
     transition: background-color 0.2s ease, box-shadow 0.2s ease;
     height: 100%;
-    line-height: 22px; // To center text vertically
+    line-height: 22px;
 
     &:hover {
       background-color: #1a5d38;
@@ -181,6 +109,46 @@
   }
 }
 
+.subRow {
+  width: fit-content;
+  position: relative;
 
+  .RowResizeDiv {
+    display: none;
+    position: absolute;
+    width: 30px;
+    left: 10px;
+    height: 2px;
+    background-color: transparent;
+    border: 1px green solid;
+    cursor: ns-resize;
+    pointer-events: none;
+  }
+}
 
+.subColumn {
+  width: fit-content;
+  position: relative;
 
+  .ColumnResizeDiv {
+    display: none;
+    position: absolute;
+    width: 2px;
+    top: 5px;
+    height: 15px;
+    background-color: transparent;
+    border: 1px green solid;
+    cursor: ew-resize;
+    pointer-events: none;
+  }
+}
+
+.columnsRow,
+.flex {
+  display: flex;
+}
+
+.testingClass {
+  height: 1000px;
+  width: 5000px;
+}

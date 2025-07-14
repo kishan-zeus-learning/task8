@@ -49,6 +49,7 @@ export class RowResizeEventHandler extends PointerEventHandlerBase {
      */
     pointerDown(event) {
         var _a;
+        this.rowsManager.rowsDivContainer.style.cursor = "ns-resize";
         document.body.style.cursor = "ns-resize";
         this.rowKey = this.rowID * 25 + 1 + this.hoverIdx;
         this.prevValue = ((_a = this.rowsManager.rowHeights.get(this.rowKey)) === null || _a === void 0 ? void 0 : _a.height) || 25;
@@ -67,6 +68,7 @@ export class RowResizeEventHandler extends PointerEventHandlerBase {
      */
     pointerUp(event) {
         document.body.style.cursor = "";
+        this.rowsManager.rowsDivContainer.style.cursor = "";
         const rowResizeOperation = new RowResizingOperation(this.rowKey, this.prevValue, this.currentCanvasObj.getNewValue(), this.currentCanvasObj.rowHeights, this.rowsManager, this.tilesManager, this.currentCanvasObj);
         this.undoRedoManager.execute(rowResizeOperation);
         this.tilesManager.redrawRow(this.rowID);

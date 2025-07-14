@@ -13,9 +13,8 @@ export class ColumnsManager {
      * @param columnCanvasLimit - Maximum number of column canvas groups.
      * @param defaultHeight - Default height for column headers.
      * @param defaultWidth - Default width for columns.
-     * @param marginLeft - Initial left margin for the columns container.
      */
-    constructor(columnWidths, startColumnIdx, visibleColumnCnt, selectionCoordinates, columnCanvasLimit = 40, defaultHeight = 25, defaultWidth = 100, marginLeft = { value: 0 }) {
+    constructor(columnWidths, startColumnIdx, visibleColumnCnt, selectionCoordinates, columnCanvasLimit = 40, defaultHeight = 25, defaultWidth = 100) {
         this.columnWidths = columnWidths;
         this.startColumnIdx = startColumnIdx;
         this.visibleColumnCnt = visibleColumnCnt;
@@ -23,7 +22,8 @@ export class ColumnsManager {
         this.defaultHeight = defaultHeight;
         this.defaultWidth = defaultWidth;
         this.selectionCoordinates = selectionCoordinates;
-        this.marginLeft = marginLeft;
+        this.marginLeft = { value: 0 };
+        this.marginRight = { value: 0 };
         this.visibleColumns = [];
         this.visibleColumnsPrefixSum = [];
         this.columnsDivContainer = document.getElementById("columnsRow");
@@ -74,6 +74,10 @@ export class ColumnsManager {
         this.visibleColumns.push(canvas);
         this.visibleColumnsPrefixSum.push(canvas.columnsPositionArr);
         this.columnsDivContainer.appendChild(canvas.columnCanvasDiv);
+        if (this.marginRight.value > 0) {
+            this.marginRight.value -= canvas.columnsPositionArr[24];
+            this.columnsDivContainer.style.marginRight = `${this.marginRight.value}px`;
+        }
     }
     /**
      * Mounts a new column canvas group to the left end and adjusts margin.
@@ -102,6 +106,8 @@ export class ColumnsManager {
      * Unmounts the rightmost canvas from the DOM.
      */
     unmountColumnRight() {
+        this.marginRight.value += this.visibleColumns[this.visibleColumnCnt - 1].columnsPositionArr[24];
+        this.columnsDivContainer.style.marginRight = `${this.marginRight.value}px`;
         const canvas = this.visibleColumns.pop();
         if (canvas) {
             this.columnsDivContainer.removeChild(canvas.columnCanvasDiv);

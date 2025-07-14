@@ -45,9 +45,7 @@ class App {
         this.ColumnsManagerObj = new ColumnsManager(this.columnData, 0, this.ScrollManagerObj.horizontalNum, // number of visible columns
         this.selectionCoordinates);
         // TilesManager handles cell rendering, merging selection + data
-        this.TilesManagerObj = new TilesManager(this.RowsManagerObj.rowsPositionPrefixSumArr, this.ColumnsManagerObj.visibleColumnsPrefixSum, this.ScrollManagerObj.verticalNum, this.ScrollManagerObj.horizontalNum, this.selectionCoordinates, this.CellsManagerObj, undefined, // formulaManager (future)
-        undefined, // dependencyGraph (future)
-        this.RowsManagerObj.marginTop, this.ColumnsManagerObj.marginLeft);
+        this.TilesManagerObj = new TilesManager(this.RowsManagerObj.rowsPositionPrefixSumArr, this.ColumnsManagerObj.visibleColumnsPrefixSum, this.ScrollManagerObj.verticalNum, this.ScrollManagerObj.horizontalNum, this.selectionCoordinates, this.CellsManagerObj, undefined, undefined, this.RowsManagerObj.marginTop, this.ColumnsManagerObj.marginLeft);
         // Enables uploading JSON file to populate spreadsheet
         this.JSONUploadObj = new JSONUpload(this.cellData, this.TilesManagerObj, this.RowsManagerObj, this.ColumnsManagerObj);
         // Calculation engine for sum, average, count, min, max in selection

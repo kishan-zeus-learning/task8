@@ -123,8 +123,8 @@ export class ColumnsResizeEventHandler extends PointerEventHandlerBase {
      * @param event - The pointer down event.
      */
     pointerDown(event: PointerEvent): void {
-        document.body.style.cursor = "ew-resize";
-
+        this.ColumnDiv.style.cursor="ew-resize";
+        document.body.style.cursor="ew-resize";
         this.columnKey = (this.columnID as number) * 25 + 1 + this.hoverIdx;
         this.prevValue = this.columnsManager.columnWidths.get(this.columnKey)?.width || 100;
         this.newValue = this.prevValue;
@@ -144,6 +144,7 @@ export class ColumnsResizeEventHandler extends PointerEventHandlerBase {
      */
     pointerUp(event: PointerEvent): void {
         document.body.style.cursor = "";
+        this.ColumnDiv.style.cursor="";
 
         const columnResizeOperation = new ColumnResizingOperation(
             this.columnKey,

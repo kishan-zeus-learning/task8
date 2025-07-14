@@ -106,8 +106,8 @@ class App {
             this.ScrollManagerObj.horizontalNum,
             this.selectionCoordinates,
             this.CellsManagerObj,
-            undefined, // formulaManager (future)
-            undefined, // dependencyGraph (future)
+            undefined, 
+            undefined, 
             this.RowsManagerObj.marginTop,
             this.ColumnsManagerObj.marginLeft
         );

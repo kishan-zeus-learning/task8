@@ -23,8 +23,11 @@ export class RowsManager {
     /** @type {RowsCanvas[]} Array of currently visible RowsCanvas instances */
     readonly visibleRows: RowsCanvas[];
 
-    /** @type {NumberObj} Global shared variable representing vertical scroll offset in pixels */
+    /** @type {NumberObj} Global shared variable representing vertical scroll top offset in pixels */
     readonly marginTop: NumberObj;
+
+    /** @type {NumberObj} Global shared variable representing vertical scroll bottom offset in pixels */
+    readonly marginBottom: NumberObj;
 
     /** @type {HTMLDivElement[]} DOM references to currently visible row block divs */
     private rowsDivArr: HTMLDivElement[];
@@ -53,7 +56,6 @@ export class RowsManager {
      * @param {number} [rowCanvasLimit=40000] - Maximum number of row blocks.
      * @param {number} [defaultHeight=25] - Default row height (pixels).
      * @param {number} [defaultWidth=50] - Default row width (pixels).
-     * @param {NumberObj} [marginTop={ value: 0 }] - Global object for managing vertical scroll offset.
      */
     constructor(
         rowHeights: RowData,
@@ -63,7 +65,6 @@ export class RowsManager {
         rowCanvasLimit: number = 40000,
         defaultHeight: number = 25,
         defaultWidth: number = 50,
-        marginTop = { value: 0 }
     ) {
         this.rowHeights = rowHeights;
         this.startRowIdx = startRowIdx;
@@ -73,7 +74,8 @@ export class RowsManager {
         this.rowsPositionPrefixSumArr = [];
         this.rowsDivArr = [];
         this.visibleRows = [];
-        this.marginTop = marginTop;
+        this.marginTop = {value:0};
+        this.marginBottom={value:0};
         this.defaultHeight = defaultHeight;
         this.defaultWidth = defaultWidth;
         this.rowsDivContainer = document.getElementById("rowsColumn") as HTMLDivElement;
@@ -141,6 +143,10 @@ export class RowsManager {
         this.rowsPositionPrefixSumArr.push(canvas.rowsPositionArr);
         this.rowsDivArr.push(canvas.rowCanvasDiv);
         this.rowsDivContainer.appendChild(canvas.rowCanvasDiv);
+        if(this.marginBottom.value>0){
+            this.marginBottom.value-=this.rowsPositionPrefixSumArr[this.visibleRowCnt-1][24];
+            this.rowsDivContainer.style.marginBottom=`${this.marginBottom.value}px`;
+        }
     }
 
     /**
@@ -183,6 +189,8 @@ export class RowsManager {
      * Unmounts the bottommost row block during scroll up.
      */
     private unmountRowBottom(): void {
+        this.marginBottom.value+=this.rowsPositionPrefixSumArr[this.rowsPositionPrefixSumArr.length-1][24];
+        this.rowsDivContainer.style.marginBottom= `${this.marginBottom.value}px`;
         this.rowsDivContainer.removeChild(this.rowsDivArr[this.rowsDivArr.length - 1]);
         this.rowsDivArr.pop();
         this.rowsPositionPrefixSumArr.pop();

@@ -90,7 +90,8 @@ export class RowResizeEventHandler extends PointerEventHandlerBase {
      * @param {PointerEvent} event
      */
     pointerDown(event: PointerEvent): void {
-        document.body.style.cursor = "ns-resize";
+        this.rowsManager.rowsDivContainer.style.cursor="ns-resize";
+        document.body.style.cursor="ns-resize";
         this.rowKey = (this.rowID as number) * 25 + 1 + this.hoverIdx;
         this.prevValue = this.rowsManager.rowHeights.get(this.rowKey)?.height || 25;
         this.newValue = this.prevValue;
@@ -110,6 +111,7 @@ export class RowResizeEventHandler extends PointerEventHandlerBase {
      */
     pointerUp(event: PointerEvent): void {
         document.body.style.cursor = "";
+        this.rowsManager.rowsDivContainer.style.cursor="";
         const rowResizeOperation = new RowResizingOperation(
             this.rowKey,
             this.prevValue,

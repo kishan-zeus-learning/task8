@@ -50,6 +50,7 @@ export class ColumnsResizeEventHandler extends PointerEventHandlerBase {
      */
     pointerDown(event) {
         var _a;
+        this.ColumnDiv.style.cursor = "ew-resize";
         document.body.style.cursor = "ew-resize";
         this.columnKey = this.columnID * 25 + 1 + this.hoverIdx;
         this.prevValue = ((_a = this.columnsManager.columnWidths.get(this.columnKey)) === null || _a === void 0 ? void 0 : _a.width) || 100;
@@ -68,6 +69,7 @@ export class ColumnsResizeEventHandler extends PointerEventHandlerBase {
      */
     pointerUp(event) {
         document.body.style.cursor = "";
+        this.ColumnDiv.style.cursor = "";
         const columnResizeOperation = new ColumnResizingOperation(this.columnKey, this.prevValue, this.currentCanvasObj.getNewValue(), this.currentCanvasObj.columnWidths, this.columnsManager, this.tilesManager, this.currentCanvasObj);
         this.undoRedoManager.execute(columnResizeOperation);
         this.tilesManager.redrawColumn(this.columnID);

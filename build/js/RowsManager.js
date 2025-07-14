@@ -13,9 +13,8 @@ export class RowsManager {
      * @param {number} [rowCanvasLimit=40000] - Maximum number of row blocks.
      * @param {number} [defaultHeight=25] - Default row height (pixels).
      * @param {number} [defaultWidth=50] - Default row width (pixels).
-     * @param {NumberObj} [marginTop={ value: 0 }] - Global object for managing vertical scroll offset.
      */
-    constructor(rowHeights, startRowIdx, visibleRowCnt, selectionCoordinates, rowCanvasLimit = 40000, defaultHeight = 25, defaultWidth = 50, marginTop = { value: 0 }) {
+    constructor(rowHeights, startRowIdx, visibleRowCnt, selectionCoordinates, rowCanvasLimit = 40000, defaultHeight = 25, defaultWidth = 50) {
         this.rowHeights = rowHeights;
         this.startRowIdx = startRowIdx;
         this.rowCanvasLimit = rowCanvasLimit;
@@ -24,7 +23,8 @@ export class RowsManager {
         this.rowsPositionPrefixSumArr = [];
         this.rowsDivArr = [];
         this.visibleRows = [];
-        this.marginTop = marginTop;
+        this.marginTop = { value: 0 };
+        this.marginBottom = { value: 0 };
         this.defaultHeight = defaultHeight;
         this.defaultWidth = defaultWidth;
         this.rowsDivContainer = document.getElementById("rowsColumn");
@@ -78,6 +78,10 @@ export class RowsManager {
         this.rowsPositionPrefixSumArr.push(canvas.rowsPositionArr);
         this.rowsDivArr.push(canvas.rowCanvasDiv);
         this.rowsDivContainer.appendChild(canvas.rowCanvasDiv);
+        if (this.marginBottom.value > 0) {
+            this.marginBottom.value -= this.rowsPositionPrefixSumArr[this.visibleRowCnt - 1][24];
+            this.rowsDivContainer.style.marginBottom = `${this.marginBottom.value}px`;
+        }
     }
     /**
      * Mounts a new row block at the top during scroll up.
@@ -109,6 +113,8 @@ export class RowsManager {
      * Unmounts the bottommost row block during scroll up.
      */
     unmountRowBottom() {
+        this.marginBottom.value += this.rowsPositionPrefixSumArr[this.rowsPositionPrefixSumArr.length - 1][24];
+        this.rowsDivContainer.style.marginBottom = `${this.marginBottom.value}px`;
         this.rowsDivContainer.removeChild(this.rowsDivArr[this.rowsDivArr.length - 1]);
         this.rowsDivArr.pop();
         this.rowsPositionPrefixSumArr.pop();

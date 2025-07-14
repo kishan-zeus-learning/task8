@@ -205,6 +205,7 @@ export class InteractionManager {
         const hoverIdx = canvas.binarySearchRange(offsetY);
         // Update cursor based on hover state
         document.body.style.cursor = hoverIdx === -1 ? "" : "ns-resize";
+        this.rowsManager.rowsDivContainer.style.cursor = document.body.style.cursor;
     }
     /**
      * Checks and updates cursor when hovering near resizable column areas.
@@ -228,6 +229,7 @@ export class InteractionManager {
         const hoverIdx = canvas.binarySearchRange(offsetX);
         // Update cursor based on hover state
         document.body.style.cursor = hoverIdx === -1 ? "" : "ew-resize";
+        this.columnsManager.columnsDivContainer.style.cursor = document.body.style.cursor;
     }
     /**
      * Determines and sets the appropriate resize cursor if needed.

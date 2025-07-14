@@ -3,7 +3,6 @@
 // Imports remain unchanged
 import { ColumnData } from "./types/ColumnRows";
 import { MultipleSelectionCoordinates } from "./types/MultipleSelectionCoordinates";
-import { NumberObj } from "./types/NumberObj";
 
 /**
  * Manages the rendering and interaction of column headers on a canvas.

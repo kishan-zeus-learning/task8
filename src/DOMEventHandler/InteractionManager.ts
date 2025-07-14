@@ -296,6 +296,7 @@ export class InteractionManager {
 
         // Update cursor based on hover state
         document.body.style.cursor = hoverIdx === -1 ? "" : "ns-resize";
+        this.rowsManager.rowsDivContainer.style.cursor=document.body.style.cursor;
     }
 
     /**
@@ -324,6 +325,7 @@ export class InteractionManager {
 
         // Update cursor based on hover state
         document.body.style.cursor = hoverIdx === -1 ? "" : "ew-resize";
+        this.columnsManager.columnsDivContainer.style.cursor=document.body.style.cursor;
     }
 
     /**

@@ -71,6 +71,14 @@ export class ScrollManager {
                 this.handleScrollLeft(event);
             lastScrollLeft = currentScrollLeft;
             lastScrollTop = currentScrollTop;
+            if (currentScrollTop === 0) {
+                this.rowsManager.rowsDivContainer.style.marginBottom = "0";
+                this.rowsManager.marginBottom.value = 0;
+            }
+            if (currentScrollLeft === 0) {
+                this.columnsManager.columnsDivContainer.style.marginRight = "0";
+                this.columnsManager.marginRight.value = 0;
+            }
         });
     }
     /**
