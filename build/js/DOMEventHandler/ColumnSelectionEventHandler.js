@@ -44,6 +44,8 @@ export class ColumnSelectionEventHandler extends PointerEventHandlerBase {
         this.selectionCoordinates.selectionEndColumn = startColumn;
         this.selectionCoordinates.selectionStartRow = 1;
         this.selectionCoordinates.selectionEndRow = 1000000;
+        this.coordinateX = event.clientX;
+        this.coordinateY = event.clientY;
         this.rerender();
         this.startAutoScroll();
     }
@@ -63,12 +65,13 @@ export class ColumnSelectionEventHandler extends PointerEventHandlerBase {
     startAutoScroll() {
         if (this.scrollID !== null)
             return;
-        console.log("before this : ", this);
+        // console.log("before this : ", this);
         this.scrollID = requestAnimationFrame(this.autoScroll);
     }
     autoScroll() {
-        console.log("this : ", this);
-        console.log("starting auto scroll ");
+        // console.log("this : ", this);
+        // console.log("starting auto scroll ");
+        console.log("scrolling is on at column selection");
         if (!this.ifSelectionOn) {
             this.scrollID = null;
             return;
@@ -93,6 +96,7 @@ export class ColumnSelectionEventHandler extends PointerEventHandlerBase {
         const endColumn = this.getColumn(document.elementFromPoint(canvasX, canvasY), canvasX);
         if (endColumn)
             this.selectionCoordinates.selectionEndColumn = endColumn;
+        console.log("endColumn: ", this.selectionCoordinates);
         this.rerender();
         this.scrollID = requestAnimationFrame(this.autoScroll);
     }

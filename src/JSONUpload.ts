@@ -124,7 +124,7 @@ export class JSONUpload {
             }
         }
 
-        // Trigger a re-render of tiles
+
         this.tileManager.rerender();
     }
 }

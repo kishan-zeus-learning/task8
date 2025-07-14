@@ -81,7 +81,6 @@ export class JSONUpload {
                 this.cellData.set(rowCnt++, columnMap);
             }
         }
-        // Trigger a re-render of tiles
         this.tileManager.rerender();
     }
 }

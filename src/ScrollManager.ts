@@ -3,64 +3,56 @@ import { ColumnsManager } from "./ColumnsManager.js";
 import { RowsCanvas } from "./RowsCanvas.js";
 import { RowsManager } from "./RowsManager.js";
 import { TilesManager } from "./TilesManager.js";
-// import { BooleanObj } from "./types/BooleanObj.js"; // This import is commented out and not used
 
 /**
  * Manages scrolling behavior and coordinates updates to rows, columns, and tile data.
- * It observes the scroll position of a main container and triggers loading/unloading
+ * Observes the scroll position of a main container and triggers loading/unloading
  * of row, column, and tile blocks to maintain performance for large datasets.
  */
 export class ScrollManager {
     /** @type {HTMLDivElement} The main container div for the sheet */
     private sheetDiv: HTMLDivElement;
 
-    /** @type {number} The minimum height of a row in pixels, used for calculating divisions. */
+    /** @type {number} The minimum height of a row in pixels */
     private minHeight: number = 18;
 
-    /** @type {number} The minimum width of a column in pixels, used for calculating divisions. */
+    /** @type {number} The minimum width of a column in pixels */
     private minWidth: number = 40;
 
-    /** @readonly @type {number} Number of vertical scrollable divisions (row blocks) to render initially. */
+    /** @readonly @type {number} Number of vertical scrollable divisions (row blocks) to render initially */
     readonly verticalNum: number;
 
-    /** @readonly @type {number} Number of horizontal scrollable divisions (column blocks) to render initially. */
+    /** @readonly @type {number} Number of horizontal scrollable divisions (column blocks) to render initially */
     readonly horizontalNum: number;
 
-    /** @type {ColumnsManager | null} Manager responsible for handling columns and their scrolling logic. */
+    /** @type {ColumnsManager | null} Manager responsible for column scroll handling */
     private columnsManager: ColumnsManager | null = null;
 
-    /** @type {RowsManager | null} Manager responsible for handling rows and their scrolling logic. */
+    /** @type {RowsManager | null} Manager responsible for row scroll handling */
     private rowsManager: RowsManager | null = null;
 
-    /** @type {TilesManager | null} Manager responsible for handling individual cells/tiles and their scrolling logic. */
+    /** @type {TilesManager | null} Manager responsible for cell/tile scroll handling */
     private tilesManager: TilesManager | null = null;
 
-    /** @type {DOMRect} Bounding client rectangle of the sheet container, used for visibility checks. */
+    /** @type {DOMRect} Bounding client rectangle of the container for visibility checks */
     private containerDivRect: DOMRect;
 
-
     /**
-     * Initializes the ScrollManager, computes initial scrollable divisions, and sets up scroll listeners.
-     * It connects to the main sheet DOM element and calculates how many row/column blocks
-     * should be initially visible based on its dimensions.
+     * Initializes the ScrollManager and sets up initial scrollable regions and listeners.
      */
     constructor() {
-        this.sheetDiv = document.getElementById("sheet") as HTMLDivElement; // Get the main sheet container
-        this.containerDivRect = this.sheetDiv.getBoundingClientRect(); // Get its dimensions and position
-        // Calculate the number of row blocks needed, plus a buffer of 2 blocks
+        this.sheetDiv = document.getElementById("sheet") as HTMLDivElement;
+        this.containerDivRect = this.sheetDiv.getBoundingClientRect();
         this.verticalNum = this.minVerticalDiv() + 2;
-        // Calculate the number of column blocks needed, plus a buffer of 2 blocks
         this.horizontalNum = this.minHorizontalDiv() + 2;
-        this.scrollListener(); // Attach the scroll event listener
+        this.scrollListener();
     }
 
     /**
-     * Links the external manager instances (ColumnsManager, RowsManager, TilesManager)
-     * to this ScrollManager. This is necessary for ScrollManager to coordinate their
-     * loading/unloading operations during scrolling.
-     * @param {ColumnsManager} columnsManager - The manager for columns.
-     * @param {RowsManager} rowsManager - The manager for rows.
-     * @param {TilesManager} tilesManager - The manager for cell tiles.
+     * Initializes manager dependencies for scroll coordination.
+     * @param {ColumnsManager} columnsManager - Manages column data and rendering
+     * @param {RowsManager} rowsManager - Manages row data and rendering
+     * @param {TilesManager} tilesManager - Manages cell data and rendering
      */
     initializeManager(columnsManager: ColumnsManager, rowsManager: RowsManager, tilesManager: TilesManager): void {
         this.columnsManager = columnsManager;
@@ -69,174 +61,112 @@ export class ScrollManager {
     }
 
     /**
-     * Calculates the minimum number of vertical divisions (25-row blocks)
-     * required to fill the visible height of the sheet container.
+     * Calculates minimum number of 25-row blocks visible based on container height.
      * @private
-     * @returns {number} The calculated number of vertical scrollable sections.
+     * @returns {number} Number of vertical divisions
      */
     private minVerticalDiv(): number {
-        // Calculate rows per view, then divide by 25 rows per block to get block count
         return Math.ceil(Math.ceil(this.sheetDiv.clientHeight / this.minHeight) / 25);
     }
 
     /**
-     * Calculates the minimum number of horizontal divisions (25-column blocks)
-     * required to fill the visible width of the sheet container.
+     * Calculates minimum number of 25-column blocks visible based on container width.
      * @private
-     * @returns {number} The calculated number of horizontal scrollable sections.
+     * @returns {number} Number of horizontal divisions
      */
     private minHorizontalDiv(): number {
-        // Calculate columns per view, then divide by 25 columns per block to get block count
         return Math.ceil(Math.ceil(this.sheetDiv.clientWidth / this.minWidth) / 25);
     }
 
     /**
-     * Attaches a scroll event listener to the sheet container.
-     * This listener monitors scroll direction (up, down, left, right)
-     * and triggers the corresponding handler functions.
+     * Attaches scroll listener to handle dynamic tile rendering on scroll.
      * @private
      */
     private scrollListener(): void {
-        let lastScrollTop = this.sheetDiv.scrollTop; // Store initial vertical scroll position
-        let lastScrollLeft = this.sheetDiv.scrollLeft; // Store initial horizontal scroll position
+        let lastScrollTop = this.sheetDiv.scrollTop;
+        let lastScrollLeft = this.sheetDiv.scrollLeft;
 
         this.sheetDiv.addEventListener("scroll", (event) => {
             const currentScrollTop = this.sheetDiv.scrollTop;
             const currentScrollLeft = this.sheetDiv.scrollLeft;
 
-            // Determine vertical scroll direction
-            if (currentScrollTop > lastScrollTop) {
-                this.handleScrollDown(event);
-            } else if (currentScrollTop < lastScrollTop) {
-                this.handleScrollUp(event);
-            }
+            if (currentScrollTop > lastScrollTop) this.handleScrollDown(event);
+            else if (currentScrollTop < lastScrollTop) this.handleScrollUp(event);
 
-            // Determine horizontal scroll direction
-            if (currentScrollLeft > lastScrollLeft) {
-                this.handleScrollRight(event);
-            } else if (currentScrollLeft < lastScrollLeft) {
-                this.handleScrollLeft(event);
-            }
+            if (currentScrollLeft > lastScrollLeft) this.handleScrollRight(event);
+            else if (currentScrollLeft < lastScrollLeft) this.handleScrollLeft(event);
 
-            // Update last scroll positions for the next event
             lastScrollLeft = currentScrollLeft;
             lastScrollTop = currentScrollTop;
         });
     }
 
     /**
-     * Handles scrolling down. It checks if the bottommost visible row block
-     * is entering the viewport, and if so, triggers the `RowsManager` and
-     * `TilesManager` to scroll down (unmount top, mount bottom).
+     * Handles vertical scroll down and loads new rows and tiles if necessary.
      * @private
-     * @param {Event} event - The scroll event object.
+     * @param {Event} event - Scroll event
      */
     private handleScrollDown(event: Event): void {
-        // Get the last visible row canvas and its bounding rectangle
         const lastRow = this.rowsManager?.visibleRows[this.rowsManager.visibleRows.length - 1] as RowsCanvas;
-        // If there are no rows (e.g., initial state or error), return
         if (!lastRow) return;
 
         const bufferRect = lastRow.rowCanvasDiv.getBoundingClientRect();
-
-        // Check if the bottom buffer row is within the container's visible area
-        const isVisible = (
-            bufferRect.top < this.containerDivRect.bottom &&
-            bufferRect.bottom > this.containerDivRect.top
-        );
+        const isVisible = bufferRect.top < this.containerDivRect.bottom && bufferRect.bottom > this.containerDivRect.top;
 
         if (isVisible) {
-            // If the buffer is visible, attempt to scroll down managers
-            if (this.rowsManager?.scrollDown()) {
-                this.tilesManager?.scrollDown();
-            }
+            console.log("buffer is visible ...............");
+            if (this.rowsManager?.scrollDown()) this.tilesManager?.scrollDown();
         }
     }
 
     /**
-     * Handles scrolling up. It checks if the topmost visible row block
-     * is entering the viewport, and if so, triggers the `RowsManager` and
-     * `TilesManager` to scroll up (unmount bottom, mount top).
+     * Handles vertical scroll up and loads new rows and tiles if necessary.
      * @private
-     * @param {Event} event - The scroll event object.
+     * @param {Event} event - Scroll event
      */
     private handleScrollUp(event: Event): void {
-        // Get the first visible row canvas and its bounding rectangle
         const firstRow = this.rowsManager?.visibleRows[0] as RowsCanvas;
-        // If there are no rows, return
         if (!firstRow) return;
 
         const bufferRect = firstRow.rowCanvasDiv.getBoundingClientRect();
-
-        // Check if the top buffer row is within the container's visible area
-        const isVisible = (
-            bufferRect.bottom > this.containerDivRect.top &&
-            bufferRect.top < this.containerDivRect.bottom
-        );
+        const isVisible = bufferRect.bottom > this.containerDivRect.top && bufferRect.top < this.containerDivRect.bottom;
 
         if (isVisible) {
-            // If the buffer is visible, attempt to scroll up managers
-            if (this.rowsManager?.scrollUp()) {
-                this.tilesManager?.scrollUp();
-            }
+            if (this.rowsManager?.scrollUp()) this.tilesManager?.scrollUp();
         }
     }
 
     /**
-     * Handles scrolling right. It checks if the rightmost visible column block
-     * is entering the viewport, and if so, triggers the `ColumnsManager` and
-     * `TilesManager` to scroll right (unmount left, mount right).
+     * Handles horizontal scroll right and loads new columns and tiles if necessary.
      * @private
-     * @param {Event} event - The scroll event object.
+     * @param {Event} event - Scroll event
      */
     private handleScrollRight(event: Event): void {
-        // Get the last visible column canvas and its bounding rectangle
         const lastColumn = this.columnsManager?.visibleColumns[this.columnsManager.visibleColumns.length - 1] as ColumnsCanvas;
-        // If there are no columns, return
         if (!lastColumn) return;
 
         const bufferRect = lastColumn.columnCanvasDiv.getBoundingClientRect();
-
-        // Check if the right buffer column is within the container's visible area
-        const isVisible = (
-            bufferRect.right > this.containerDivRect.left &&
-            bufferRect.left < this.containerDivRect.right
-        );
+        const isVisible = bufferRect.right > this.containerDivRect.left && bufferRect.left < this.containerDivRect.right;
 
         if (isVisible) {
-            // If the buffer is visible, attempt to scroll right managers
-            if (this.columnsManager?.scrollRight()) {
-                this.tilesManager?.scrollRight();
-            }
+            if (this.columnsManager?.scrollRight()) this.tilesManager?.scrollRight();
         }
     }
 
     /**
-     * Handles scrolling left. It checks if the leftmost visible column block
-     * is entering the viewport, and if so, triggers the `ColumnsManager` and
-     * `TilesManager` to scroll left (unmount right, mount left).
+     * Handles horizontal scroll left and loads new columns and tiles if necessary.
      * @private
-     * @param {Event} event - The scroll event object.
+     * @param {Event} event - Scroll event
      */
     private handleScrollLeft(event: Event): void {
-        // Get the first visible column canvas and its bounding rectangle
         const firstColumn = this.columnsManager?.visibleColumns[0] as ColumnsCanvas;
-        // If there are no columns, return
         if (!firstColumn) return;
 
         const bufferRect = firstColumn.columnCanvasDiv.getBoundingClientRect();
-
-        // Check if the left buffer column is within the container's visible area
-        const isVisible = (
-            bufferRect.left < this.containerDivRect.right &&
-            bufferRect.right > this.containerDivRect.left
-        );
+        const isVisible = bufferRect.left < this.containerDivRect.right && bufferRect.right > this.containerDivRect.left;
 
         if (isVisible) {
-            // If the buffer is visible, attempt to scroll left managers
-            if (this.columnsManager?.scrollLeft()) {
-                this.tilesManager?.scrollLeft();
-            }
+            if (this.columnsManager?.scrollLeft()) this.tilesManager?.scrollLeft();
         }
     }
 }

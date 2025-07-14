@@ -1,3 +1,3 @@
 export interface NumberObj{
-    value:number
-};
+    value:number;
+}

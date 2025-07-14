@@ -6,7 +6,7 @@ import { UndoRedoManager } from "../UndoRedoManager/UndoRedoManager.js";
 import { PointerEventHandlerBase } from "./PointerEventHandlerBase.js";
 
 export class RowResizeEventHandler extends PointerEventHandlerBase{
-    private RowDiv=document.getElementById("rowsColumn") as HTMLDivElement;
+    private RowDiv:HTMLDivElement;
     private rowsManager:RowsManager;
     private tilesManager:TilesManager;
     private undoRedoManager:UndoRedoManager;
@@ -25,6 +25,7 @@ export class RowResizeEventHandler extends PointerEventHandlerBase{
         this.rowsManager=rowsManager;
         this.tilesManager=tilesManager;
         this.undoRedoManager=undoRedoManager;
+        this.RowDiv=rowsManager.rowsDivContainer;
         this.currentCanvasObj=null;
         this.rowID=null;
         this.hoverIdx=-1;

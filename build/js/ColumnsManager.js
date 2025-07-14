@@ -5,151 +5,122 @@ import { ColumnsCanvas } from "./ColumnsCanvas.js";
  */
 export class ColumnsManager {
     /**
-     * Creates an instance of ColumnsManager.
-     * @param {ColumnData} columnWidths - Map that stores custom column widths keyed by column index.
-     * @param {number} startColumnIdx - Initial index of the first visible column group.
-     * @param {number} visibleColumnCnt - Number of column groups visible initially.
-     * @param {BooleanObj} ifResizeOn - Boolean object to control resize hover state.
-     * @param {BooleanObj} ifResizePointerDown - Boolean object to control resize pointer down state.
-     * @param {MultipleSelectionCoordinates} selectionCoordinates - Object containing selection range coordinates.
-     * @param {number} [columnCanvasLimit=40] - Maximum number of column canvas groups.
-     * @param {number} [defaultHeight=25] - Default height for column headers.
-     * @param {number} [defaultWidth=100] - Default width for columns.
-     * @param {NumberObj} [marginLeft={ value: 0 }] - Initial left margin for the columns container.
+     * Initializes a ColumnsManager instance.
+     * @param columnWidths - Map that stores custom column widths keyed by column index.
+     * @param startColumnIdx - Initial index of the first visible column group.
+     * @param visibleColumnCnt - Number of column groups visible initially.
+     * @param selectionCoordinates - Object containing selection range coordinates.
+     * @param columnCanvasLimit - Maximum number of column canvas groups.
+     * @param defaultHeight - Default height for column headers.
+     * @param defaultWidth - Default width for columns.
+     * @param marginLeft - Initial left margin for the columns container.
      */
-    constructor(columnWidths, startColumnIdx, visibleColumnCnt, ifResizeOn, ifResizePointerDown, selectionCoordinates, columnCanvasLimit = 40, defaultHeight = 25, defaultWidth = 100, marginLeft = { value: 0 }) {
+    constructor(columnWidths, startColumnIdx, visibleColumnCnt, selectionCoordinates, columnCanvasLimit = 40, defaultHeight = 25, defaultWidth = 100, marginLeft = { value: 0 }) {
         this.columnWidths = columnWidths;
-        this._ifResizeOn = ifResizeOn;
-        this.currentResizingColumn = { value: -1 }; // Initialize with a default invalid value
-        this._ifResizePointerDown = ifResizePointerDown;
         this.startColumnIdx = startColumnIdx;
-        this.columnCanvasLimit = columnCanvasLimit;
         this.visibleColumnCnt = visibleColumnCnt;
-        this.visibleColumnsPrefixSum = []; // Initialize empty array for prefix sums
-        this.visibleColumns = []; // Initialize empty array for visible ColumnCanvas instances
-        this.marginLeft = marginLeft;
+        this.columnCanvasLimit = columnCanvasLimit;
         this.defaultHeight = defaultHeight;
         this.defaultWidth = defaultWidth;
         this.selectionCoordinates = selectionCoordinates;
-        // Get the DOM element for the columns container
+        this.marginLeft = marginLeft;
+        this.visibleColumns = [];
+        this.visibleColumnsPrefixSum = [];
         this.columnsDivContainer = document.getElementById("columnsRow");
-        this.initialLoad(); // Perform initial loading of column canvases
+        this.initialLoad(); // Load initial column canvases
     }
     /**
-     * Returns the ColumnsCanvas instance for the currently resizing column group.
-     * This getter determines which of the visible column canvases is being interacted with for resizing.
-     * @returns {ColumnsCanvas} The ColumnsCanvas instance currently being resized.
-     */
-    get currentResizingColumnCanvas() {
-        let idx = 0;
-        // Calculate the index within the visibleColumns array based on the currentResizingColumn value
-        if (this.currentResizingColumn.value !== -1) {
-            idx = this.currentResizingColumn.value - this.visibleColumns[0].columnID;
-        }
-        return this.visibleColumns[idx];
-    }
-    /**
-     * Scrolls the columns display to the right by unmounting the leftmost column group
-     * and mounting a new column group on the right.
-     * @returns {boolean} True if scrolling occurred, false if at the rightmost limit.
-     */
-    scrollRight() {
-        // Check if already at the rightmost scroll limit
-        if (this.startColumnIdx === (this.columnCanvasLimit - 1 - this.visibleColumnCnt))
-            return false;
-        this.unmountColumnLeft(); // Remove the leftmost column canvas from DOM and array
-        this.startColumnIdx++; // Increment the starting column index
-        this.mountColumnRight(); // Add a new column canvas to the right
-        return true;
-    }
-    /**
-     * Scrolls the columns display to the left by unmounting the rightmost column group
-     * and mounting a new column group on the left.
-     * @returns {boolean} True if scrolling occurred, false if at the leftmost limit.
-     */
-    scrollLeft() {
-        // Check if already at the leftmost scroll limit
-        if (this.startColumnIdx === 0)
-            return false;
-        this.unmountColumnRight(); // Remove the rightmost column canvas from DOM and array
-        this.startColumnIdx--; // Decrement the starting column index
-        this.mountColumnLeft(); // Add a new column canvas to the left
-        return true;
-    }
-    /**
-     * Performs the initial loading and rendering of visible column canvas groups.
-     * This method is called once during the constructor.
+     * Loads initial visible column canvases and appends them to the DOM.
      */
     initialLoad() {
         for (let j = 0; j < this.visibleColumnCnt; j++) {
-            const colIdx = j + this.startColumnIdx; // Calculate the global column group index
-            // Create a new ColumnsCanvas instance
-            const canvas = new ColumnsCanvas(colIdx, this.columnWidths, this.defaultWidth, this.defaultHeight, this._ifResizeOn, this._ifResizePointerDown, this.currentResizingColumn, this.selectionCoordinates);
-            this.visibleColumns.push(canvas); // Add to the array of visible canvases
-            this.visibleColumnsPrefixSum.push(canvas.columnsPositionArr); // Store its prefix sum array
-            this.columnsDivContainer.appendChild(canvas.columnCanvasDiv); // Append to the DOM container
+            const colIdx = j + this.startColumnIdx;
+            const canvas = new ColumnsCanvas(colIdx, this.columnWidths, this.defaultWidth, this.defaultHeight, this.selectionCoordinates);
+            this.visibleColumns.push(canvas);
+            this.visibleColumnsPrefixSum.push(canvas.columnsPositionArr);
+            this.columnsDivContainer.appendChild(canvas.columnCanvasDiv);
         }
     }
     /**
-     * Mounts a new ColumnsCanvas instance to the right of the currently visible columns.
-     * This is typically called during horizontal scrolling to the right.
+     * Scrolls right by removing leftmost canvas and adding a new one on the right.
+     * @returns True if scroll occurred, false if already at right edge.
+     */
+    scrollRight() {
+        if (this.startColumnIdx === (this.columnCanvasLimit - 1 - this.visibleColumnCnt))
+            return false;
+        this.unmountColumnLeft();
+        this.startColumnIdx++;
+        this.mountColumnRight();
+        return true;
+    }
+    /**
+     * Scrolls left by removing rightmost canvas and adding a new one on the left.
+     * @returns True if scroll occurred, false if already at left edge.
+     */
+    scrollLeft() {
+        if (this.startColumnIdx === 0)
+            return false;
+        this.unmountColumnRight();
+        this.startColumnIdx--;
+        this.mountColumnLeft();
+        return true;
+    }
+    /**
+     * Mounts a new column canvas group to the right end.
      */
     mountColumnRight() {
-        const colIdx = this.startColumnIdx + this.visibleColumnCnt - 1; // Calculate the index for the new column group
-        // Create a new ColumnsCanvas instance for the new column group
-        const canvas = new ColumnsCanvas(colIdx, this.columnWidths, this.defaultWidth, this.defaultHeight, this._ifResizeOn, this._ifResizePointerDown, this.currentResizingColumn, this.selectionCoordinates);
-        this.visibleColumns.push(canvas); // Add to the end of the visible canvases array
-        this.columnsDivContainer.appendChild(canvas.columnCanvasDiv); // Append to the DOM container
-        this.visibleColumnsPrefixSum.push(canvas.columnsPositionArr); // Add its prefix sum array
+        const colIdx = this.startColumnIdx + this.visibleColumnCnt - 1;
+        const canvas = new ColumnsCanvas(colIdx, this.columnWidths, this.defaultWidth, this.defaultHeight, this.selectionCoordinates);
+        this.visibleColumns.push(canvas);
+        this.visibleColumnsPrefixSum.push(canvas.columnsPositionArr);
+        this.columnsDivContainer.appendChild(canvas.columnCanvasDiv);
     }
     /**
-     * Mounts a new ColumnsCanvas instance to the left of the currently visible columns.
-     * This is typically called during horizontal scrolling to the left.
+     * Mounts a new column canvas group to the left end and adjusts margin.
      */
     mountColumnLeft() {
-        const columnIdx = this.startColumnIdx; // The index for the new column group
-        // Create a new ColumnsCanvas instance for the new column group
-        const canvas = new ColumnsCanvas(columnIdx, this.columnWidths, this.defaultWidth, this.defaultHeight, this._ifResizeOn, this._ifResizePointerDown, this.currentResizingColumn, this.selectionCoordinates);
-        this.visibleColumns.unshift(canvas); // Add to the beginning of the visible canvases array
-        this.columnsDivContainer.prepend(canvas.columnCanvasDiv); // Prepend to the DOM container
-        this.visibleColumnsPrefixSum.unshift(canvas.columnsPositionArr); // Add its prefix sum array to the beginning
-        // Adjust the left margin to maintain visual continuity during left scroll
-        this.marginLeft.value -= canvas.columnsPositionArr[24]; // Subtract the total width of the newly added canvas
-        this.columnsDivContainer.style.marginLeft = `${this.marginLeft.value}px`; // Apply the new margin
+        const columnIdx = this.startColumnIdx;
+        const canvas = new ColumnsCanvas(columnIdx, this.columnWidths, this.defaultWidth, this.defaultHeight, this.selectionCoordinates);
+        this.visibleColumns.unshift(canvas);
+        this.visibleColumnsPrefixSum.unshift(canvas.columnsPositionArr);
+        this.columnsDivContainer.prepend(canvas.columnCanvasDiv);
+        // Adjust container margin to maintain visual continuity
+        this.marginLeft.value -= canvas.columnsPositionArr[24];
+        this.columnsDivContainer.style.marginLeft = `${this.marginLeft.value}px`;
     }
     /**
-     * Unmounts (removes) the leftmost ColumnsCanvas instance from the display.
-     * This is typically called during horizontal scrolling to the right.
+     * Unmounts the leftmost canvas and updates margin.
      */
     unmountColumnLeft() {
-        // Add the width of the unmounted canvas to the left margin to simulate scrolling
         this.marginLeft.value += this.visibleColumns[0].columnsPositionArr[24];
-        this.columnsDivContainer.style.marginLeft = `${this.marginLeft.value}px`; // Apply the new margin
-        // Remove the first child (leftmost canvas) from the DOM
+        this.columnsDivContainer.style.marginLeft = `${this.marginLeft.value}px`;
         this.columnsDivContainer.removeChild(this.visibleColumns[0].columnCanvasDiv);
-        this.visibleColumns.shift(); // Remove from the array of visible canvases
-        this.visibleColumnsPrefixSum.shift(); // Remove its prefix sum array
+        this.visibleColumns.shift();
+        this.visibleColumnsPrefixSum.shift();
     }
     /**
-     * Unmounts (removes) the rightmost ColumnsCanvas instance from the display.
-     * This is typically called during horizontal scrolling to the left.
+     * Unmounts the rightmost canvas from the DOM.
      */
     unmountColumnRight() {
-        const canvas = this.visibleColumns.pop(); // Remove the last canvas from the array
+        const canvas = this.visibleColumns.pop();
         if (canvas) {
-            this.columnsDivContainer.removeChild(canvas.columnCanvasDiv); // Remove from the DOM
-            this.visibleColumnsPrefixSum.pop(); // Remove its prefix sum array
+            this.columnsDivContainer.removeChild(canvas.columnCanvasDiv);
+            this.visibleColumnsPrefixSum.pop();
         }
     }
     /**
      * Redraws all currently visible columns.
-     * This is called when the display needs to be updated, e.g., after selection changes or resizing.
      */
     rerender() {
         for (let column of this.visibleColumns) {
-            column.drawCanvas(); // Call drawCanvas method on each visible ColumnsCanvas instance
+            column.drawCanvas();
         }
     }
+    /**
+     * Gets the ColumnsCanvas instance for the specified column group ID.
+     * @param columnID - The group ID (0-based) of the column canvas to retrieve.
+     * @returns The matching ColumnsCanvas instance, or null if not found.
+     */
     getCurrentColumnCanvas(columnID) {
         const arrIdx = columnID - this.visibleColumns[0].columnID;
         if (arrIdx >= 0 && arrIdx < this.visibleColumns.length)

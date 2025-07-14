@@ -72,7 +72,8 @@ export class RowSelectionEventHandler extends PointerEventHandlerBase {
         this.scrollID = requestAnimationFrame(this.autoScroll);
     }
     autoScroll() {
-        console.log("this : ", this);
+        // console.log("this : ",this);
+        console.log("scrolling is on at row selection");
         if (!this.ifSelectionOn) {
             this.scrollID = null;
             return;

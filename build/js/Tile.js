@@ -1,200 +1,182 @@
 /**
- * Represents a single tile (cell group) in a grid system composed of 25 rows and 25 columns.
- * Responsible for rendering the grid lines within this tile using canvas.
+ * Represents a single tile (25x25 grid of cells) in the spreadsheet.
+ * Responsible for rendering grid lines, text content, and selection highlights.
  */
 export class Tile {
     /**
-     * Initializes a new Tile instance for a specific (row, col) position
-     * @param row - The row index of the tile
-     * @param col - The column index of the tile
-     * @param rowsPositionArr - Array of row edge positions (prefix sum of heights)
-     * @param colsPositionArr - Array of column edge positions (prefix sum of widths)
-     * @param selectionCoordinates - Current selection coordinates in the grid
-     * @param CellsManager - Manages cell data and updates
+     * Initializes a tile instance for a given (row, col) position.
+     * @param {number} row
+     * @param {number} col
+     * @param {number[]} rowsPositionArr
+     * @param {number[]} colsPositionArr
+     * @param {MultipleSelectionCoordinates} selectionCoordinates
+     * @param {CellsManager} CellsManager
      */
     constructor(row, col, rowsPositionArr, colsPositionArr, selectionCoordinates, CellsManager) {
-        /** Canvas element used to render grid lines */
+        /** @type {HTMLCanvasElement} Canvas used for rendering the tile */
         this.tileCanvas = document.createElement("canvas");
-        /** Input element for editing cell values */
+        /** @type {HTMLInputElement} Input element used for in-cell editing */
         this.inputDiv = document.createElement("input");
+        /** @type {number} Device pixel ratio for high-DPI screens */
+        this.dpr = window.devicePixelRatio || 1;
         this.row = row;
         this.col = col;
         this.rowsPositionArr = rowsPositionArr;
         this.colsPositionArr = colsPositionArr;
         this.selectionCoordinates = selectionCoordinates;
         this.CellsManager = CellsManager;
-        this.tileDiv = this.createTile(); // initialize and attach canvas element
-        this.drawGrid(); // Render the grid lines and content on canvas
+        this.tileDiv = this.createTile();
+        this.drawGrid();
     }
     /**
-     * Draws the 25x25 grid on the tileCanvas using the row and column positions
-     * Also renders the selection highlight, cell text, and handles input tag
+     * Renders the grid lines, selected cells, text values, and input.
      */
     drawGrid() {
-        // Set canvas size based on 25 rows and columns using position arrays
-        this.tileCanvas.width = this.colsPositionArr[24];
-        this.tileCanvas.height = this.rowsPositionArr[24];
-        // Add row and column attributes for reference
+        const logicalWidth = this.colsPositionArr[24];
+        const logicalHeight = this.rowsPositionArr[24];
+        this.tileCanvas.style.width = `${logicalWidth}px`;
+        this.tileCanvas.style.height = `${logicalHeight}px`;
+        this.tileCanvas.width = logicalWidth * this.dpr;
+        this.tileCanvas.height = logicalHeight * this.dpr;
         this.tileCanvas.setAttribute("row", `${this.row}`);
         this.tileCanvas.setAttribute("col", `${this.col}`);
         const ctx = this.tileCanvas.getContext("2d");
+        ctx.scale(this.dpr, this.dpr);
         ctx.lineWidth = 1;
         ctx.beginPath();
-        ctx.strokeStyle = "#ddd"; // Light gray for grid lines
-        // Draw horizontal and vertical grid lines for all 25 boundaries
+        ctx.strokeStyle = "#ddd";
         for (let i = 0; i < 25; i++) {
-            // Horizontal line at row boundary
             ctx.moveTo(0, this.rowsPositionArr[i] - 0.5);
             ctx.lineTo(this.colsPositionArr[24], this.rowsPositionArr[i] - 0.5);
-            // Vertical line at column boundary
             ctx.moveTo(this.colsPositionArr[i] - 0.5, 0);
             ctx.lineTo(this.colsPositionArr[i] - 0.5, this.rowsPositionArr[24]);
         }
-        ctx.stroke(); // Render all grid lines
-        this.renderSelected(ctx); // Render selected cell highlight
-        this.renderText(ctx); // Render cell text values
-        this.handleInputTag(); // Show or hide the input element as needed
+        ctx.stroke();
+        this.renderSelected(ctx);
+        this.renderText(ctx);
+        this.handleInputTag();
     }
     /**
-     * Adds or removes the input element based on whether
-     * the selection is within this tile.
+     * Adds or removes the input box based on whether selection is inside this tile.
      */
     handleInputTag() {
         if (this.ifInputAppend()) {
-            // Append input if not already present
             this.tileDiv.appendChild(this.inputDiv);
             this.inputDiv.classList.add("cellInput");
             this.inputDiv.id = `input_r${this.row}_c${this.col}`;
             this.inputDiv.style.visibility = "hidden";
         }
         else {
-            // Remove input if present but selection is outside this tile
             if (this.tileDiv.querySelector(".cellInput")) {
                 this.tileDiv.removeChild(this.inputDiv);
             }
         }
     }
     /**
-     * Draws text values for cells within this tile
-     * Uses left or right alignment based on cell property
-     * @param ctx Canvas rendering context
+     * Renders cell text content inside the tile.
+     * @param {CanvasRenderingContext2D} ctx
      */
     renderText(ctx) {
         ctx.beginPath();
-        ctx.fillStyle = "black"; // Text color
-        ctx.font = "16px Arial"; // Text font and size
-        ctx.textBaseline = "bottom"; // Vertical alignment
-        let rowNum, colNum;
+        ctx.fillStyle = "black";
+        ctx.font = "16px Arial";
+        ctx.textBaseline = "bottom";
         for (let i = 0; i < 25; i++) {
-            rowNum = this.row * 25 + 1 + i; // Global row number
+            const rowNum = this.row * 25 + 1 + i;
             const columnMap = this.CellsManager.CellsMap.get(rowNum);
-            if (columnMap) {
-                for (let j = 0; j < 25; j++) {
-                    colNum = this.col * 25 + 1 + j; // Global column number
-                    const cell = columnMap.get(colNum);
-                    if (cell) {
-                        if (cell.leftAlign) {
-                            ctx.textAlign = "left"; // Align left for leftAlign cells
-                            const textX = (j === 0) ? 0 : this.colsPositionArr[j - 1] + 5;
-                            const textY = this.rowsPositionArr[i] - 3;
-                            ctx.fillText(cell.getValue(), textX, textY);
-                        }
-                        else {
-                            ctx.textAlign = "right"; // Align right otherwise
-                            const textX = this.colsPositionArr[j] - 5;
-                            const textY = this.rowsPositionArr[i] - 3;
-                            ctx.fillText(cell.getValue(), textX, textY);
-                        }
-                    }
+            if (!columnMap)
+                continue;
+            for (let j = 0; j < 25; j++) {
+                const colNum = this.col * 25 + 1 + j;
+                const cell = columnMap.get(colNum);
+                if (!cell)
+                    continue;
+                if (cell.leftAlign) {
+                    ctx.textAlign = "left";
+                    const textX = j === 0 ? 0 : this.colsPositionArr[j - 1] + 5;
+                    const textY = this.rowsPositionArr[i] - 3;
+                    ctx.fillText(cell.getValue(), textX, textY);
+                }
+                else {
+                    ctx.textAlign = "right";
+                    const textX = this.colsPositionArr[j] - 5;
+                    const textY = this.rowsPositionArr[i] - 3;
+                    ctx.fillText(cell.getValue(), textX, textY);
                 }
             }
         }
         ctx.stroke();
     }
     /**
-     * Creates the tile's container div and appends the canvas inside it
-     * @returns The div element wrapping this tile's canvas
+     * Creates and returns the tile container div.
+     * @returns {HTMLDivElement}
      */
     createTile() {
         const tileDiv = document.createElement("div");
-        tileDiv.id = `tile_${this.row}_${this.col}`; // Unique tile identifier
+        tileDiv.id = `tile_${this.row}_${this.col}`;
         tileDiv.classList.add("tileDiv");
-        tileDiv.appendChild(this.tileCanvas); // Append canvas element to div
+        tileDiv.appendChild(this.tileCanvas);
         return tileDiv;
     }
     /**
-     * Checks if the input element should be appended to this tile
-     * based on whether the selection start cell is inside this tile
-     * @returns True if input should be appended, false otherwise
+     * Determines if selection start cell lies within this tile.
+     * @returns {boolean}
      */
     ifInputAppend() {
         const startRow = this.row * 25 + 1;
         const endRow = this.row * 25 + 25;
         const startCol = this.col * 25 + 1;
         const endCol = this.col * 25 + 25;
-        return (this.selectionCoordinates.selectionStartRow <= endRow
-            && this.selectionCoordinates.selectionStartRow >= startRow
-            && this.selectionCoordinates.selectionStartColumn >= startCol
-            && this.selectionCoordinates.selectionStartColumn <= endCol);
+        return (this.selectionCoordinates.selectionStartRow <= endRow &&
+            this.selectionCoordinates.selectionStartRow >= startRow &&
+            this.selectionCoordinates.selectionStartColumn >= startCol &&
+            this.selectionCoordinates.selectionStartColumn <= endCol);
     }
     /**
-     * Renders the selected area on the canvas,
-     * highlighting the selected cells within this tile,
-     * and positions the input element if the selection start is here
-     * @param ctx Canvas rendering context
+     * Highlights the selected area and draws the selection border.
+     * @param {CanvasRenderingContext2D} ctx
      */
     renderSelected(ctx) {
-        // Tile boundaries in global coordinates
         const tileStartRowNum = this.row * 25 + 1;
         const tileStartColNum = this.col * 25 + 1;
         const tileEndRowNum = this.row * 25 + 25;
         const tileEndColNum = this.col * 25 + 25;
-        // Calculate selection boundaries (normalized min/max)
         const selectedStartRow = Math.min(this.selectionCoordinates.selectionEndRow, this.selectionCoordinates.selectionStartRow);
         const selectedEndRow = Math.max(this.selectionCoordinates.selectionEndRow, this.selectionCoordinates.selectionStartRow);
         const selectedStartCol = Math.min(this.selectionCoordinates.selectionEndColumn, this.selectionCoordinates.selectionStartColumn);
         const selectedEndCol = Math.max(this.selectionCoordinates.selectionEndColumn, this.selectionCoordinates.selectionStartColumn);
-        // Return early if selection doesn't intersect this tile
-        if ((selectedEndRow < tileStartRowNum) ||
-            (selectedStartRow > tileEndRowNum) ||
-            (selectedEndCol < tileStartColNum) ||
-            (selectedStartCol > tileEndColNum))
+        if (selectedEndRow < tileStartRowNum ||
+            selectedStartRow > tileEndRowNum ||
+            selectedEndCol < tileStartColNum ||
+            selectedStartCol > tileEndColNum)
             return;
-        // Intersection of selection and tile boundaries
         const rangeRowStartNum = Math.max(selectedStartRow, tileStartRowNum);
         const rangeRowEndNum = Math.min(selectedEndRow, tileEndRowNum);
         const rangeColumnStartNum = Math.max(selectedStartCol, tileStartColNum);
         const rangeColumnEndNum = Math.min(selectedEndCol, tileEndColNum);
-        // Calculate pixel coordinates of selection rectangle start
-        const startY = ((rangeRowStartNum - 1) % 25 === 0) ? 0 : (this.rowsPositionArr[(rangeRowStartNum - 2) % 25]);
-        const startX = ((rangeColumnStartNum - 1) % 25 === 0) ? 0 : (this.colsPositionArr[(rangeColumnStartNum - 2) % 25]);
-        // Calculate pixel width and height of selection rectangle
+        const startY = ((rangeRowStartNum - 1) % 25 === 0) ? 0 : this.rowsPositionArr[(rangeRowStartNum - 2) % 25];
+        const startX = ((rangeColumnStartNum - 1) % 25 === 0) ? 0 : this.colsPositionArr[(rangeColumnStartNum - 2) % 25];
         const rectHeight = this.rowsPositionArr[(rangeRowEndNum - 1) % 25] - startY;
         const rectWidth = this.colsPositionArr[(rangeColumnEndNum - 1) % 25] - startX;
-        // Draw translucent green fill for selection highlight
         ctx.fillStyle = "#E8F2EC";
         ctx.fillRect(startX, startY, rectWidth, rectHeight);
         ctx.stroke();
-        // If selection start cell is within this tile, position input box accordingly
-        if ((this.selectionCoordinates.selectionStartRow >= tileStartRowNum && this.selectionCoordinates.selectionStartRow <= tileEndRowNum) &&
-            (this.selectionCoordinates.selectionStartColumn >= tileStartColNum && this.selectionCoordinates.selectionStartColumn <= tileEndColNum)) {
-            // Calculate input box pixel position and size based on selection start cell
-            const clearY = ((this.selectionCoordinates.selectionStartRow - 1) % 25 === 0) ? 0 : (this.rowsPositionArr[(this.selectionCoordinates.selectionStartRow - 2) % 25]);
-            const clearX = ((this.selectionCoordinates.selectionStartColumn - 1) % 25 === 0) ? 0 : (this.colsPositionArr[(this.selectionCoordinates.selectionStartColumn - 2) % 25]);
+        if (this.selectionCoordinates.selectionStartRow >= tileStartRowNum &&
+            this.selectionCoordinates.selectionStartRow <= tileEndRowNum &&
+            this.selectionCoordinates.selectionStartColumn >= tileStartColNum &&
+            this.selectionCoordinates.selectionStartColumn <= tileEndColNum) {
+            const clearY = ((this.selectionCoordinates.selectionStartRow - 1) % 25 === 0) ? 0 : this.rowsPositionArr[(this.selectionCoordinates.selectionStartRow - 2) % 25];
+            const clearX = ((this.selectionCoordinates.selectionStartColumn - 1) % 25 === 0) ? 0 : this.colsPositionArr[(this.selectionCoordinates.selectionStartColumn - 2) % 25];
             const clearWidth = this.colsPositionArr[(this.selectionCoordinates.selectionStartColumn - 1) % 25] - clearX;
             const clearHeight = this.rowsPositionArr[(this.selectionCoordinates.selectionStartRow - 1) % 25] - clearY;
-            // Position and size the input element to align with selected cell
             this.inputDiv.style.top = `${clearY}px`;
             this.inputDiv.style.left = `${clearX}px`;
             this.inputDiv.style.width = `${clearWidth}px`;
             this.inputDiv.style.height = `${clearHeight}px`;
-            // Store cell coordinates as attributes for reference
             this.inputDiv.setAttribute("row", `${this.selectionCoordinates.selectionStartRow}`);
             this.inputDiv.setAttribute("col", `${this.selectionCoordinates.selectionStartColumn}`);
-            // Clear the underlying canvas area so input is visible
             ctx.clearRect(clearX, clearY, clearWidth - 1, clearHeight - 1);
         }
-        // Draw selection border lines around selected area with thicker green stroke
         ctx.beginPath();
         ctx.strokeStyle = "#137E43";
         ctx.lineWidth = 2;
@@ -215,5 +197,15 @@ export class Tile {
             ctx.lineTo(startX + rectWidth, startY + rectHeight - 1);
         }
         ctx.stroke();
+    }
+    /**
+     * Updates the canvas DPR and redraws the grid if DPR has changed.
+     */
+    updateDPR() {
+        const newDPR = window.devicePixelRatio || 1;
+        if (newDPR !== this.dpr) {
+            this.dpr = newDPR;
+            this.drawGrid();
+        }
     }
 }

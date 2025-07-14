@@ -3,10 +3,10 @@ import { PointerEventHandlerBase } from "./PointerEventHandlerBase.js";
 export class ColumnsResizeEventHandler extends PointerEventHandlerBase {
     constructor(columnsManager, tilesManager, undoRedoManager) {
         super();
-        this.ColumnDiv = document.getElementById("columnsRow");
         this.columnsManager = columnsManager;
         this.tilesManager = tilesManager;
         this.undoRedoManager = undoRedoManager;
+        this.ColumnDiv = columnsManager.columnsDivContainer;
         this.currentCanvasObj = null;
         this.columnID = null;
         this.hoverIdx = -1;

@@ -1,24 +1,20 @@
 /**
- * Manages statistical calculations like count, sum, average, min, and max
- * for a selected rectangular range of cells in the spreadsheet.
+ * Manages calculations (count, sum, average, min, max) for selected cells.
  */
 export class CalculationEngine {
     /**
-     * Initializes the engine with cell data and selected range.
-     * @param cellsMap Map of all cells (sparse 2D structure).
-     * @param selectionCoordinates Current selection range in spreadsheet.
+     * @param {CellsMap} cellsMap - A map containing all cell data.
+     * @param {MultipleSelectionCoordinates} selectionCoordinates - Object holding the coordinates of the current selection.
      */
     constructor(cellsMap, selectionCoordinates) {
         this.cellsMap = cellsMap;
         this.selectionCoordinates = selectionCoordinates;
-        /**
-         * Holds the current result values of calculations.
-         */
+        /** @private @type {Map<CalculationKey, CalculationResult>} Stores the results of various calculations. */
         this.calculationResults = new Map();
         this.initializeCalculationResults();
     }
     /**
-     * Sets up initial values for all calculation types.
+     * Initializes the calculation results map with default values.
      */
     initializeCalculationResults() {
         this.calculationResults.set("count", { value: 0, visible: true });
@@ -29,7 +25,10 @@ export class CalculationEngine {
         this.calculationResults.set("max", { value: Number.MIN_VALUE, visible: true });
     }
     /**
-     * Safely retrieves a result from the map. Throws an error if not found.
+     * Retrieves a specific calculation result from the map.
+     * @param {CalculationKey} key - The key of the calculation result to retrieve.
+     * @returns {CalculationResult} The calculation result object.
+     * @throws {Error} If the calculation result for the given key is not found.
      */
     getResult(key) {
         const result = this.calculationResults.get(key);
@@ -38,7 +37,7 @@ export class CalculationEngine {
         return result;
     }
     /**
-     * Resets all calculations to default values before recalculation.
+     * Resets all calculation results to their initial default values.
      */
     resetCalculationResults() {
         this.getResult("count").value = 0;
@@ -49,8 +48,12 @@ export class CalculationEngine {
         this.getResult("max").value = Number.MIN_VALUE;
     }
     /**
-     * Triggers calculation on selection change.
-     * Efficiently chooses between iterating over the range or the map based on size.
+     * Handles the pointer up event to trigger calculations based on the selected range.
+     * @param {PointerEvent} _ - The pointer event object (unused but required by event listener signature).
+     */
+    /**
+     * Performs calculations for the selected range using optimized traversal logic.
+     * Chooses between iterating over the range or the map based on efficiency.
      */
     handleSelection() {
         this.resetCalculationResults();
@@ -61,19 +64,23 @@ export class CalculationEngine {
         const endCol = Math.max(selectionStartColumn, selectionEndColumn);
         const rangeRowCount = endRow - startRow + 1;
         const mapRowCount = this.cellsMap.size;
+        // If the map has more rows than the range, iterate over the range
         if (mapRowCount > rangeRowCount) {
-            // Loop through selected range if it's smaller
             this.iterateOverRange(startRow, endRow, startCol, endCol);
         }
         else {
-            // Loop through existing cells only (faster for sparse data)
+            // Otherwise, iterate over the map and check if cells are in range
             this.iterateOverMap(startRow, endRow, startCol, endCol);
         }
-        this.finalizeAverage(); // Calculate average from sum/count
-        this.displayCalculationsFromMap(); // Render result to UI
+        this.finalizeAverage();
+        this.displayCalculationsFromMap();
     }
     /**
-     * Loops through cells in the selected rectangular region and processes them.
+     * Iterates over the specified range to process cells.
+     * @param {number} startRow - Starting row index.
+     * @param {number} endRow - Ending row index.
+     * @param {number} startCol - Starting column index.
+     * @param {number} endCol - Ending column index.
      */
     iterateOverRange(startRow, endRow, startCol, endCol) {
         for (let i = startRow; i <= endRow; i++) {
@@ -89,13 +96,19 @@ export class CalculationEngine {
         }
     }
     /**
-     * Loops only through non-empty cells and processes them if they're within selection.
+     * Iterates over the map and processes cells that fall within the specified range.
+     * @param {number} startRow - Starting row index.
+     * @param {number} endRow - Ending row index.
+     * @param {number} startCol - Starting column index.
+     * @param {number} endCol - Ending column index.
      */
     iterateOverMap(startRow, endRow, startCol, endCol) {
         for (const [rowIndex, row] of this.cellsMap.entries()) {
+            // Skip rows outside the selection range
             if (rowIndex < startRow || rowIndex > endRow)
                 continue;
             for (const [colIndex, cell] of row.entries()) {
+                // Skip columns outside the selection range
                 if (colIndex < startCol || colIndex > endCol)
                     continue;
                 this.processCell(cell);
@@ -103,12 +116,12 @@ export class CalculationEngine {
         }
     }
     /**
-     * Updates count, sum, min, max, and numerical count based on cell value.
-     * Assumes `leftAlign === false` means the value is numeric.
+     * Processes a single cell to update calculation results.
+     * @param {{ getValue: () => any; leftAlign: boolean }} cell - The cell object to process.
      */
     processCell(cell) {
         this.getResult("count").value += 1;
-        if (!cell.leftAlign) {
+        if (!cell.leftAlign) { // Assuming !leftAlign means it's a numerical value
             const num = Number(cell.getValue());
             const numerical = this.getResult("numericalCount");
             const sum = this.getResult("sum");
@@ -121,7 +134,7 @@ export class CalculationEngine {
         }
     }
     /**
-     * Computes average from sum and numerical count.
+     * Calculates the average based on the sum and numerical count.
      */
     finalizeAverage() {
         const numericalCount = this.getResult("numericalCount").value;
@@ -130,8 +143,7 @@ export class CalculationEngine {
         }
     }
     /**
-     * Displays result values below the spreadsheet (in `.calculationsValues` container).
-     * If only one or zero cells selected, clears the output.
+     * Displays the calculated results in the UI.
      */
     displayCalculationsFromMap() {
         const count = this.getResult("count").value;
@@ -139,12 +151,20 @@ export class CalculationEngine {
         const container = document.querySelector('.calculationsValues');
         if (!container)
             return;
+        // Clear display if no or single cell is selected
         if (count <= 1) {
             container.innerHTML = "";
             return;
         }
+        /**
+         * Helper function to get the HTML string for a calculation display div.
+         * @param {string} label - The label for the calculation (e.g., "Count", "Sum").
+         * @param {CalculationKey} key - The key to retrieve the calculation result.
+         * @returns {string} The HTML string for the calculation display div.
+         */
         const getDiv = (label, key) => this.getCalculationDisplayDiv(label, this.getResult(key).value, this.getResult(key).visible);
         let html = "";
+        // Display different sets of calculations based on whether numerical values are present
         if (numericalCount === 0) {
             html += getDiv("Count", "count");
         }
@@ -159,7 +179,11 @@ export class CalculationEngine {
         container.innerHTML = html;
     }
     /**
-     * Returns HTML string for a result box (label + value).
+     * Generates the HTML string for a single calculation display div.
+     * @param {string} label - The label to display for the calculation.
+     * @param {number} value - The calculated value.
+     * @param {boolean} visible - Whether the display div should be visible.
+     * @returns {string} The HTML string.
      */
     getCalculationDisplayDiv(label, value, visible) {
         return `
