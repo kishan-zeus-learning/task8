@@ -1,6 +1,15 @@
 import { RowResizingOperation } from "../UndoRedoManager/RowResizingOperation.js";
 import { PointerEventHandlerBase } from "./PointerEventHandlerBase.js";
+/**
+ * Handles pointer events for resizing individual rows in the spreadsheet.
+ */
 export class RowResizeEventHandler extends PointerEventHandlerBase {
+    /**
+     * Initializes the RowResizeEventHandler
+     * @param {RowsManager} rowsManager - Manages the rows
+     * @param {TilesManager} tilesManager - Manages the tiles
+     * @param {UndoRedoManager} undoRedoManager - Manages undo/redo operations
+     */
     constructor(rowsManager, tilesManager, undoRedoManager) {
         super();
         this.rowsManager = rowsManager;
@@ -14,6 +23,11 @@ export class RowResizeEventHandler extends PointerEventHandlerBase {
         this.newValue = rowsManager.defaultHeight;
         this.prevValue = rowsManager.defaultHeight;
     }
+    /**
+     * Detects if a pointer event hits a resizable row area.
+     * @param {PointerEvent} event - The pointer event
+     * @returns {boolean} True if the target is valid for resizing
+     */
     hitTest(event) {
         const currentElement = event.target;
         if (!currentElement || !(currentElement instanceof HTMLCanvasElement))
@@ -26,10 +40,13 @@ export class RowResizeEventHandler extends PointerEventHandlerBase {
             return false;
         const currentCanvasRect = currentElement.getBoundingClientRect();
         const offsetY = event.clientY - currentCanvasRect.top;
-        // this.currentCanvasObj=currentCanvas;
         this.hoverIdx = this.currentCanvasObj.binarySearchRange(offsetY);
         return this.hoverIdx !== -1;
     }
+    /**
+     * Begins the row resize operation on pointer down
+     * @param {PointerEvent} event
+     */
     pointerDown(event) {
         var _a;
         document.body.style.cursor = "ns-resize";
@@ -37,9 +54,17 @@ export class RowResizeEventHandler extends PointerEventHandlerBase {
         this.prevValue = ((_a = this.rowsManager.rowHeights.get(this.rowKey)) === null || _a === void 0 ? void 0 : _a.height) || 25;
         this.newValue = this.prevValue;
     }
+    /**
+     * Updates the row size while dragging
+     * @param {PointerEvent} event
+     */
     pointerMove(event) {
         this.currentCanvasObj.resizeRow(event.clientY, this.hoverIdx, this.rowKey);
     }
+    /**
+     * Finalizes the resize and pushes the operation to the undo/redo stack
+     * @param {PointerEvent} event
+     */
     pointerUp(event) {
         document.body.style.cursor = "";
         const rowResizeOperation = new RowResizingOperation(this.rowKey, this.prevValue, this.currentCanvasObj.getNewValue(), this.currentCanvasObj.rowHeights, this.rowsManager, this.tilesManager, this.currentCanvasObj);

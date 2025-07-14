@@ -1,4 +1,4 @@
-// Importing core managers
+// === Importing core managers ===
 import { ScrollManager } from "./ScrollManager.js";
 import { RowsManager } from "./RowsManager.js";
 import { ColumnsManager } from "./ColumnsManager.js";
@@ -8,7 +8,7 @@ import { JSONUpload } from "./JSONUpload.js";
 import { CalculationEngine } from "./CalculationEngine.js";
 import { InteractionManager } from "./DOMEventHandler/InteractionManager.js";
 
-// Importing types
+// === Importing types ===
 import { MultipleSelectionCoordinates } from "./types/MultipleSelectionCoordinates.js";
 import { CellsMap } from "./types/CellsMap.js";
 import { ColumnData } from "./types/ColumnRows.js";
@@ -20,11 +20,19 @@ import { CellsManager } from "./CellsManager.js";
  */
 class App {
     // === Core Data Structures ===
-    private cellData: CellsMap = new Map();       // Stores all cell data
-    private columnData: ColumnData = new Map();   // Stores column width and data
-    private rowData: RowData = new Map();         // Stores row height and data
+
+    /** @type {CellsMap} Master map holding cell values and metadata */
+    private cellData: CellsMap = new Map();
+
+    /** @type {ColumnData} Stores column-related info like width */
+    private columnData: ColumnData = new Map();
+
+    /** @type {RowData} Stores row-related info like height */
+    private rowData: RowData = new Map();
 
     // === Selection State ===
+
+    /** @type {MultipleSelectionCoordinates} Tracks current selection range */
     private selectionCoordinates: MultipleSelectionCoordinates = {
         selectionStartRow: 1,
         selectionEndRow: 1,
@@ -33,14 +41,32 @@ class App {
     };
 
     // === Managers ===
+
+    /** @type {CellsManager} Handles access to cell values */
     private CellsManagerObj: CellsManager;
+
+    /** @type {UndoRedoManager} Manages undo and redo operations */
     private undoRedoManager: UndoRedoManager;
+
+    /** @type {ScrollManager} Handles scroll-based rendering updates */
     private ScrollManagerObj: ScrollManager;
+
+    /** @type {RowsManager} Controls rendering and state of rows */
     private RowsManagerObj: RowsManager;
+
+    /** @type {ColumnsManager} Controls rendering and state of columns */
     private ColumnsManagerObj: ColumnsManager;
+
+    /** @type {TilesManager} Manages visible cell tiles and content rendering */
     private TilesManagerObj: TilesManager;
+
+    /** @type {JSONUpload} Handles import of spreadsheet data from JSON */
     private JSONUploadObj: JSONUpload;
+
+    /** @type {CalculationEngine} Performs calculations like sum, avg, min, max */
     private calculationEngineObj: CalculationEngine;
+
+    /** @type {InteractionManager} Manages user input, selection, and editing */
     private InteractionManagerObj: InteractionManager;
 
     /**

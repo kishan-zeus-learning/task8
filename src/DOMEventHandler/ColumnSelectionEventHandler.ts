@@ -1,112 +1,182 @@
 import { ColumnsCanvas } from "../ColumnsCanvas";
 import { ColumnsManager } from "../ColumnsManager";
 import { RowsManager } from "../RowsManager";
-import { Tile } from "../Tile";
 import { TilesManager } from "../TilesManager";
 import { MultipleSelectionCoordinates } from "../types/MultipleSelectionCoordinates";
 import { PointerEventHandlerBase } from "./PointerEventHandlerBase.js";
 
+/**
+ * Handles mouse-based column selection including drag-selection and auto-scrolling.
+ * Extends {@link PointerEventHandlerBase}.
+ */
 export class ColumnSelectionEventHandler extends PointerEventHandlerBase {
-    private ColumnDiv = document.getElementById("columnsRow") as HTMLDivElement;
-    private rowsManager: RowsManager;
-    private columnsManager: ColumnsManager;
-    private tilesManager: TilesManager;
-    private selectionCoordinates: MultipleSelectionCoordinates;
-    private currentCanvasObj: ColumnsCanvas | null;
-    private columnID: number | null;
-    private hoverIdx: number;
-    private coordinateX: number = 0;
-    private coordinateY: number = 0;
-    private ifSelectionOn: boolean = false;
-    private scrollID: number | null = null;
-    readonly maxDistance: number = 100;
+    /** @private */
+    private ColumnDiv: HTMLDivElement = document.getElementById("columnsRow") as HTMLDivElement;
 
-    readonly maxSpeed: number = 10;
-
+    /** @private */
     private sheetDiv: HTMLDivElement = document.getElementById("sheet") as HTMLDivElement;
 
+    /** @private */
+    private rowsManager: RowsManager;
 
-    constructor(rowsManager: RowsManager, columnsManager: ColumnsManager, tilesManager: TilesManager, selectionCoordinates: MultipleSelectionCoordinates) {
+    /** @private */
+    private columnsManager: ColumnsManager;
+
+    /** @private */
+    private tilesManager: TilesManager;
+
+    /** @private */
+    private selectionCoordinates: MultipleSelectionCoordinates;
+
+    /** @private */
+    private currentCanvasObj: ColumnsCanvas | null = null;
+
+    /** @private */
+    private columnID: number | null = null;
+
+    /** 
+     * The index of the column edge being hovered over (used for hit testing).
+     * If `-1`, no resize region is under the pointer.
+     * @private 
+     */
+    private hoverIdx: number = -1;
+
+    /** @private */
+    private coordinateX: number = 0;
+
+    /** @private */
+    private coordinateY: number = 0;
+
+    /** 
+     * Whether column selection is currently active.
+     * @private 
+     */
+    private ifSelectionOn: boolean = false;
+
+    /** 
+     * ID of the active `requestAnimationFrame` loop for auto-scrolling.
+     * Null when no auto-scroll is running.
+     * @private 
+     */
+    private scrollID: number | null = null;
+
+    /**
+     * The maximum distance from the edge that triggers auto-scroll.
+     * @readonly
+     */
+    readonly maxDistance: number = 100;
+
+    /**
+     * The maximum scroll speed in pixels per frame.
+     * @readonly
+     */
+    readonly maxSpeed: number = 10;
+
+    /**
+     * Constructs a `ColumnSelectionEventHandler`.
+     * @param rowsManager - Reference to the `RowsManager`.
+     * @param columnsManager - Reference to the `ColumnsManager`.
+     * @param tilesManager - Reference to the `TilesManager`.
+     * @param selectionCoordinates - Shared object tracking selection boundaries.
+     */
+    constructor(
+        rowsManager: RowsManager,
+        columnsManager: ColumnsManager,
+        tilesManager: TilesManager,
+        selectionCoordinates: MultipleSelectionCoordinates
+    ) {
         super();
         this.rowsManager = rowsManager;
         this.columnsManager = columnsManager;
         this.tilesManager = tilesManager;
         this.selectionCoordinates = selectionCoordinates;
-        this.currentCanvasObj = null;
-        this.columnID = null;
-        this.hoverIdx = -1;
+
         this.autoScroll = this.autoScroll.bind(this);
     }
 
+    /**
+     * Determines if this handler should activate for the current pointer event.
+     * Returns `true` only if pointer is inside a column header but NOT on a resizable edge.
+     */
     hitTest(event: PointerEvent): boolean {
         const currentElement = event.target;
-        if (!currentElement || !(currentElement instanceof HTMLCanvasElement)) return false;
-
+        if (!(currentElement instanceof HTMLCanvasElement)) return false;
         if (!this.ColumnDiv.contains(currentElement)) return false;
 
         this.columnID = parseInt(currentElement.getAttribute("col") as string);
-
         this.currentCanvasObj = this.columnsManager.getCurrentColumnCanvas(this.columnID);
 
         if (!this.currentCanvasObj) return false;
 
-        const currentCanvasRect = currentElement.getBoundingClientRect();
-
-        const offsetX = event.clientX - currentCanvasRect.left;
-
+        const offsetX = event.clientX - currentElement.getBoundingClientRect().left;
         this.hoverIdx = this.currentCanvasObj.binarySearchRange(offsetX);
 
         return this.hoverIdx === -1;
     }
 
+    /**
+     * Begins column selection.
+     */
     pointerDown(event: PointerEvent): void {
         document.body.style.cursor = "url('./img/ArrowDown.png'), auto";
-
-        this.ifSelectionOn=true;
+        this.ifSelectionOn = true;
 
         const startColumn = this.getColumn(this.currentCanvasObj!.columnCanvas, event.clientX);
-
-        if (!startColumn) return alert("Not a valid canvas element in column pointer down");
+        if (!startColumn) return alert("Invalid column canvas element");
 
         this.selectionCoordinates.selectionStartColumn = startColumn;
         this.selectionCoordinates.selectionEndColumn = startColumn;
         this.selectionCoordinates.selectionStartRow = 1;
         this.selectionCoordinates.selectionEndRow = 1000000;
 
-        this.coordinateX=event.clientX;
-        this.coordinateY=event.clientY;
+        this.coordinateX = event.clientX;
+        this.coordinateY = event.clientY;
 
         this.rerender();
         this.startAutoScroll();
     }
 
+    /**
+     * Tracks pointer coordinates during active selection.
+     */
     pointerMove(event: PointerEvent): void {
-        this.coordinateX=event.clientX;
-        this.coordinateY=event.clientY;
+        this.coordinateX = event.clientX;
+        this.coordinateY = event.clientY;
     }
 
-    pointerUp(event: PointerEvent): void {
-        this.ifSelectionOn=false;
-        document.body.style.cursor="";
+    /**
+     * Finalizes selection.
+     */
+    pointerUp(_event: PointerEvent): void {
+        this.ifSelectionOn = false;
+        document.body.style.cursor = "";
     }
 
-    private rerender() {
+    /**
+     * Re-renders rows, columns, and tiles to reflect selection changes.
+     * @private
+     */
+    private rerender(): void {
         this.rowsManager.rerender();
         this.columnsManager.rerender();
         this.tilesManager.rerender();
     }
 
-    private startAutoScroll() {
+    /**
+     * Starts the auto-scroll loop if not already running.
+     * @private
+     */
+    private startAutoScroll(): void {
         if (this.scrollID !== null) return;
-        // console.log("before this : ", this);
         this.scrollID = requestAnimationFrame(this.autoScroll);
     }
 
-
-    private autoScroll() {
-        // console.log("this : ", this);
-        // console.log("starting auto scroll ");
-        console.log("scrolling is on at column selection");
+    /**
+     * Auto-scrolls the viewport when pointer is near the edge of the sheet.
+     * Also updates the selection range in real-time.
+     * @private
+     */
+    private autoScroll(): void {
         if (!this.ifSelectionOn) {
             this.scrollID = null;
             return;
@@ -129,37 +199,49 @@ export class ColumnSelectionEventHandler extends PointerEventHandlerBase {
 
         this.sheetDiv.scrollBy(dx, dy);
 
-        const canvasX = Math.min(rect.right - 18, Math.max(this.coordinateX, rect.left + 1 + this.rowsManager.defaultWidth));
-
+        const canvasX = Math.min(
+            rect.right - 18,
+            Math.max(this.coordinateX, rect.left + 1 + this.rowsManager.defaultWidth)
+        );
         const canvasY = 216 + this.columnsManager.defaultHeight / 2;
 
         const endColumn = this.getColumn(document.elementFromPoint(canvasX, canvasY) as HTMLElement, canvasX);
-
         if (endColumn) this.selectionCoordinates.selectionEndColumn = endColumn;
 
-        console.log("endColumn: ",this.selectionCoordinates);
-
         this.rerender();
-        this.scrollID=requestAnimationFrame(this.autoScroll);
+        this.scrollID = requestAnimationFrame(this.autoScroll);
     }
 
-    private calculateSpeed(distance: number) {
+    /**
+     * Calculates scroll speed based on distance from the edge.
+     * @private
+     */
+    private calculateSpeed(distance: number): number {
         return Math.min(distance / this.maxDistance, 1) * this.maxSpeed;
     }
 
-    private getColumn(canvas: HTMLElement, clientX: number) {
+    /**
+     * Gets the column index under a given X coordinate in a canvas element.
+     * @private
+     */
+    private getColumn(canvas: HTMLElement, clientX: number): number | null {
         if (!canvas || canvas.tagName !== "CANVAS") return null;
 
         const rect = canvas.getBoundingClientRect();
         const offsetX = clientX - rect.left;
-        const currentCol = parseInt(canvas.getAttribute('col') as string);
+
+        const currentCol = parseInt(canvas.getAttribute("col") as string);
         const arrIdx = currentCol - this.columnsManager.visibleColumns[0].columnID;
         const colBlock = this.columnsManager.visibleColumns[arrIdx];
-        // Assuming each column has a default width of 25 pixels and then using binary search within the block
+
         return currentCol * 25 + this.binarySearchUpperBound(colBlock.columnsPositionArr, offsetX) + 1;
     }
 
-    private binarySearchUpperBound(arr: number[], target: number) {
+    /**
+     * Binary search helper to find the upper bound index for a position.
+     * @private
+     */
+    private binarySearchUpperBound(arr: number[], target: number): number {
         let start = 0, end = 24, ans = -1;
         while (start <= end) {
             const mid = Math.floor((start + end) / 2);

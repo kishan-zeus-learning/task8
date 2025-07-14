@@ -1,15 +1,32 @@
 import { PointerEventHandlerBase } from "./PointerEventHandlerBase.js";
+/**
+ * Handles pointer events for row selection including dragging and auto-scrolling.
+ */
 export class RowSelectionEventHandler extends PointerEventHandlerBase {
+    /**
+     * Initializes the RowSelectionEventHandler
+     * @param {RowsManager} rowsManager - Manages the rows
+     * @param {ColumnsManager} columnsManager - Manages the columns
+     * @param {TilesManager} tilesManager - Manages the tiles
+     * @param {MultipleSelectionCoordinates} selectionCoordinates - Selection state tracker
+     */
     constructor(rowsManager, columnsManager, tilesManager, selectionCoordinates) {
         super();
+        /** @type {HTMLDivElement} Container div for the row labels/headers */
         this.RowDiv = document.getElementById("rowsColumn");
+        /** @type {number} X-coordinate of the current pointer (used for auto-scroll) */
         this.coordinateX = 0;
+        /** @type {number} Y-coordinate of the current pointer (used for auto-scroll) */
         this.coordinateY = 0;
+        /** @type {boolean} Flag indicating whether selection is currently active */
         this.ifSelectionOn = false;
+        /** @type {number | null} RequestAnimationFrame ID for auto-scrolling */
         this.scrollID = null;
+        /** @readonly @type {number} Maximum distance for auto-scroll acceleration calculation */
         this.maxDistance = 100;
-        /** @type {number} Max auto-scroll speed */
+        /** @readonly @type {number} Maximum auto-scroll speed in pixels per frame */
         this.maxSpeed = 10;
+        /** @type {HTMLDivElement} Reference to the main scrollable sheet container */
         this.sheetDiv = document.getElementById("sheet");
         this.rowsManager = rowsManager;
         this.columnsManager = columnsManager;
@@ -20,6 +37,11 @@ export class RowSelectionEventHandler extends PointerEventHandlerBase {
         this.hoverIdx = -1;
         this.autoScroll = this.autoScroll.bind(this);
     }
+    /**
+     * Checks if a pointer event occurred inside a valid row canvas
+     * @param {PointerEvent} event - The pointer event
+     * @returns {boolean} True if the event hit a valid target
+     */
     hitTest(event) {
         const currentElement = event.target;
         if (!currentElement || !(currentElement instanceof HTMLCanvasElement))
@@ -35,12 +57,17 @@ export class RowSelectionEventHandler extends PointerEventHandlerBase {
         this.hoverIdx = this.currentCanvasObj.binarySearchRange(offsetY);
         return this.hoverIdx === -1;
     }
+    /**
+     * Handles pointer down event to initiate row selection
+     * @param {PointerEvent} event
+     */
     pointerDown(event) {
-        console.log("success hit test");
         document.body.style.cursor = "url('./img/ArrowRight.png'), auto";
         const startRow = this.getRow(this.currentCanvasObj.rowCanvas, event.clientX, event.clientY);
-        if (!startRow)
-            return alert("Not a valid canvas element in row pointer down");
+        if (!startRow) {
+            alert("Not a valid canvas element in row pointer down");
+            return;
+        }
         this.selectionCoordinates.selectionStartRow = startRow;
         this.selectionCoordinates.selectionEndRow = startRow;
         this.selectionCoordinates.selectionStartColumn = 1;
@@ -51,29 +78,42 @@ export class RowSelectionEventHandler extends PointerEventHandlerBase {
         this.rerender();
         this.startAutoScroll();
     }
+    /**
+     * Handles pointer move event to track mouse movement
+     * @param {PointerEvent} event
+     */
     pointerMove(event) {
-        // if (!this.ifSelectionOn) return;
         this.coordinateX = event.clientX;
         this.coordinateY = event.clientY;
     }
+    /**
+     * Handles pointer up event to stop selection
+     * @param {PointerEvent} event
+     */
     pointerUp(event) {
         this.ifSelectionOn = false;
         document.body.style.cursor = "";
     }
+    /**
+     * Triggers rerender on rows, columns, and tiles
+     */
     rerender() {
         this.rowsManager.rerender();
         this.columnsManager.rerender();
         this.tilesManager.rerender();
     }
+    /**
+     * Starts the auto-scrolling mechanism
+     */
     startAutoScroll() {
         if (this.scrollID !== null)
             return;
-        console.log("before this : ", this);
         this.scrollID = requestAnimationFrame(this.autoScroll);
     }
+    /**
+     * Performs auto-scrolling based on cursor position
+     */
     autoScroll() {
-        // console.log("this : ",this);
-        console.log("scrolling is on at row selection");
         if (!this.ifSelectionOn) {
             this.scrollID = null;
             return;
@@ -101,9 +141,21 @@ export class RowSelectionEventHandler extends PointerEventHandlerBase {
         this.rerender();
         this.scrollID = requestAnimationFrame(this.autoScroll);
     }
+    /**
+     * Calculates scroll speed based on distance from edge
+     * @param {number} distance
+     * @returns {number} Scroll speed
+     */
     calculateSpeed(distance) {
         return Math.min(distance / this.maxDistance, 1) * this.maxSpeed;
     }
+    /**
+     * Determines the row based on canvas and pointer coordinates
+     * @param {HTMLElement} canvas
+     * @param {number} clientX
+     * @param {number} clientY
+     * @returns {number | null} Row number or null
+     */
     getRow(canvas, clientX, clientY) {
         if (!canvas || canvas.tagName !== "CANVAS")
             return null;
@@ -114,6 +166,12 @@ export class RowSelectionEventHandler extends PointerEventHandlerBase {
         const rowBlock = this.rowsManager.visibleRows[arrIdx];
         return currentRow * 25 + this.binarySearchUpperBound(rowBlock.rowsPositionArr, offsetY) + 1;
     }
+    /**
+     * Returns upper bound index from a sorted array using binary search
+     * @param {number[]} arr
+     * @param {number} target
+     * @returns {number} Index
+     */
     binarySearchUpperBound(arr, target) {
         let start = 0, end = 24, ans = -1;
         while (start <= end) {

@@ -3,9 +3,20 @@
  * Handles row drawing, resizing, and rendering optimizations.
  */
 export class RowsCanvas {
+    /**
+     * Constructs a new RowsCanvas block for rendering 25 rows.
+     * @param rowID - ID of this block (zero-based index of blocks)
+     * @param rowHeights - Map of individual row heights
+     * @param defaultWidth - Default width of the canvas area
+     * @param defaultHeight - Default height for each row
+     * @param selectionCoordinates - Current selection state in spreadsheet
+     */
     constructor(rowID, rowHeights, defaultWidth, defaultHeight, selectionCoordinates) {
+        /** Canvas element where the rows are rendered */
         this.rowCanvas = document.createElement("canvas");
+        /** Div element used as a visual resize handle */
         this.resizeDiv = document.createElement("div");
+        /** Current resized row height value */
         this.newValue = 25;
         this.rowHeights = rowHeights;
         this.rowID = rowID;
@@ -13,50 +24,67 @@ export class RowsCanvas {
         this.defaultWidth = defaultWidth;
         this.rowsPositionArr = [];
         this.selectionCoordinates = selectionCoordinates;
-        this.setRowsPositionArr(); // Populate initial row boundaries
-        this.rowCanvasDiv = this.createRowCanvas(); // Build DOM elements and attach canvas
+        this.setRowsPositionArr(); // Populate initial cumulative row heights
+        this.rowCanvasDiv = this.createRowCanvas(); // Create DOM structure with canvas and resize div
     }
+    /** Returns the current new row height after resizing */
     getNewValue() {
         return this.newValue;
     }
     /**
      * Called during drag operation to resize a row.
+     * Calculates new height based on drag position and updates visuals.
+     * @param newPosition - Y coordinate of drag event
+     * @param hoverIdx - Index of hovered row within this block (0-24)
+     * @param rowKey - Unique key of the row (calculated here)
      */
     resizeRow(newPosition, hoverIdx, rowKey) {
+        // Calculate relative position inside the canvas container
         newPosition = newPosition - this.rowCanvasDiv.getBoundingClientRect().top;
         let newHeight;
+        // Calculate new height based on hovered row boundary or absolute position
         if (hoverIdx !== 0) {
             newHeight = newPosition - this.rowsPositionArr[hoverIdx - 1];
         }
         else {
             newHeight = newPosition;
         }
+        // Clamp the new height within reasonable bounds
         newHeight = Math.max(25, Math.min(500, newHeight));
+        // Move the resize handle visually
         if (hoverIdx !== 0) {
             this.resizeDiv.style.top = `${this.rowsPositionArr[hoverIdx - 1] + newHeight}px`;
         }
         else {
             this.resizeDiv.style.top = `${newHeight}px`;
         }
+        // Compute global row key from block ID and hover index
         rowKey = this.rowID * 25 + hoverIdx + 1;
         this.changeHeight(newHeight, rowKey);
     }
     /**
-     * Modifies row height and re-renders the canvas.
+     * Modifies the height of a row and triggers re-rendering of the canvas.
+     * @param newHeight - New height value to apply
+     * @param rowKey - Unique row identifier in rowHeights map
      */
     changeHeight(newHeight, rowKey) {
         this.newValue = newHeight;
+        // Remove from map if height is default, else update map
         if (newHeight === 25) {
             this.rowHeights.delete(rowKey);
         }
         else {
             this.rowHeights.set(rowKey, { height: newHeight });
         }
+        // Recompute cumulative positions and redraw the canvas
         this.setRowsPositionArr();
         this.drawCanvas();
     }
     /**
-     * Finds row boundary within ±5px of a given Y coordinate.
+     * Finds the row boundary index within ±5 pixels of a given Y coordinate.
+     * Used to detect if user is hovering near a row boundary for resizing.
+     * @param num - Y coordinate to test
+     * @returns Index of row boundary or -1 if none found within threshold
      */
     binarySearchRange(num) {
         let start = 0;
@@ -76,12 +104,13 @@ export class RowsCanvas {
         return -1;
     }
     /**
-     * Updates the `rowsPositionArr` array using cumulative height logic.
+     * Calculates the cumulative sum of row heights into `rowsPositionArr`.
+     * Uses defaultHeight for rows without an explicit height in the map.
      */
     setRowsPositionArr() {
         let startNum = this.rowID * 25 + 1;
         let prefixSum = 0;
-        this.rowsPositionArr.length = 0;
+        this.rowsPositionArr.length = 0; // reset array
         for (let i = 0; i < 25; i++) {
             const rowData = this.rowHeights.get(i + startNum);
             prefixSum += rowData ? rowData.height : this.defaultHeight;
@@ -89,7 +118,9 @@ export class RowsCanvas {
         }
     }
     /**
-     * Creates a div container with canvas and resize line for the current row block.
+     * Creates the container div holding the canvas and resize div elements.
+     * Sets appropriate attributes and styles, then draws the initial canvas.
+     * @returns The constructed HTMLDivElement
      */
     createRowCanvas() {
         const rowDiv = document.createElement("div");
@@ -103,14 +134,16 @@ export class RowsCanvas {
         return rowDiv;
     }
     /**
-     * Draws the 25 rows inside the canvas, with selection highlights.
+     * Draws the 25 rows inside the canvas, including highlights for selected rows.
+     * Handles scaling for device pixel ratio for crisp rendering.
      */
     drawCanvas() {
         if (!this.rowCanvas)
             return;
         const dpr = window.devicePixelRatio || 1;
         const canvasWidth = this.defaultWidth;
-        const canvasHeight = this.rowsPositionArr[24];
+        const canvasHeight = this.rowsPositionArr[24]; // total height of 25 rows
+        // Set canvas pixel dimensions accounting for device pixel ratio
         this.rowCanvas.width = canvasWidth * dpr;
         this.rowCanvas.height = canvasHeight * dpr;
         this.rowCanvas.style.width = `${canvasWidth}px`;
@@ -118,16 +151,20 @@ export class RowsCanvas {
         const ctx = this.rowCanvas.getContext("2d");
         ctx.scale(dpr, dpr);
         ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+        // Determine selected row range for highlighting
         const canvasStartRow = Math.min(this.selectionCoordinates.selectionEndRow, this.selectionCoordinates.selectionStartRow);
         const canvasEndRow = Math.max(this.selectionCoordinates.selectionEndRow, this.selectionCoordinates.selectionStartRow);
+        // Draw background
         ctx.fillStyle = "#f5f5f5";
         ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+        // Draw right border line
         ctx.beginPath();
         ctx.strokeStyle = "#ddd";
         ctx.lineWidth = 1;
         ctx.moveTo(canvasWidth - 0.5, 0);
         ctx.lineTo(canvasWidth - 0.5, canvasHeight);
         ctx.stroke();
+        // Setup text style for row numbers
         ctx.font = '14px Arial';
         ctx.lineWidth = 1;
         ctx.textAlign = "right";
@@ -140,6 +177,7 @@ export class RowsCanvas {
             const yPos = Math.round(yBottom - (yBottom - yTop) / 2 + 1);
             const rowIndex = i + startNum;
             let widthOffset = 0;
+            // Highlight row if selected
             if (this.ifSelected(rowIndex)) {
                 widthOffset = 2;
                 if (this.ifSelectedWhole()) {
@@ -167,13 +205,15 @@ export class RowsCanvas {
                 ctx.fillStyle = "#616161";
                 ctx.strokeStyle = "#ddd";
             }
+            // Draw horizontal grid line for each row boundary
             ctx.beginPath();
             ctx.moveTo(0, this.rowsPositionArr[i] - offset);
             ctx.lineTo(canvasWidth - widthOffset, this.rowsPositionArr[i] - offset);
             ctx.stroke();
+            // Draw row number text
             ctx.fillText(`${rowIndex}`, canvasWidth - 5, yPos);
         }
-        // Bottom border for selection
+        // Draw bottom border highlight if selection is whole rows block or partial
         ctx.beginPath();
         if (this.ifSelectedWhole()) {
             if (canvasEndRow <= this.rowID * 25 + 25 &&
@@ -201,11 +241,20 @@ export class RowsCanvas {
         }
         ctx.stroke();
     }
+    /**
+     * Checks if a given row number is currently within the selected range.
+     * @param num - Row number to check
+     * @returns True if the row is selected, false otherwise
+     */
     ifSelected(num) {
         const canvasStartRow = Math.min(this.selectionCoordinates.selectionEndRow, this.selectionCoordinates.selectionStartRow);
         const canvasEndRow = Math.max(this.selectionCoordinates.selectionEndRow, this.selectionCoordinates.selectionStartRow);
         return num >= canvasStartRow && num <= canvasEndRow;
     }
+    /**
+     * Determines if the entire row block (all columns) is selected.
+     * @returns True if full row selection, false if partial or column-limited selection
+     */
     ifSelectedWhole() {
         const canvasStartColumn = Math.min(this.selectionCoordinates.selectionEndColumn, this.selectionCoordinates.selectionStartColumn);
         const canvasEndColumn = Math.max(this.selectionCoordinates.selectionEndColumn, this.selectionCoordinates.selectionStartColumn);

@@ -1,4 +1,4 @@
-// Importing core managers
+// === Importing core managers ===
 import { ScrollManager } from "./ScrollManager.js";
 import { RowsManager } from "./RowsManager.js";
 import { ColumnsManager } from "./ColumnsManager.js";
@@ -17,10 +17,14 @@ class App {
      */
     constructor() {
         // === Core Data Structures ===
-        this.cellData = new Map(); // Stores all cell data
-        this.columnData = new Map(); // Stores column width and data
-        this.rowData = new Map(); // Stores row height and data
+        /** @type {CellsMap} Master map holding cell values and metadata */
+        this.cellData = new Map();
+        /** @type {ColumnData} Stores column-related info like width */
+        this.columnData = new Map();
+        /** @type {RowData} Stores row-related info like height */
+        this.rowData = new Map();
         // === Selection State ===
+        /** @type {MultipleSelectionCoordinates} Tracks current selection range */
         this.selectionCoordinates = {
             selectionStartRow: 1,
             selectionEndRow: 1,
