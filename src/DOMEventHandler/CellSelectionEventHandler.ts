@@ -426,17 +426,19 @@ export class CellSelectionEventHandler extends PointerEventHandlerBase {
      */
     private handleDoubleClick(event: PointerEvent): void {
         // Get the cell input element
+        event.preventDefault();
         this.inputDiv = document.querySelector(".cellInput") as HTMLInputElement;
         if (!this.inputDiv) return;
         
         // Show input, focus it, and populate with current cell value
+        console.log("inside double click");
         this.inputDiv.style.visibility = "visible";
-        // this.inputDiv.focus({ preventScroll: true });
-        this.inputDiv.focus();
+        // this.inputDiv.focus();
         console.log("Focus attempt:", document.activeElement);
         this.putInput();
         this.inputFocus = true;
         this.ifCellEdited = true;
+        this.inputDiv.focus({ preventScroll: true });
     }
 
     /**

@@ -206,7 +206,7 @@ export class TilesManager {
     resizePosition() {
         let positionY = this.rowsManagerObj.getStartTop();
         for (let i = 0; i < this.visibleRowCnt; i++) {
-            let positionX = this.columnsManagerObj.getScrollWidth();
+            let positionX = this.columnsManagerObj.getStartLeft();
             for (let j = 0; j < this.visibleColumnCnt; j++) {
                 this.visibleTiles[i][j].drawGrid();
                 this.visibleTiles[i][j].tileDivWrapper.style.top = `${positionY}px`;
