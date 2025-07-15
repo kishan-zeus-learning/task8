@@ -1,8 +1,8 @@
-import { ColumnsCanvas } from "./ColumnsCanvas.js";
-import { ColumnsManager } from "./ColumnsManager.js";
-import { RowsCanvas } from "./RowsCanvas.js";
-import { RowsManager } from "./RowsManager.js";
-import { TilesManager } from "./TilesManager.js";
+import { ColumnsCanvas } from "./Columns/ColumnsCanvas.js";
+import { ColumnsManager } from "./Columns/ColumnsManager.js";
+import { RowsCanvas } from "./Rows/RowsCanvas.js";
+import { RowsManager } from "./Rows/RowsManager.js";
+import { TilesManager } from "./Tiles/TilesManager.js";
 
 /**
  * Manages scrolling behavior and coordinates updates to rows, columns, and tile data.
@@ -99,6 +99,7 @@ export class ScrollManager {
             const deltaY = currentScrollTop - lastScrollTop;
             const deltaX = currentScrollLeft - lastScrollLeft;
 
+            // Determine if the scroll is "fast" based on a threshold
             const isFastScroll = Math.abs(deltaX) > 2500 || Math.abs(deltaY) > 625;
 
             if (isFastScroll) {
@@ -121,8 +122,6 @@ export class ScrollManager {
             lastScrollTop = currentScrollTop;
             lastScrollLeft = currentScrollLeft;
 
-
-
             // Detect scroll stop using a debounce timer
             if (scrollStopTimer) {
                 clearTimeout(scrollStopTimer);
@@ -143,6 +142,7 @@ export class ScrollManager {
                 }
             }, 150); // delay in ms to determine scroll stop
 
+            // Immediate reset for edge cases where scroll position is exactly 0
             if (currentScrollTop === 0) {
                 this.rowsManager!.resetScrollTop();
             }
@@ -153,6 +153,13 @@ export class ScrollManager {
         });
     }
 
+    /**
+     * Handles actions to take when a fast scroll event ends.
+     * Reloads rows, columns, and tiles based on the final scroll position.
+     * @private
+     * @param {number} scrollTop - The final vertical scroll position.
+     * @param {number} scrollLeft - The final horizontal scroll position.
+     */
     private onFastScrollEnd(scrollTop: number, scrollLeft: number) {
         console.log("fast scroll ended");
 
@@ -163,19 +170,23 @@ export class ScrollManager {
         this.columnsManager!.reload(leftPosIdx.idx, leftPosIdx.left);
 
         this.tilesManager!.reload();
-
-
     }
 
-
-
+    /**
+     * Handles smooth scrolling, triggering updates for rows and columns.
+     * @private
+     * @param {Event} event - The scroll event.
+     * @param {number} currentScrollTop - The current vertical scroll position.
+     * @param {number} currentScrollLeft - The current horizontal scroll position.
+     * @param {number} lastScrollTop - The previous vertical scroll position.
+     * @param {number} lastScrollLeft - The previous horizontal scroll position.
+     */
     private scrollSmooth(event: Event, currentScrollTop: number, currentScrollLeft: number, lastScrollTop: number, lastScrollLeft: number) {
         if (currentScrollTop > lastScrollTop) this.handleScrollDown(event);
         else if (currentScrollTop < lastScrollTop) this.handleScrollUp(event);
 
         if (currentScrollLeft > lastScrollLeft) this.handleScrollRight(event);
         else if (currentScrollLeft < lastScrollLeft) this.handleScrollLeft(event);
-
     }
 
     /**
@@ -191,9 +202,7 @@ export class ScrollManager {
         const isVisible = bufferRect.top < this.containerDivRect.bottom && bufferRect.bottom > this.containerDivRect.top;
 
         if (isVisible) {
-            // console.log("buffer is visible ...............");
             if (this.rowsManager?.scrollDown()) this.tilesManager?.scrollDown();
-            // this.rowsManager!.scrollDown();
         }
     }
 
@@ -211,7 +220,6 @@ export class ScrollManager {
 
         if (isVisible) {
             if (this.rowsManager?.scrollUp()) this.tilesManager?.scrollUp();
-            // this.rowsManager!.scrollUp();
         }
     }
 
@@ -246,70 +254,101 @@ export class ScrollManager {
 
         if (isVisible) {
             if (this.columnsManager?.scrollLeft()) this.tilesManager?.scrollLeft();
-            // this.columnsManager!.scrollLeft();
         }
     }
 
+    /**
+     * Calculates the index and top pixel position of the row block that should be at the top
+     * of the visible area given a scroll top value. Used for fast scrolling reloads.
+     * @private
+     * @param {number} scrollTop - The current vertical scroll position.
+     * @returns {{idx: number, top: number}} An object containing the row block index and its top pixel position.
+     */
     private getIdxTop(scrollTop: number): { idx: number, top: number } {
         let sum = 0;
         let prevSum = 0;
+        // Iterate through potential row blocks (each 25 rows)
         for (let i = 0; i < 4000 - this.rowsManager!.visibleRowCnt; i++) {
-            const currentSum = this.getSum25Row(i);
+            const currentSum = this.getSum25Row(i); // Get total height of current 25-row block
             if (sum + currentSum > scrollTop) {
+                // If adding the current block's height exceeds scrollTop,
+                // the previous block was the one just above the scroll top.
                 return { idx: i - 1, top: prevSum };
             }
-            prevSum = sum;
-            sum += currentSum;
+            prevSum = sum; // Store the sum before adding current block's height
+            sum += currentSum; // Accumulate total height
         }
 
+        // If scroll position is beyond all calculated blocks, return the last possible block
         return { idx: 4000 - this.rowsManager!.visibleRowCnt, top: prevSum };
     }
 
-    private getSum25Row(idx: number) {
-        let currIdx = idx * 25;
+    /**
+     * Calculates the total height of a block of 25 rows starting from a given block index.
+     * @private
+     * @param {number} idx - The 0-based index of the 25-row block.
+     * @returns {number} The total height of the 25 rows in the specified block.
+     */
+    private getSum25Row(idx: number): number {
+        let currIdx = idx * 25; // Calculate the global starting row number for this block (0-indexed)
         let sum = 0;
         for (let i = 0; i < 25; i++) {
-            currIdx++;
+            currIdx++; // Move to the next global row number (1-indexed for map lookup)
             const currentHeight = this.rowsManager!.rowHeights.get(currIdx);
             if (currentHeight) {
                 sum += currentHeight.height;
             } else {
-                sum += this.rowsManager!.defaultHeight;
+                sum += this.rowsManager!.defaultHeight; // Use default height if not custom
             }
         }
-
         return sum;
     }
 
+    /**
+     * Calculates the index and left pixel position of the column block that should be at the left
+     * of the visible area given a scroll left value. Used for fast scrolling reloads.
+     * @private
+     * @param {number} scrollLeft - The current horizontal scroll position.
+     * @returns {{idx: number, left: number}} An object containing the column block index and its left pixel position.
+     */
     private getIdxLeft(scrollLeft: number): { idx: number, left: number } {
         let sum = 0;
         let prevSum = 0;
+        // Iterate through potential column blocks (each 25 columns)
         for (let i = 0; i < 40 - this.columnsManager!.visibleColumnCnt; i++) {
-            const currentSum = this.getSum25Column(i);
+            const currentSum = this.getSum25Column(i); // Get total width of current 25-column block
             if (sum + currentSum > scrollLeft) {
+                // If adding the current block's width exceeds scrollLeft,
+                // the previous block was the one just left of the scroll left.
                 return { idx: (i - 1), left: prevSum };
             }
-            prevSum = sum;
-            sum += currentSum;
+            prevSum = sum; // Store the sum before adding current block's width
+            sum += currentSum; // Accumulate total width
         }
 
+        // If scroll position is beyond all calculated blocks, return the last possible block
         return { idx: 40 - this.columnsManager!.visibleColumnCnt, left: prevSum };
     }
 
-    private getSum25Column(idx: number) {
-        let currIdx = idx * 25;
+    /**
+     * Calculates the total width of a block of 25 columns starting from a given block index.
+     * @private
+     * @param {number} idx - The 0-based index of the 25-column block.
+     * @returns {number} The total width of the 25 columns in the specified block.
+     */
+    private getSum25Column(idx: number): number {
+        let currIdx = idx * 25; // Calculate the global starting column number for this block (0-indexed)
         let sum = 0;
         for (let i = 0; i < 25; i++) {
-            currIdx++;
+            currIdx++; // Move to the next global column number (1-indexed for map lookup)
             const currentWidth = this.columnsManager!.columnWidths.get(currIdx);
 
             if (currentWidth) {
                 sum += currentWidth.width;
             } else {
-                sum += this.columnsManager!.defaultWidth;
+                sum += this.columnsManager!.defaultWidth; // Use default width if not custom
             }
         }
-
         return sum;
     }
 }

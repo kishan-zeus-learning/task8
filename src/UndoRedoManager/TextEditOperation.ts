@@ -1,6 +1,6 @@
-import { CellsManager } from "../CellsManager.js";
+import { CellsManager } from "../Tiles/CellsManager.js";
 import { Operation } from "./Operation.js";
-import { TilesManager } from "../TilesManager.js";
+import { TilesManager } from "../Tiles/TilesManager.js";
 
 /**
  * Represents a text edit operation that supports undo and redo functionality.

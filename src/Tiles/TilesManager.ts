@@ -1,9 +1,8 @@
 import { CellsManager } from "./CellsManager.js";
-import { ColumnsManager } from "./ColumnsManager.js";
-import { RowsManager } from "./RowsManager.js";
+import { ColumnsManager } from "../Columns/ColumnsManager.js";
+import { RowsManager } from "../Rows/RowsManager.js";
 import { Tile } from "./Tile.js";
-import { MultipleSelectionCoordinates } from "./types/MultipleSelectionCoordinates.js";
-// import { NumberObj } from "./types/NumberObj.js";
+import { MultipleSelectionCoordinates } from "../types/MultipleSelectionCoordinates.js";
 
 /**
  * Manages the rendering and dynamic loading/unloading of visible cell tiles within the grid.
@@ -11,7 +10,6 @@ import { MultipleSelectionCoordinates } from "./types/MultipleSelectionCoordinat
 export class TilesManager {
     /** @type {Tile[][]} Stores the currently visible tile instances in a 2D array */
     readonly visibleTiles: Tile[][];
-
 
     /** @type {MultipleSelectionCoordinates} Stores the coordinates of the selected cell range */
     private selectionCoordinates: MultipleSelectionCoordinates;
@@ -34,9 +32,12 @@ export class TilesManager {
     /** @type {number} Index of the first visible column */
     private startColIdx: number;
 
-    private rowsManagerObj:RowsManager;
+    /** @type {RowsManager} Manages row-related operations and data */
+    private rowsManagerObj: RowsManager;
 
+    /** @type {ColumnsManager} Manages column-related operations and data */
     private columnsManagerObj: ColumnsManager;
+
     /** @type {HTMLDivElement} Main grid container element */
     readonly gridDiv: HTMLDivElement;
 
@@ -45,21 +46,28 @@ export class TilesManager {
 
     /**
      * Initializes a new TilesManager instance
+     * @param {RowsManager} rowsManagerObj - The RowsManager instance
+     * @param {ColumnsManager} columnsManagerObj - The ColumnsManager instance
+     * @param {number} visibleRowCnt - The number of rows currently visible
+     * @param {number} visibleColumnCnt - The number of columns currently visible
+     * @param {MultipleSelectionCoordinates} selectionCoordinates - The coordinates of the current selection
+     * @param {CellsManager} CellsManager - The CellsManager instance
+     * @param {number} [startRowIdx=0] - The starting row index for visible tiles
+     * @param {number} [startColIdx=0] - The starting column index for visible tiles
      */
     constructor(
-        rowsManagerObj:RowsManager,
-        columnsManagerObj:ColumnsManager,
+        rowsManagerObj: RowsManager,
+        columnsManagerObj: ColumnsManager,
         visibleRowCnt: number,
         visibleColumnCnt: number,
         selectionCoordinates: MultipleSelectionCoordinates,
         CellsManager: CellsManager,
         startRowIdx: number = 0,
         startColIdx: number = 0,
-
     ) {
         this.gridDiv = document.getElementById("grid") as HTMLDivElement;
-        this.rowsManagerObj=rowsManagerObj;
-        this.columnsManagerObj=columnsManagerObj;
+        this.rowsManagerObj = rowsManagerObj;
+        this.columnsManagerObj = columnsManagerObj;
         this.visibleTilesRowPrefixSum = rowsManagerObj.rowsPositionPrefixSumArr;
         this.visibleTilesColumnPrefixSum = columnsManagerObj.visibleColumnsPrefixSumArr;
         this.visibleTiles = [];
@@ -70,13 +78,11 @@ export class TilesManager {
         this.startRowIdx = startRowIdx;
         this.startColIdx = startColIdx;
 
-
         this.reload();
     }
 
     /** Scrolls the grid one row down */
     scrollDown(): void {
-        // this.gridDiv.style.marginTop = `${this.marginTop.value}px`;
         this.unmountTileTop();
         this.startRowIdx++;
         this.mountTileBottom();
@@ -84,8 +90,7 @@ export class TilesManager {
 
     /** Scrolls the grid one column to the right */
     scrollRight(): void {
-        // this.gridDiv.style.marginLeft = `${this.marginLeft.value}px`;
-        console.log("inside scroll right")
+        console.log("inside scroll right");
         this.unmountTileLeft();
         this.startColIdx++;
         this.mountTileRight();
@@ -93,7 +98,6 @@ export class TilesManager {
 
     /** Scrolls the grid one row up */
     scrollUp(): void {
-        // this.gridDiv.style.marginTop = `${this.marginTop.value}px`;
         this.unmountTileBottom();
         this.startRowIdx--;
         this.mountTileTop();
@@ -102,19 +106,24 @@ export class TilesManager {
     /** Scrolls the grid one column to the left */
     scrollLeft(): void {
         if (this.startColIdx === 0) return;
-        // this.gridDiv.style.marginLeft = `${this.marginLeft.value}px`;
         this.unmountTileRight();
         this.startColIdx--;
         this.mountTileLeft();
     }
 
-    /** Redraws all tiles in a specific row */
+    /**
+     * Redraws all tiles in a specific row.
+     * @param {number} rowID - The global index of the row to redraw.
+     */
     redrawRow(rowID: number): void {
         const arrIdx = rowID - this.visibleTiles[0][0].row;
         this.visibleTiles[arrIdx].forEach(tile => tile.drawGrid());
     }
 
-    /** Redraws all tiles in a specific column */
+    /**
+     * Redraws all tiles in a specific column.
+     * @param {number} columnID - The global index of the column to redraw.
+     */
     redrawColumn(columnID: number): void {
         const arrIdx = columnID - this.visibleTiles[0][0].col;
         this.visibleTiles.forEach(tileArr => tileArr[arrIdx].drawGrid());
@@ -131,19 +140,17 @@ export class TilesManager {
 
     /** Loads the initial set of visible tiles */
     reload(): void {
-
-        this.startRowIdx=this.rowsManagerObj.getStartRowIdx();
-        this.startColIdx=this.columnsManagerObj.getStartColIdx();
+        this.startRowIdx = this.rowsManagerObj.getStartRowIdx();
+        this.startColIdx = this.columnsManagerObj.getStartColIdx();
 
         this.gridDiv.replaceChildren();
 
-        this.visibleTiles.splice(0,this.visibleTiles.length);
+        this.visibleTiles.splice(0, this.visibleTiles.length);
 
-        let positionY=this.rowsManagerObj.getStartTop();
-        
+        let positionY = this.rowsManagerObj.getStartTop();
+
         for (let i = this.startRowIdx; i < this.visibleRowCnt + this.startRowIdx; i++) {
-
-            let positionX=this.columnsManagerObj.getStartLeft();
+            let positionX = this.columnsManagerObj.getStartLeft();
             const currentVisibleRow: Tile[] = [];
 
             for (let j = this.startColIdx; j < this.visibleColumnCnt + this.startColIdx; j++) {
@@ -158,30 +165,24 @@ export class TilesManager {
                 currentVisibleRow.push(tile);
 
                 this.gridDiv.appendChild(tile.tileDivWrapper);
-                tile.tileDivWrapper.style.top=`${positionY}px`;
-                tile.tileDivWrapper.style.left=`${positionX}px`;
+                tile.tileDivWrapper.style.top = `${positionY}px`;
+                tile.tileDivWrapper.style.left = `${positionX}px`;
 
-                positionX+=this.visibleTilesColumnPrefixSum[j-this.startColIdx][24];
-                // this.visibleTilesRowDivArr[i - this.startRowIdx].appendChild(tile.tileDiv);
-
+                positionX += this.visibleTilesColumnPrefixSum[j - this.startColIdx][24];
             }
 
             this.visibleTiles.push(currentVisibleRow);
-            positionY+=this.visibleTilesRowPrefixSum[i-this.startRowIdx][24];
-            // this.gridDiv.appendChild(this.visibleTilesRowDivArr[i - this.startRowIdx]);
-
-            
+            positionY += this.visibleTilesRowPrefixSum[i - this.startRowIdx][24];
         }
     }
-
 
     /** Appends a new row of tiles to the bottom of the grid */
     private mountTileBottom(): void {
         const rowIdx = this.startRowIdx + this.visibleRowCnt - 1;
 
         const currentVisibleRow: Tile[] = [];
-        const positionY=this.rowsManagerObj.getScrollHeight() -  this.rowsManagerObj.visibleRows[this.visibleRowCnt-1].rowsPositionArr[24];
-        let positionX=this.columnsManagerObj.getStartLeft();
+        const positionY = this.rowsManagerObj.getScrollHeight() - this.rowsManagerObj.visibleRows[this.visibleRowCnt - 1].rowsPositionArr[24];
+        let positionX = this.columnsManagerObj.getStartLeft();
 
         for (let j = 0; j < this.visibleColumnCnt; j++) {
             const colIdx = this.startColIdx + j;
@@ -196,25 +197,21 @@ export class TilesManager {
 
             currentVisibleRow.push(tile);
             this.gridDiv.appendChild(tile.tileDivWrapper);
-            tile.tileDivWrapper.style.top=`${positionY}px`;
-            tile.tileDivWrapper.style.left=`${positionX}px`;
-            positionX+=tile.colsPositionArr[24];
-
+            tile.tileDivWrapper.style.top = `${positionY}px`;
+            tile.tileDivWrapper.style.left = `${positionX}px`;
+            positionX += tile.colsPositionArr[24];
         }
 
         this.visibleTiles.push(currentVisibleRow);
-        // this.gridDiv.appendChild(this.visibleTilesRowDivArr[this.visibleTilesRowDivArr.length - 1]);
     }
 
     /** Prepends a new row of tiles to the top of the grid */
     private mountTileTop(): void {
         const rowIdx = this.startRowIdx;
-        // const rowDiv = this.createRowDiv(rowIdx);
-        // this.visibleTilesRowDivArr.unshift(rowDiv);
-
         const currentVisibleRow: Tile[] = [];
-        const coordinateY=this.rowsManagerObj.getStartTop();
-        let coordinateX=this.columnsManagerObj.getStartLeft();
+        const coordinateY = this.rowsManagerObj.getStartTop();
+        let coordinateX = this.columnsManagerObj.getStartLeft();
+
         for (let j = 0; j < this.visibleColumnCnt; j++) {
             const colIdx = this.startColIdx + j;
             const tile = new Tile(
@@ -227,22 +224,21 @@ export class TilesManager {
             );
 
             this.gridDiv.prepend(tile.tileDivWrapper);
-            tile.tileDivWrapper.style.top=`${coordinateY}px`;
-            tile.tileDivWrapper.style.left=`${coordinateX}px`;
-            coordinateX+=tile.colsPositionArr[24];
+            tile.tileDivWrapper.style.top = `${coordinateY}px`;
+            tile.tileDivWrapper.style.left = `${coordinateX}px`;
+            coordinateX += tile.colsPositionArr[24];
             currentVisibleRow.push(tile);
-            // this.visibleTilesRowDivArr[0].appendChild(tile.tileDiv);
         }
 
         this.visibleTiles.unshift(currentVisibleRow);
-        // this.gridDiv.prepend(this.visibleTilesRowDivArr[0]);
     }
 
     /** Prepends a new column of tiles to the left of the grid */
     private mountTileLeft(): void {
         const colIdx = this.startColIdx;
-        const positionX=this.columnsManagerObj.getStartLeft();
-        let positionY= this.rowsManagerObj.getStartTop();
+        const positionX = this.columnsManagerObj.getStartLeft();
+        let positionY = this.rowsManagerObj.getStartTop();
+
         for (let i = 0; i < this.visibleRowCnt; i++) {
             const rowIdx = this.startRowIdx + i;
             const tile = new Tile(
@@ -254,26 +250,21 @@ export class TilesManager {
                 this.CellsManager
             );
             this.gridDiv.prepend(tile.tileDivWrapper);
-            tile.tileDivWrapper.style.top=`${positionY}px`;
-            tile.tileDivWrapper.style.left=`${positionX}px`;
+            tile.tileDivWrapper.style.top = `${positionY}px`;
+            tile.tileDivWrapper.style.left = `${positionX}px`;
 
-            positionY+=tile.rowsPositionArr[24];
+            positionY += tile.rowsPositionArr[24];
             this.visibleTiles[i].unshift(tile);
-            // this.visibleTilesRowDivArr[i].prepend(tile.tileDiv);
         }
     }
 
     /** Appends a new column of tiles to the right of the grid */
     private mountTileRight(): void {
         const colIdx = this.startColIdx + this.visibleColumnCnt - 1;
-        const coordinateX=this.columnsManagerObj.getScrollWidth() - this.columnsManagerObj.visibleColumns[this.visibleColumnCnt-1].columnsPositionArr[24];
-        let coordinateY=this.rowsManagerObj.getStartTop();
+        const coordinateX = this.columnsManagerObj.getScrollWidth() - this.columnsManagerObj.visibleColumns[this.visibleColumnCnt - 1].columnsPositionArr[24];
+        let coordinateY = this.rowsManagerObj.getStartTop();
 
-        console.log("mount tile right x : ",coordinateX,"y: ",coordinateY)
-
-
-
-
+        console.log("mount tile right x : ", coordinateX, "y: ", coordinateY);
 
         for (let i = 0; i < this.visibleRowCnt; i++) {
             const rowIdx = this.startRowIdx + i;
@@ -287,41 +278,35 @@ export class TilesManager {
             );
 
             this.gridDiv.appendChild(tile.tileDivWrapper);
-            tile.tileDivWrapper.style.left=`${coordinateX}px`;
-            tile.tileDivWrapper.style.top=`${coordinateY}px`;
-            coordinateY+=tile.rowsPositionArr[24];
+            tile.tileDivWrapper.style.left = `${coordinateX}px`;
+            tile.tileDivWrapper.style.top = `${coordinateY}px`;
+            coordinateY += tile.rowsPositionArr[24];
             this.visibleTiles[i].push(tile);
-            // this.visibleTilesRowDivArr[i].appendChild(tile.tileDiv);
         }
     }
 
     /** Removes the topmost row of tiles */
     private unmountTileTop(): void {
-        // this.gridDiv.removeChild(this.visibleTilesRowDivArr[0]);
-        const removingRow=this.visibleTiles[0];
-        for(let j=0;j<this.visibleColumnCnt;j++){
+        const removingRow = this.visibleTiles[0];
+        for (let j = 0; j < this.visibleColumnCnt; j++) {
             this.gridDiv.removeChild(removingRow[j].tileDivWrapper);
         }
         this.visibleTiles.shift();
-        // this.visibleTilesRowDivArr.shift();
     }
 
     /** Removes the bottommost row of tiles */
     private unmountTileBottom(): void {
-        // this.gridDiv.removeChild(this.visibleTilesRowDivArr[this.visibleTilesRowDivArr.length - 1]);
-        const currentRow=this.visibleTiles[this.visibleRowCnt-1];
-        for(let j=0;j<this.visibleColumnCnt;j++){
+        const currentRow = this.visibleTiles[this.visibleRowCnt - 1];
+        for (let j = 0; j < this.visibleColumnCnt; j++) {
             this.gridDiv.removeChild(currentRow[j].tileDivWrapper);
         }
         this.visibleTiles.pop();
-        // this.visibleTilesRowDivArr.pop();
     }
 
     /** Removes the leftmost column of tiles */
     private unmountTileLeft(): void {
         for (let i = 0; i < this.visibleRowCnt; i++) {
-            // this.visibleTilesRowDivArr[i].removeChild(this.visibleTilesRowDivArr[i].firstChild as HTMLDivElement);
-            this.gridDiv.removeChild(this.visibleTiles[i][0].tileDivWrapper)
+            this.gridDiv.removeChild(this.visibleTiles[i][0].tileDivWrapper);
             this.visibleTiles[i].shift();
         }
     }
@@ -329,26 +314,25 @@ export class TilesManager {
     /** Removes the rightmost column of tiles */
     private unmountTileRight(): void {
         for (let i = 0; i < this.visibleRowCnt; i++) {
-            // this.visibleTilesRowDivArr[i].removeChild(this.visibleTilesRowDivArr[i].lastChild as HTMLDivElement);
-            this.gridDiv.removeChild(this.visibleTiles[i][this.visibleColumnCnt-1].tileDivWrapper);
+            this.gridDiv.removeChild(this.visibleTiles[i][this.visibleColumnCnt - 1].tileDivWrapper);
             this.visibleTiles[i].pop();
         }
     }
 
-    resizePosition(){
-        let positionY=this.rowsManagerObj.getStartTop();
+    /** Updates the positions and redraws all visible tiles, typically after a resize event. */
+    resizePosition() {
+        let positionY = this.rowsManagerObj.getStartTop();
 
-        for(let i=0;i<this.visibleRowCnt;i++){
-            let positionX=this.columnsManagerObj.getStartLeft();
-            for(let j=0;j<this.visibleColumnCnt;j++){
+        for (let i = 0; i < this.visibleRowCnt; i++) {
+            let positionX = this.columnsManagerObj.getStartLeft();
+            for (let j = 0; j < this.visibleColumnCnt; j++) {
                 this.visibleTiles[i][j].drawGrid();
-                this.visibleTiles[i][j].tileDivWrapper.style.top=`${positionY}px`;
-                this.visibleTiles[i][j].tileDivWrapper.style.left=`${positionX}px`;
+                this.visibleTiles[i][j].tileDivWrapper.style.top = `${positionY}px`;
+                this.visibleTiles[i][j].tileDivWrapper.style.left = `${positionX}px`;
 
-                positionX+=this.visibleTiles[i][j].colsPositionArr[24];
-
+                positionX += this.visibleTiles[i][j].colsPositionArr[24];
             }
-            positionY+=this.visibleTilesRowPrefixSum[i][24];
+            positionY += this.visibleTilesRowPrefixSum[i][24];
         }
     }
 }

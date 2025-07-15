@@ -1,7 +1,7 @@
-import { ColumnsCanvas } from "../ColumnsCanvas";
-import { ColumnsManager } from "../ColumnsManager";
-import { RowsManager } from "../RowsManager";
-import { TilesManager } from "../TilesManager";
+import { ColumnsCanvas } from "../Columns/ColumnsCanvas";
+import { ColumnsManager } from "../Columns/ColumnsManager";
+import { RowsManager } from "../Rows/RowsManager";
+import { TilesManager } from "../Tiles/TilesManager";
 import { MultipleSelectionCoordinates } from "../types/MultipleSelectionCoordinates";
 import { PointerEventHandlerBase } from "./PointerEventHandlerBase.js";
 

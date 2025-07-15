@@ -1,8 +1,6 @@
 import { CellsMap } from "./types/CellsMap.js";
-import { Cell } from "./Cell.js";
-import { TilesManager } from "./TilesManager";
-import { RowsManager } from "./RowsManager";
-import { ColumnsManager } from "./ColumnsManager";
+import { Cell } from "./Tiles/Cell.js";
+import { TilesManager } from "./Tiles/TilesManager.js";
 export class JSONUpload {
     /**
      * Stores the uploaded JSON data from the file
@@ -28,30 +26,16 @@ export class JSONUpload {
      */
     private tileManager: TilesManager;
 
-    /**
-     * Manages the row structures
-     * @type {RowsManager}
-     */
-    private rowManager: RowsManager;
-
-    /**
-     * Manages the column structures
-     * @type {ColumnsManager}
-     */
-    private columnManager: ColumnsManager;
 
     /**
      * Initializes the JSONUpload class
      * @param {CellsMap} cellData The current cell map data structure
      * @param {TilesManager} tileManager The tile manager instance
-     * @param {RowsManager} rowManager The row manager instance
-     * @param {ColumnsManager} columnManager The column manager instance
      */
-    constructor(cellData: CellsMap, tileManager: TilesManager, rowManager: RowsManager, columnManager: ColumnsManager) {
+    constructor(cellData: CellsMap, tileManager: TilesManager) {
         this.cellData = cellData;
         this.tileManager = tileManager;
-        this.rowManager = rowManager;
-        this.columnManager = columnManager;
+
         this.init();
     }
 

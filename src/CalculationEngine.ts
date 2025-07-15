@@ -1,71 +1,114 @@
 import { CellsMap } from "./types/CellsMap";
 import { MultipleSelectionCoordinates } from "./types/MultipleSelectionCoordinates";
+import { Cell } from "./Tiles/Cell.js"; // Explicitly import Cell type for processCell
 
+/**
+ * @typedef {"count" | "numericalCount" | "sum" | "average" | "min" | "max"} CalculationKey
+ * Represents the type of statistical calculation.
+ */
 type CalculationKey = "count" | "numericalCount" | "sum" | "average" | "min" | "max";
+
+/**
+ * @typedef {object} CalculationResult
+ * @property {number} value - The numerical result of the calculation.
+ * @property {boolean} visible - A flag indicating whether this calculation result should be displayed.
+ * Represents the structure for storing a calculation's value and visibility.
+ */
 type CalculationResult = { value: number; visible: boolean };
 
 /**
  * Manages statistical calculations like count, sum, average, min, and max
- * for a selected rectangular range of cells in the spreadsheet.
+ * for a selected rectangular range of cells in the spreadsheet. It optimizes
+ * calculation by choosing the most efficient iteration method (over selected range
+ * or over existing cells map) based on the sparsity of the data.
  */
 export class CalculationEngine {
     /**
-     * Holds the current result values of calculations.
+     * @type {Map<CalculationKey, CalculationResult>} Holds the current result values of various calculations.
+     * Each key corresponds to a specific calculation type (e.g., "count", "sum").
      */
     private calculationResults: Map<CalculationKey, CalculationResult> = new Map();
 
     /**
-     * Initializes the engine with cell data and selected range.
-     * @param cellsMap Map of all cells (sparse 2D structure).
-     * @param selectionCoordinates Current selection range in spreadsheet.
+     * @type {CellsMap} A private reference to the main map of all cells in the spreadsheet.
+     * This allows the engine to access cell data for calculations.
+     */
+    private cellsMap: CellsMap;
+
+    /**
+     * @type {MultipleSelectionCoordinates} A private reference to the object holding the
+     * current selection range coordinates (start/end row and column) in the spreadsheet.
+     */
+    private selectionCoordinates: MultipleSelectionCoordinates;
+
+    /**
+     * Initializes the CalculationEngine instance.
+     * @param {CellsMap} cellsMap - The main map of all cells (sparse 2D structure) in the spreadsheet.
+     * @param {MultipleSelectionCoordinates} selectionCoordinates - The current selection range coordinates in the spreadsheet.
      */
     constructor(
-        private cellsMap: CellsMap,
-        private selectionCoordinates: MultipleSelectionCoordinates
+        cellsMap: CellsMap,
+        selectionCoordinates: MultipleSelectionCoordinates
     ) {
-        this.initializeCalculationResults();
+        this.cellsMap = cellsMap;
+        this.selectionCoordinates = selectionCoordinates;
+        this.initializeCalculationResults(); // Set up initial default values for all calculations.
     }
 
     /**
-     * Sets up initial values for all calculation types.
+     * Sets up the initial values for all calculation types in the `calculationResults` map.
+     * Default values are chosen to correctly initialize sums (0), counts (0), and extreme values (MAX_VALUE for min, MIN_VALUE for max).
      */
-    private initializeCalculationResults() {
+    private initializeCalculationResults(): void {
         this.calculationResults.set("count", { value: 0, visible: true });
         this.calculationResults.set("numericalCount", { value: 0, visible: true });
         this.calculationResults.set("sum", { value: 0, visible: true });
         this.calculationResults.set("average", { value: 0, visible: true });
+        // Initialize min to the largest possible number so any actual number will be smaller.
         this.calculationResults.set("min", { value: Number.MAX_VALUE, visible: true });
+        // Initialize max to the smallest possible number so any actual number will be larger.
         this.calculationResults.set("max", { value: Number.MIN_VALUE, visible: true });
     }
 
     /**
-     * Safely retrieves a result from the map. Throws an error if not found.
+     * Safely retrieves a `CalculationResult` object from the `calculationResults` map using its key.
+     * Throws an error if the specified `key` is not found, indicating a potential programming mistake.
+     * @param {CalculationKey} key - The key identifying the desired calculation result.
+     * @returns {CalculationResult} The `CalculationResult` object associated with the key.
+     * @throws {Error} If the calculation result for the given key is not found.
      */
     private getResult(key: CalculationKey): CalculationResult {
         const result = this.calculationResults.get(key);
-        if (!result) throw new Error(`Calculation result for '${key}' not found.`);
+        if (!result) {
+            // This error indicates an unexpected state, likely a typo in a key or uninitialized value.
+            throw new Error(`Calculation result for '${key}' not found.`);
+        }
         return result;
     }
 
     /**
-     * Resets all calculations to default values before recalculation.
+     * Resets all calculation results to their default initial values.
+     * This prepares the engine for a fresh recalculation, typically after a selection change.
      */
-    private resetCalculationResults() {
+    private resetCalculationResults(): void {
         this.getResult("count").value = 0;
         this.getResult("numericalCount").value = 0;
         this.getResult("sum").value = 0;
         this.getResult("average").value = 0;
-        this.getResult("min").value = Number.MAX_VALUE;
-        this.getResult("max").value = Number.MIN_VALUE;
+        this.getResult("min").value = Number.MAX_VALUE; // Reset min to max value for comparison
+        this.getResult("max").value = Number.MIN_VALUE; // Reset max to min value for comparison
     }
 
     /**
-     * Triggers calculation on selection change.
-     * Efficiently chooses between iterating over the range or the map based on size.
+     * Handles the recalculation of all statistical values when the selection changes.
+     * It first resets all previous results, then determines the most efficient way to
+     * iterate over the relevant cells (either by iterating the selection range or the `cellsMap`),
+     * processes the cells, finalizes the average, and then updates the display.
      */
-    handleSelection() {
-        this.resetCalculationResults();
+    handleSelection(): void {
+        this.resetCalculationResults(); // Clear previous results.
 
+        // Get and normalize the selection coordinates to ensure start <= end.
         const { selectionStartRow, selectionEndRow, selectionStartColumn, selectionEndColumn } = this.selectionCoordinates;
 
         const startRow = Math.min(selectionStartRow, selectionEndRow);
@@ -73,106 +116,140 @@ export class CalculationEngine {
         const startCol = Math.min(selectionStartColumn, selectionEndColumn);
         const endCol = Math.max(selectionStartColumn, selectionEndColumn);
 
-        const rangeRowCount = endRow - startRow + 1;
-        const mapRowCount = this.cellsMap.size;
+        const rangeRowCount = endRow - startRow + 1; // Number of rows in the selected range.
+        const mapRowCount = this.cellsMap.size; // Number of rows with at least one cell in the entire map.
 
+        // Optimize iteration: If the number of rows in the selected range is smaller than
+        // the number of *non-empty* rows in the entire spreadsheet, iterate over the range.
+        // Otherwise, iterate over the sparse map (which is faster for very sparse data or large selections).
         if (mapRowCount > rangeRowCount) {
-            // Loop through selected range if it's smaller
             this.iterateOverRange(startRow, endRow, startCol, endCol);
         } else {
-            // Loop through existing cells only (faster for sparse data)
             this.iterateOverMap(startRow, endRow, startCol, endCol);
         }
 
-        this.finalizeAverage();         // Calculate average from sum/count
-        this.displayCalculationsFromMap(); // Render result to UI
+        this.finalizeAverage(); // Calculate the average after all cells are processed.
+        this.displayCalculationsFromMap(); // Update the UI with the new calculation results.
     }
 
     /**
-     * Loops through cells in the selected rectangular region and processes them.
+     * Iterates through each row and column within the defined rectangular selection range.
+     * It checks if a cell exists at each position and, if so, processes it.
+     * This method is generally efficient for dense selections or smaller total maps.
+     * @param {number} startRow - The starting row index of the selection.
+     * @param {number} endRow - The ending row index of the selection.
+     * @param {number} startCol - The starting column index of the selection.
+     * @param {number} endCol - The ending column index of the selection.
      */
-    private iterateOverRange(startRow: number, endRow: number, startCol: number, endCol: number) {
+    private iterateOverRange(startRow: number, endRow: number, startCol: number, endCol: number): void {
+        // Loop through each row in the selected range.
         for (let i = startRow; i <= endRow; i++) {
             const row = this.cellsMap.get(i);
-            if (!row) continue;
+            if (!row) continue; // If the row has no cells, skip it.
 
+            // Loop through each column in the selected range for the current row.
             for (let j = startCol; j <= endCol; j++) {
                 const cell = row.get(j);
-                if (!cell) continue;
-                this.processCell(cell);
+                if (!cell) continue; // If the cell doesn't exist, skip it.
+                this.processCell(cell); // Process the existing cell.
             }
         }
     }
 
     /**
-     * Loops only through non-empty cells and processes them if they're within selection.
+     * Iterates only through existing non-empty cells in the `cellsMap`.
+     * For each existing cell, it checks if it falls within the current selection range.
+     * This method is generally more efficient for sparse data or very large selection ranges.
+     * @param {number} startRow - The starting row index of the selection.
+     * @param {number} endRow - The ending row index of the selection.
+     * @param {number} startCol - The starting column index of the selection.
+     * @param {number} endCol - The ending column index of the selection.
      */
-    private iterateOverMap(startRow: number, endRow: number, startCol: number, endCol: number) {
+    private iterateOverMap(startRow: number, endRow: number, startCol: number, endCol: number): void {
+        // Iterate over each row that has at least one cell.
         for (const [rowIndex, row] of this.cellsMap.entries()) {
+            // Skip rows that are outside the selected row range.
             if (rowIndex < startRow || rowIndex > endRow) continue;
 
+            // Iterate over each cell within the current row.
             for (const [colIndex, cell] of row.entries()) {
+                // Skip cells that are outside the selected column range.
                 if (colIndex < startCol || colIndex > endCol) continue;
-                this.processCell(cell);
+                this.processCell(cell); // Process the cell if it's within the selection.
             }
         }
     }
 
     /**
-     * Updates count, sum, min, max, and numerical count based on cell value.
-     * Assumes `leftAlign === false` means the value is numeric.
+     * Processes a single cell to update the `count`, `sum`, `min`, `max`, and `numericalCount` results.
+     * It increments `count` for every non-empty cell. For numerical cells (where `leftAlign` is false),
+     * it converts the value to a number and updates `sum`, `min`, `max`, and `numericalCount`.
+     * @param {Cell} cell - The `Cell` instance to be processed. Assumes `leftAlign` correctly indicates numeric vs. non-numeric content.
      */
-    private processCell(cell: { getValue: () => any; leftAlign: boolean }) {
-        this.getResult("count").value += 1;
+    private processCell(cell: Cell): void {
+        this.getResult("count").value += 1; // Increment total cell count.
 
         if (!cell.leftAlign) {
-            const num = Number(cell.getValue());
+            // If the cell is not left-aligned, it's assumed to contain a numerical value.
+            const num = Number(cell.getValue()); // Convert cell value to a number.
 
+            // Get references to the calculation results for easier access.
             const numerical = this.getResult("numericalCount");
             const sum = this.getResult("sum");
             const min = this.getResult("min");
             const max = this.getResult("max");
 
-            numerical.value += 1;
-            sum.value += num;
-            min.value = Math.min(min.value, num);
-            max.value = Math.max(max.value, num);
+            numerical.value += 1; // Increment numerical cell count.
+            sum.value += num; // Add to the total sum.
+            min.value = Math.min(min.value, num); // Update minimum value.
+            max.value = Math.max(max.value, num); // Update maximum value.
         }
     }
 
     /**
-     * Computes average from sum and numerical count.
+     * Computes the `average` calculation result based on the `sum` and `numericalCount`
+     * of the processed cells. If `numericalCount` is zero, the average remains 0.
      */
-    private finalizeAverage() {
+    private finalizeAverage(): void {
         const numericalCount = this.getResult("numericalCount").value;
         if (numericalCount > 0) {
             this.getResult("average").value = this.getResult("sum").value / numericalCount;
+        } else {
+            this.getResult("average").value = 0; // If no numerical values, average is 0.
         }
     }
 
     /**
-     * Displays result values below the spreadsheet (in `.calculationsValues` container).
-     * If only one or zero cells selected, clears the output.
+     * Displays the calculated results in the `.calculationsValues` HTML container.
+     * If one or zero cells are selected, the display container is cleared.
+     * Otherwise, it dynamically generates HTML to show the relevant statistics.
+     * If there are no numerical cells, only the "Count" is displayed.
      */
-    private displayCalculationsFromMap() {
-        const count = this.getResult("count").value;
-        const numericalCount = this.getResult("numericalCount").value;
-        const container = document.querySelector('.calculationsValues') as HTMLDivElement;
-        if (!container) return;
+    private displayCalculationsFromMap(): void {
+        const count = this.getResult("count").value; // Total count of selected cells.
+        const numericalCount = this.getResult("numericalCount").value; // Count of numerical cells.
+        const container = document.querySelector('.calculationsValues') as HTMLDivElement; // The HTML container for display.
 
+        if (!container) return; // Exit if the display container is not found.
+
+        // If only one or zero cells are selected, clear the display.
         if (count <= 1) {
             container.innerHTML = "";
             return;
         }
 
+        // Helper function to generate display HTML for a specific calculation.
         const getDiv = (label: string, key: CalculationKey) =>
             this.getCalculationDisplayDiv(label, this.getResult(key).value, this.getResult(key).visible);
 
-        let html = "";
+        let html = ""; // String to build the HTML content.
 
+        // Determine which calculations to display based on whether numerical data exists.
         if (numericalCount === 0) {
+            // If no numerical data, only display the total count.
             html += getDiv("Count", "count");
         } else {
+            // If numerical data exists, display all relevant statistics.
             html += getDiv("Average", "average");
             html += getDiv("Count", "count");
             html += getDiv("Numerical Count", "numericalCount");
@@ -181,16 +258,23 @@ export class CalculationEngine {
             html += getDiv("Sum", "sum");
         }
 
-        container.innerHTML = html;
+        container.innerHTML = html; // Update the content of the display container.
     }
 
     /**
-     * Returns HTML string for a result box (label + value).
+     * Generates an HTML string for a single calculation result display box.
+     * This div includes a label and the calculated value.
+     * @param {string} label - The human-readable label for the calculation (e.g., "Sum", "Average").
+     * @param {number} value - The numerical result of the calculation.
+     * @param {boolean} visible - A flag to control the visibility of the div (adds "hide" class if false).
+     * @returns {string} The HTML string for the calculation display div.
      */
     private getCalculationDisplayDiv(label: string, value: number, visible: boolean): string {
+        // Format numbers to 2 decimal places for better readability, unless it's an integer.
+        const formattedValue = Number.isInteger(value) ? value.toString() : value.toFixed(2);
         return `
         <div class="calculationDisplay ${visible ? "" : "hide"}">
-            ${label} <span> : ${value}</span>
+            ${label} <span> : ${formattedValue}</span>
         </div>`;
     }
 }

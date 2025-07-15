@@ -1,7 +1,7 @@
-import { CellsManager } from "../CellsManager.js";
-import { ColumnsManager } from "../ColumnsManager.js";
-import { RowsManager } from "../RowsManager.js";
-import { TilesManager } from "../TilesManager.js";
+import { CellsManager } from "../Tiles/CellsManager.js";
+import { ColumnsManager } from "../Columns/ColumnsManager.js";
+import { RowsManager } from "../Rows/RowsManager.js";
+import { TilesManager } from "../Tiles/TilesManager.js";
 import { MultipleSelectionCoordinates } from "../types/MultipleSelectionCoordinates.js";
 import { UndoRedoManager } from "../UndoRedoManager/UndoRedoManager.js";
 import { CellSelectionEventHandler } from "./CellSelectionEventHandler.js";

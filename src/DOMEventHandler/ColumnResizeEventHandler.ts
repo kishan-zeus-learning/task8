@@ -1,6 +1,6 @@
-import { ColumnsCanvas } from "../ColumnsCanvas.js";
-import { ColumnsManager } from "../ColumnsManager.js";
-import { TilesManager } from "../TilesManager.js";
+import { ColumnsCanvas } from "../Columns/ColumnsCanvas.js";
+import { ColumnsManager } from "../Columns/ColumnsManager.js";
+import { TilesManager } from "../Tiles/TilesManager.js";
 import { ColumnResizingOperation } from "../UndoRedoManager/ColumnResizingOperation.js";
 import { UndoRedoManager } from "../UndoRedoManager/UndoRedoManager.js";
 import { PointerEventHandlerBase } from "./PointerEventHandlerBase.js";
@@ -158,6 +158,5 @@ export class ColumnsResizeEventHandler extends PointerEventHandlerBase {
         );
 
         this.undoRedoManager.execute(columnResizeOperation);
-        // this.tilesManager.redrawColumn(this.columnID!);
     }
 }

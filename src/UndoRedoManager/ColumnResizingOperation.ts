@@ -1,6 +1,6 @@
-import { ColumnsCanvas } from "../ColumnsCanvas.js";
-import { ColumnsManager } from "../ColumnsManager.js";
-import { TilesManager } from "../TilesManager.js";
+import { ColumnsCanvas } from "../Columns/ColumnsCanvas.js";
+import { ColumnsManager } from "../Columns/ColumnsManager.js";
+import { TilesManager } from "../Tiles/TilesManager.js";
 import { ColumnData } from "../types/ColumnRows.js";
 import { Operation } from "./Operation.js";
 
@@ -92,8 +92,6 @@ export class ColumnResizingOperation extends Operation {
      * Redoes the column resizing operation by applying the column's new width.
      */
     redo(): void {
-        // console.log("old : ",this.prevValue);
-        // console.log("new : ",this.newValue);
         this.changeWidth(this.newValue);
         this.columnsManagerObject.resizePosition();
     }

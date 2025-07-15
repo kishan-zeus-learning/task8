@@ -1,11 +1,10 @@
-import { RowsManager } from "../RowsManager.js";
-import { ColumnsManager } from "../ColumnsManager.js";
-import { TilesManager } from "../TilesManager.js";
-import { CellsManager } from "../CellsManager.js";
+import { RowsManager } from "../Rows/RowsManager.js";
+import { ColumnsManager } from "../Columns/ColumnsManager.js";
+import { TilesManager } from "../Tiles/TilesManager.js";
+import { CellsManager } from "../Tiles/CellsManager.js";
 import { UndoRedoManager } from "../UndoRedoManager/UndoRedoManager.js";
 import { TextEditOperation } from "../UndoRedoManager/TextEditOperation.js";
 import { MultipleSelectionCoordinates } from "../types/MultipleSelectionCoordinates.js";
-// import { BooleanObj } from "../types/BooleanObj.js";
 import { PointerEventHandlerBase } from "./PointerEventHandlerBase.js";
 
 /**

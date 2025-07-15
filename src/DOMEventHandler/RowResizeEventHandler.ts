@@ -1,6 +1,6 @@
-import { RowsCanvas } from "../RowsCanvas.js";
-import { RowsManager } from "../RowsManager.js";
-import { TilesManager } from "../TilesManager.js";
+import { RowsCanvas } from "../Rows/RowsCanvas.js";
+import { RowsManager } from "../Rows/RowsManager.js";
+import { TilesManager } from "../Tiles/TilesManager.js";
 import { RowResizingOperation } from "../UndoRedoManager/RowResizingOperation.js";
 import { UndoRedoManager } from "../UndoRedoManager/UndoRedoManager.js";
 import { PointerEventHandlerBase } from "./PointerEventHandlerBase.js";
@@ -126,6 +126,5 @@ export class RowResizeEventHandler extends PointerEventHandlerBase {
         );
 
         this.undoRedoManager.execute(rowResizeOperation);
-        // this.tilesManager.redrawRow(this.rowID!);
     }
 }

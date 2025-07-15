@@ -1,7 +1,7 @@
 // import { ResizeManager } from "./ResizeManager.js";
-import { RowsCanvas } from "../RowsCanvas.js";
-import { RowsManager } from "../RowsManager.js";
-import { TilesManager } from "../TilesManager.js";
+import { RowsCanvas } from "../Rows/RowsCanvas.js";
+import { RowsManager } from "../Rows/RowsManager.js";
+import { TilesManager } from "../Tiles/TilesManager.js";
 import { Operation } from "./Operation.js";
 import { RowData } from "../types/RowsColumn.js";
 

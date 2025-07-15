@@ -1,7 +1,6 @@
-import { RowData } from "./types/RowsColumn.js";
+import { RowData } from "../types/RowsColumn.js";
 import { RowsCanvas } from "./RowsCanvas.js";
-import { MultipleSelectionCoordinates } from "./types/MultipleSelectionCoordinates.js";
-// import { NumberObj } from "./types/NumberObj.js";
+import { MultipleSelectionCoordinates } from "../types/MultipleSelectionCoordinates.js";
 
 /**
  * Manages a scrolling set of visible row canvases, enabling efficient rendering
@@ -23,12 +22,6 @@ export class RowsManager {
     /** @type {RowsCanvas[]} Array of currently visible RowsCanvas instances */
     readonly visibleRows: RowsCanvas[];
 
-    /** @type {NumberObj} Global shared variable representing vertical scroll top offset in pixels */
-    // readonly marginTop: NumberObj;
-
-    // /** @type {NumberObj} Global shared variable representing vertical scroll bottom offset in pixels */
-    // readonly marginBottom: NumberObj;
-
     /** @type {HTMLDivElement[]} DOM references to currently visible row block divs */
     private rowsDivArr: HTMLDivElement[];
 
@@ -47,9 +40,11 @@ export class RowsManager {
     /** @type {MultipleSelectionCoordinates} Shared selection coordinates for row highlighting */
     private selectionCoordinates: MultipleSelectionCoordinates;
 
-    private scrollHeight:number;
+    /** @type {number} The current total scroll height of the visible rows in pixels. */
+    private scrollHeight: number;
 
-    private scrollHeightStart:number;
+    /** @type {number} The starting top pixel position of the first visible row block. */
+    private scrollHeightStart: number;
 
     /**
      * Initializes a scrollable manager for row canvas blocks.
@@ -78,14 +73,12 @@ export class RowsManager {
         this.rowsPositionPrefixSumArr = [];
         this.rowsDivArr = [];
         this.visibleRows = [];
-        // this.marginTop = {value:0};
-        // this.marginBottom={value:0};
         this.defaultHeight = defaultHeight;
         this.defaultWidth = defaultWidth;
-        this.scrollHeight=0;
-        this.scrollHeightStart=0;
+        this.scrollHeight = 0;
+        this.scrollHeightStart = 0;
         this.rowsDivContainer = document.getElementById("rowsColumn") as HTMLDivElement;
-        this.reload(0,0);
+        this.reload(0, 0);
     }
 
     /**
@@ -93,7 +86,7 @@ export class RowsManager {
      * @returns {boolean} True if scrolling occurred, false if at the bottommost limit.
      */
     scrollDown(): boolean {
-        if (this.startRowIdx === (this.rowCanvasLimit - 1 - this.visibleRowCnt)) return false;
+        if (this.startRowIdx >= (this.rowCanvasLimit - 1 - this.visibleRowCnt)) return false;
         this.unmountRowTop();
         this.startRowIdx++;
         this.mountRowBottom();
@@ -113,48 +106,33 @@ export class RowsManager {
     }
 
     /**
-     * Loads all visible row canvases on initial render.
-     * Called once during constructor to prepare visible rows.
+     * Reloads all visible row canvases based on a new starting index and position.
+     * This is typically used for "fast scroll" scenarios where a large jump occurs.
+     * @param {number} startIdx - The new starting row block index.
+     * @param {number} startPosition - The new starting top pixel position.
      */
-    // private initialLoad(): void {
+    reload(startIdx: number, startPosition: number): void {
+        const prevHeight = this.scrollHeight; // Store previous height for container adjustment
 
-    //     for (let i = 0; i < this.visibleRowCnt; i++) {
-    //         const rowIdx = i + this.startRowIdx;
-    //         const canvas = new RowsCanvas(
-    //             rowIdx,
-    //             this.rowHeights,
-    //             this.defaultWidth,
-    //             this.defaultHeight,
-    //             this.selectionCoordinates
-    //         );
-    //         this.visibleRows.push(canvas);
-    //         this.rowsPositionPrefixSumArr.push(canvas.rowsPositionArr);
-    //         this.rowsDivArr.push(canvas.rowCanvasDiv);
-    //         this.rowsDivContainer.appendChild(canvas.rowCanvasDiv);
-    //         canvas.rowCanvasDiv.style.top=`${this.scrollHeight}px`;
-    //         this.scrollHeight+=canvas.rowsPositionArr[24];
-    //         this.rowsDivContainer.style.height=`${this.scrollHeight}px`;
-    //     }
-    // }
+        // Clamp startIdx to valid range
+        startIdx = Math.max(0, startIdx);
+        startIdx = Math.min(startIdx, this.rowCanvasLimit - this.visibleRowCnt);
 
+        startPosition = Math.max(startPosition, 0); // Ensure startPosition is not negative
 
-    reload(startIdx:number,startPosition:number):void{
-        const prevHeight=this.scrollHeight;
-        startIdx=Math.max(0,startIdx);
-        startIdx=Math.min(startIdx,this.rowCanvasLimit-this.visibleRowCnt);
+        this.rowsDivContainer.replaceChildren(); // Clear existing DOM elements
+        this.visibleRows.splice(0, this.visibleRows.length); // Clear visibleRows array
+        this.rowsDivArr.splice(0, this.rowsDivArr.length); // Clear rowsDivArr array
+        this.startRowIdx = startIdx; // Set new starting row index
+        this.rowsPositionPrefixSumArr.splice(0, this.rowsPositionPrefixSumArr.length); // Clear prefix sum array
+        this.scrollHeightStart = startPosition; // Set new starting scroll height
+        this.scrollHeight = this.scrollHeightStart; // Initialize current scroll height
 
-        startPosition=Math.max(startPosition,0);
-        this.rowsDivContainer.replaceChildren();
-        this.visibleRows.splice(0,this.visibleRows.length);
-        this.rowsDivArr.splice(0,this.rowsDivArr.length);
-        this.startRowIdx=startIdx;
-        this.rowsPositionPrefixSumArr.splice(0,this.rowsPositionPrefixSumArr.length);
-        this.scrollHeightStart=startPosition;
-        this.scrollHeight=this.scrollHeightStart;
-        for(let i=0;i<this.visibleRowCnt;i++){
-            const rowIdx=this.startRowIdx+i;
+        // Create and append new visible row canvases
+        for (let i = 0; i < this.visibleRowCnt; i++) {
+            const rowIdx = this.startRowIdx + i;
 
-            const canvas=new RowsCanvas(
+            const canvas = new RowsCanvas(
                 rowIdx,
                 this.rowHeights,
                 this.defaultWidth,
@@ -166,13 +144,12 @@ export class RowsManager {
             this.rowsPositionPrefixSumArr.push(canvas.rowsPositionArr);
             this.rowsDivArr.push(canvas.rowCanvasDiv);
             this.rowsDivContainer.appendChild(canvas.rowCanvasDiv);
-            canvas.rowCanvasDiv.style.top=`${this.scrollHeight}px`;
-            this.scrollHeight+=canvas.rowsPositionArr[24];
+            canvas.rowCanvasDiv.style.top = `${this.scrollHeight}px`; // Position the row canvas
+            this.scrollHeight += canvas.rowsPositionArr[24]; // Accumulate total scroll height
         }
 
-
-        this.rowsDivContainer.style.height=`${Math.max(prevHeight,this.scrollHeight)}px`;
-
+        // Adjust the container's height to accommodate the new content
+        this.rowsDivContainer.style.height = `${Math.max(prevHeight, this.scrollHeight)}px`;
     }
 
     /**
@@ -191,13 +168,9 @@ export class RowsManager {
         this.rowsPositionPrefixSumArr.push(canvas.rowsPositionArr);
         this.rowsDivArr.push(canvas.rowCanvasDiv);
         this.rowsDivContainer.appendChild(canvas.rowCanvasDiv);
-        // if(this.marginBottom.value>0){
-        //     this.marginBottom.value-=this.rowsPositionPrefixSumArr[this.visibleRowCnt-1][24];
-        //     this.rowsDivContainer.style.marginBottom=`${this.marginBottom.value}px`;
-        // }
-        canvas.rowCanvasDiv.style.top=`${this.scrollHeight}px`;
-        this.scrollHeight+=canvas.rowsPositionArr[24];
-        this.rowsDivContainer.style.height=`${this.scrollHeight}px`;
+        canvas.rowCanvasDiv.style.top = `${this.scrollHeight}px`;
+        this.scrollHeight += canvas.rowsPositionArr[24];
+        this.rowsDivContainer.style.height = `${this.scrollHeight}px`;
     }
 
     /**
@@ -212,42 +185,34 @@ export class RowsManager {
             this.defaultHeight,
             this.selectionCoordinates
         );
-        this.visibleRows.unshift(canvas);
+        this.visibleRows.unshift(canvas); // Add to the beginning of the array
         this.rowsPositionPrefixSumArr.unshift(canvas.rowsPositionArr);
         this.rowsDivArr.unshift(canvas.rowCanvasDiv);
-        this.rowsDivContainer.prepend(canvas.rowCanvasDiv);
-        this.scrollHeightStart-=canvas.rowsPositionArr[24];
-        canvas.rowCanvasDiv.style.top=`${this.scrollHeightStart}px`;
-
-        
-
-
-
-        // Adjust top margin to simulate scroll
-        // this.marginTop.value -= this.rowsPositionPrefixSumArr[0][24];
-        // this.rowsDivContainer.style.marginTop = `${this.marginTop.value}px`;
+        this.rowsDivContainer.prepend(canvas.rowCanvasDiv); // Add to the beginning of the DOM
+        this.scrollHeightStart -= canvas.rowsPositionArr[24]; // Adjust starting scroll height
+        canvas.rowCanvasDiv.style.top = `${this.scrollHeightStart}px`; // Position the new row
     }
 
     /**
      * Unmounts the topmost row block and adjusts margin to simulate scroll down.
      */
     private unmountRowTop(): void {
-        this.scrollHeightStart+=this.visibleRows[0].rowsPositionArr[24];
-        this.rowsDivContainer.removeChild(this.rowsDivArr[0]);
-        this.rowsDivArr.shift();
-        this.rowsPositionPrefixSumArr.shift();
-        this.visibleRows.shift();
+        this.scrollHeightStart += this.visibleRows[0].rowsPositionArr[24]; // Adjust starting scroll height
+        this.rowsDivContainer.removeChild(this.rowsDivArr[0]); // Remove from DOM
+        this.rowsDivArr.shift(); // Remove from array
+        this.rowsPositionPrefixSumArr.shift(); // Remove from prefix sum array
+        this.visibleRows.shift(); // Remove from visibleRows array
     }
 
     /**
      * Unmounts the bottommost row block during scroll up.
      */
     private unmountRowBottom(): void {
-        this.scrollHeight-=this.visibleRows[this.visibleRowCnt-1].rowsPositionArr[24];
-        this.rowsDivContainer.removeChild(this.rowsDivArr[this.rowsDivArr.length - 1]);
-        this.rowsDivArr.pop();
-        this.rowsPositionPrefixSumArr.pop();
-        this.visibleRows.pop();
+        this.scrollHeight -= this.visibleRows[this.visibleRowCnt - 1].rowsPositionArr[24]; // Adjust total scroll height
+        this.rowsDivContainer.removeChild(this.rowsDivArr[this.rowsDivArr.length - 1]); // Remove from DOM
+        this.rowsDivArr.pop(); // Remove from array
+        this.rowsPositionPrefixSumArr.pop(); // Remove from prefix sum array
+        this.visibleRows.pop(); // Remove from visibleRows array
     }
 
     /**
@@ -268,31 +233,52 @@ export class RowsManager {
     getCurrentRowCanvas(rowID: number): RowsCanvas | null {
         const arrIdx = rowID - this.visibleRows[0].rowID;
         if (arrIdx >= 0 && arrIdx < this.visibleRows.length) return this.visibleRows[arrIdx];
-        alert("something went wrong inside rows manager");
+        // In a production environment, consider more robust error handling or logging.
+        // alert("something went wrong inside rows manager"); // Removed alert as per instructions
+        console.error("Error: getCurrentRowCanvas - rowID is out of visible range.");
         return null;
     }
 
-    resizePosition(){
-        this.scrollHeight=this.scrollHeightStart+this.visibleRows[0].rowsPositionArr[24];
-        for(let i=1;i<this.visibleRowCnt;i++){
-            this.visibleRows[i].rowCanvasDiv.style.top=`${this.scrollHeight}px`;
-            this.scrollHeight+=this.visibleRows[i].rowsPositionArr[24];
+    /**
+     * Recalculates and updates the top positions of all visible row canvases,
+     * typically called after a resize event that changes row heights.
+     */
+    resizePosition() {
+        this.scrollHeight = this.scrollHeightStart + this.visibleRows[0].rowsPositionArr[24]; // Start accumulating from the first row's height
+        for (let i = 1; i < this.visibleRowCnt; i++) {
+            this.visibleRows[i].rowCanvasDiv.style.top = `${this.scrollHeight}px`;
+            this.scrollHeight += this.visibleRows[i].rowsPositionArr[24];
         }
     }
 
-    resetScrollTop(){
-        this.rowsDivContainer.style.height=`${this.scrollHeight}px`;
+    /**
+     * Resets the scroll height of the rows container, typically called when scrolling to the very top.
+     */
+    resetScrollTop() {
+        this.rowsDivContainer.style.height = `${this.scrollHeight}px`;
     }
 
-    getStartTop(){
+    /**
+     * Gets the starting top pixel position of the first visible row.
+     * @returns {number} The top pixel position.
+     */
+    getStartTop(): number {
         return this.scrollHeightStart;
     }
 
-    getScrollHeight(){
+    /**
+     * Gets the current total scroll height of the visible rows.
+     * @returns {number} The total scroll height in pixels.
+     */
+    getScrollHeight(): number {
         return this.scrollHeight;
     }
 
-    getStartRowIdx(){
+    /**
+     * Gets the global index of the first visible row block.
+     * @returns {number} The starting row index.
+     */
+    getStartRowIdx(): number {
         return this.startRowIdx;
     }
 }
