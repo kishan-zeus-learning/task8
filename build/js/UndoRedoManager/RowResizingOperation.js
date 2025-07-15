@@ -30,6 +30,8 @@ export class RowResizingOperation extends Operation {
      */
     undo() {
         this.changeHeight(this.prevValue);
+        this.rowsManagerObject.resizePosition();
+        this.tilesMangerObject.resizePosition();
     }
     /**
      * Redoes the row resizing operation.
@@ -37,6 +39,8 @@ export class RowResizingOperation extends Operation {
      */
     redo() {
         this.changeHeight(this.newValue);
+        this.rowsManagerObject.resizePosition();
+        this.tilesMangerObject.resizePosition();
     }
     /**
      * Internal method to apply the height change to a specific row.

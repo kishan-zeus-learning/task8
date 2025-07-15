@@ -1,7 +1,7 @@
 import { RowData } from "./types/RowsColumn.js";
 import { RowsCanvas } from "./RowsCanvas.js";
 import { MultipleSelectionCoordinates } from "./types/MultipleSelectionCoordinates.js";
-import { NumberObj } from "./types/NumberObj.js";
+// import { NumberObj } from "./types/NumberObj.js";
 
 /**
  * Manages a scrolling set of visible row canvases, enabling efficient rendering
@@ -15,7 +15,7 @@ export class RowsManager {
     private startRowIdx: number;
 
     /** @type {number} Number of row blocks currently visible */
-    private visibleRowCnt: number;
+    readonly visibleRowCnt: number;
 
     /** @type {number[][]} Stores the prefix sum arrays for row positions in each visible block */
     readonly rowsPositionPrefixSumArr: number[][];
@@ -24,10 +24,10 @@ export class RowsManager {
     readonly visibleRows: RowsCanvas[];
 
     /** @type {NumberObj} Global shared variable representing vertical scroll top offset in pixels */
-    readonly marginTop: NumberObj;
+    // readonly marginTop: NumberObj;
 
-    /** @type {NumberObj} Global shared variable representing vertical scroll bottom offset in pixels */
-    readonly marginBottom: NumberObj;
+    // /** @type {NumberObj} Global shared variable representing vertical scroll bottom offset in pixels */
+    // readonly marginBottom: NumberObj;
 
     /** @type {HTMLDivElement[]} DOM references to currently visible row block divs */
     private rowsDivArr: HTMLDivElement[];
@@ -46,6 +46,10 @@ export class RowsManager {
 
     /** @type {MultipleSelectionCoordinates} Shared selection coordinates for row highlighting */
     private selectionCoordinates: MultipleSelectionCoordinates;
+
+    private scrollHeight:number;
+
+    private scrollHeightStart:number;
 
     /**
      * Initializes a scrollable manager for row canvas blocks.
@@ -74,12 +78,14 @@ export class RowsManager {
         this.rowsPositionPrefixSumArr = [];
         this.rowsDivArr = [];
         this.visibleRows = [];
-        this.marginTop = {value:0};
-        this.marginBottom={value:0};
+        // this.marginTop = {value:0};
+        // this.marginBottom={value:0};
         this.defaultHeight = defaultHeight;
         this.defaultWidth = defaultWidth;
+        this.scrollHeight=0;
+        this.scrollHeightStart=0;
         this.rowsDivContainer = document.getElementById("rowsColumn") as HTMLDivElement;
-        this.initialLoad();
+        this.reload(0,0);
     }
 
     /**
@@ -110,21 +116,63 @@ export class RowsManager {
      * Loads all visible row canvases on initial render.
      * Called once during constructor to prepare visible rows.
      */
-    private initialLoad(): void {
-        for (let i = 0; i < this.visibleRowCnt; i++) {
-            const rowIdx = i + this.startRowIdx;
-            const canvas = new RowsCanvas(
+    // private initialLoad(): void {
+
+    //     for (let i = 0; i < this.visibleRowCnt; i++) {
+    //         const rowIdx = i + this.startRowIdx;
+    //         const canvas = new RowsCanvas(
+    //             rowIdx,
+    //             this.rowHeights,
+    //             this.defaultWidth,
+    //             this.defaultHeight,
+    //             this.selectionCoordinates
+    //         );
+    //         this.visibleRows.push(canvas);
+    //         this.rowsPositionPrefixSumArr.push(canvas.rowsPositionArr);
+    //         this.rowsDivArr.push(canvas.rowCanvasDiv);
+    //         this.rowsDivContainer.appendChild(canvas.rowCanvasDiv);
+    //         canvas.rowCanvasDiv.style.top=`${this.scrollHeight}px`;
+    //         this.scrollHeight+=canvas.rowsPositionArr[24];
+    //         this.rowsDivContainer.style.height=`${this.scrollHeight}px`;
+    //     }
+    // }
+
+
+    reload(startIdx:number,startPosition:number):void{
+        const prevHeight=this.scrollHeight;
+        startIdx=Math.max(0,startIdx);
+        startIdx=Math.min(startIdx,this.rowCanvasLimit-this.visibleRowCnt);
+
+        startPosition=Math.max(startPosition,0);
+        this.rowsDivContainer.replaceChildren();
+        this.visibleRows.splice(0,this.visibleRows.length);
+        this.rowsDivArr.splice(0,this.rowsDivArr.length);
+        this.startRowIdx=startIdx;
+        this.rowsPositionPrefixSumArr.splice(0,this.rowsPositionPrefixSumArr.length);
+        this.scrollHeightStart=startPosition;
+        this.scrollHeight=this.scrollHeightStart;
+        for(let i=0;i<this.visibleRowCnt;i++){
+            const rowIdx=this.startRowIdx+i;
+
+            const canvas=new RowsCanvas(
                 rowIdx,
                 this.rowHeights,
                 this.defaultWidth,
                 this.defaultHeight,
                 this.selectionCoordinates
             );
+
             this.visibleRows.push(canvas);
             this.rowsPositionPrefixSumArr.push(canvas.rowsPositionArr);
             this.rowsDivArr.push(canvas.rowCanvasDiv);
             this.rowsDivContainer.appendChild(canvas.rowCanvasDiv);
+            canvas.rowCanvasDiv.style.top=`${this.scrollHeight}px`;
+            this.scrollHeight+=canvas.rowsPositionArr[24];
         }
+
+
+        this.rowsDivContainer.style.height=`${Math.max(prevHeight,this.scrollHeight)}px`;
+
     }
 
     /**
@@ -143,10 +191,13 @@ export class RowsManager {
         this.rowsPositionPrefixSumArr.push(canvas.rowsPositionArr);
         this.rowsDivArr.push(canvas.rowCanvasDiv);
         this.rowsDivContainer.appendChild(canvas.rowCanvasDiv);
-        if(this.marginBottom.value>0){
-            this.marginBottom.value-=this.rowsPositionPrefixSumArr[this.visibleRowCnt-1][24];
-            this.rowsDivContainer.style.marginBottom=`${this.marginBottom.value}px`;
-        }
+        // if(this.marginBottom.value>0){
+        //     this.marginBottom.value-=this.rowsPositionPrefixSumArr[this.visibleRowCnt-1][24];
+        //     this.rowsDivContainer.style.marginBottom=`${this.marginBottom.value}px`;
+        // }
+        canvas.rowCanvasDiv.style.top=`${this.scrollHeight}px`;
+        this.scrollHeight+=canvas.rowsPositionArr[24];
+        this.rowsDivContainer.style.height=`${this.scrollHeight}px`;
     }
 
     /**
@@ -165,20 +216,23 @@ export class RowsManager {
         this.rowsPositionPrefixSumArr.unshift(canvas.rowsPositionArr);
         this.rowsDivArr.unshift(canvas.rowCanvasDiv);
         this.rowsDivContainer.prepend(canvas.rowCanvasDiv);
+        this.scrollHeightStart-=canvas.rowsPositionArr[24];
+        canvas.rowCanvasDiv.style.top=`${this.scrollHeightStart}px`;
+
+        
+
+
 
         // Adjust top margin to simulate scroll
-        this.marginTop.value -= this.rowsPositionPrefixSumArr[0][24];
-        this.rowsDivContainer.style.marginTop = `${this.marginTop.value}px`;
+        // this.marginTop.value -= this.rowsPositionPrefixSumArr[0][24];
+        // this.rowsDivContainer.style.marginTop = `${this.marginTop.value}px`;
     }
 
     /**
      * Unmounts the topmost row block and adjusts margin to simulate scroll down.
      */
     private unmountRowTop(): void {
-        console.log("unmounted the top div .....................");
-        this.marginTop.value += this.rowsPositionPrefixSumArr[0][24];
-        this.rowsDivContainer.style.marginTop = `${this.marginTop.value}px`;
-
+        this.scrollHeightStart+=this.visibleRows[0].rowsPositionArr[24];
         this.rowsDivContainer.removeChild(this.rowsDivArr[0]);
         this.rowsDivArr.shift();
         this.rowsPositionPrefixSumArr.shift();
@@ -189,8 +243,7 @@ export class RowsManager {
      * Unmounts the bottommost row block during scroll up.
      */
     private unmountRowBottom(): void {
-        this.marginBottom.value+=this.rowsPositionPrefixSumArr[this.rowsPositionPrefixSumArr.length-1][24];
-        this.rowsDivContainer.style.marginBottom= `${this.marginBottom.value}px`;
+        this.scrollHeight-=this.visibleRows[this.visibleRowCnt-1].rowsPositionArr[24];
         this.rowsDivContainer.removeChild(this.rowsDivArr[this.rowsDivArr.length - 1]);
         this.rowsDivArr.pop();
         this.rowsPositionPrefixSumArr.pop();
@@ -217,5 +270,29 @@ export class RowsManager {
         if (arrIdx >= 0 && arrIdx < this.visibleRows.length) return this.visibleRows[arrIdx];
         alert("something went wrong inside rows manager");
         return null;
+    }
+
+    resizePosition(){
+        this.scrollHeight=this.scrollHeightStart+this.visibleRows[0].rowsPositionArr[24];
+        for(let i=1;i<this.visibleRowCnt;i++){
+            this.visibleRows[i].rowCanvasDiv.style.top=`${this.scrollHeight}px`;
+            this.scrollHeight+=this.visibleRows[i].rowsPositionArr[24];
+        }
+    }
+
+    resetScrollTop(){
+        this.rowsDivContainer.style.height=`${this.scrollHeight}px`;
+    }
+
+    getStartTop(){
+        return this.scrollHeightStart;
+    }
+
+    getScrollHeight(){
+        return this.scrollHeight;
+    }
+
+    getStartRowIdx(){
+        return this.startRowIdx;
     }
 }

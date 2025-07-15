@@ -58,28 +58,70 @@ export class ScrollManager {
     scrollListener() {
         let lastScrollTop = this.sheetDiv.scrollTop;
         let lastScrollLeft = this.sheetDiv.scrollLeft;
+        let fastScrollDetected = false;
+        let scrollStopTimer = null;
+        // These will hold the scroll positions when fast scroll ends
+        let finalScrollTop = 0;
+        let finalScrollLeft = 0;
         this.sheetDiv.addEventListener("scroll", (event) => {
             const currentScrollTop = this.sheetDiv.scrollTop;
             const currentScrollLeft = this.sheetDiv.scrollLeft;
-            if (currentScrollTop > lastScrollTop)
-                this.handleScrollDown(event);
-            else if (currentScrollTop < lastScrollTop)
-                this.handleScrollUp(event);
-            if (currentScrollLeft > lastScrollLeft)
-                this.handleScrollRight(event);
-            else if (currentScrollLeft < lastScrollLeft)
-                this.handleScrollLeft(event);
-            lastScrollLeft = currentScrollLeft;
+            const deltaY = currentScrollTop - lastScrollTop;
+            const deltaX = currentScrollLeft - lastScrollLeft;
+            const isFastScroll = Math.abs(deltaX) > 2500 || Math.abs(deltaY) > 625;
+            if (isFastScroll) {
+                console.log("Fast scrolling");
+                fastScrollDetected = true;
+                // Store current positions for use when scrolling ends
+                finalScrollTop = currentScrollTop;
+                finalScrollLeft = currentScrollLeft;
+            }
+            else {
+                this.scrollSmooth(event, currentScrollTop, currentScrollLeft, lastScrollTop, lastScrollLeft);
+            }
             lastScrollTop = currentScrollTop;
+            lastScrollLeft = currentScrollLeft;
+            // Detect scroll stop using a debounce timer
+            if (scrollStopTimer) {
+                clearTimeout(scrollStopTimer);
+            }
+            scrollStopTimer = setTimeout(() => {
+                if (fastScrollDetected) {
+                    this.onFastScrollEnd(finalScrollTop, finalScrollLeft);
+                    fastScrollDetected = false;
+                }
+                if (currentScrollTop === 0) {
+                    this.rowsManager.resetScrollTop();
+                }
+                if (currentScrollLeft === 0) {
+                    this.columnsManager.resetScrollLeft();
+                }
+            }, 150); // delay in ms to determine scroll stop
             if (currentScrollTop === 0) {
-                this.rowsManager.rowsDivContainer.style.marginBottom = "0";
-                this.rowsManager.marginBottom.value = 0;
+                this.rowsManager.resetScrollTop();
             }
             if (currentScrollLeft === 0) {
-                this.columnsManager.columnsDivContainer.style.marginRight = "0";
-                this.columnsManager.marginRight.value = 0;
+                this.columnsManager.resetScrollLeft();
             }
         });
+    }
+    onFastScrollEnd(scrollTop, scrollLeft) {
+        console.log("fast scroll ended");
+        const topPosIdx = this.getIdxTop(scrollTop);
+        const leftPosIdx = this.getIdxLeft(scrollLeft);
+        this.rowsManager.reload(topPosIdx.idx, topPosIdx.top);
+        this.columnsManager.reload(leftPosIdx.idx, leftPosIdx.left);
+        this.tilesManager.reload();
+    }
+    scrollSmooth(event, currentScrollTop, currentScrollLeft, lastScrollTop, lastScrollLeft) {
+        if (currentScrollTop > lastScrollTop)
+            this.handleScrollDown(event);
+        else if (currentScrollTop < lastScrollTop)
+            this.handleScrollUp(event);
+        if (currentScrollLeft > lastScrollLeft)
+            this.handleScrollRight(event);
+        else if (currentScrollLeft < lastScrollLeft)
+            this.handleScrollLeft(event);
     }
     /**
      * Handles vertical scroll down and loads new rows and tiles if necessary.
@@ -94,9 +136,10 @@ export class ScrollManager {
         const bufferRect = lastRow.rowCanvasDiv.getBoundingClientRect();
         const isVisible = bufferRect.top < this.containerDivRect.bottom && bufferRect.bottom > this.containerDivRect.top;
         if (isVisible) {
-            console.log("buffer is visible ...............");
+            // console.log("buffer is visible ...............");
             if ((_b = this.rowsManager) === null || _b === void 0 ? void 0 : _b.scrollDown())
                 (_c = this.tilesManager) === null || _c === void 0 ? void 0 : _c.scrollDown();
+            // this.rowsManager!.scrollDown();
         }
     }
     /**
@@ -114,6 +157,7 @@ export class ScrollManager {
         if (isVisible) {
             if ((_b = this.rowsManager) === null || _b === void 0 ? void 0 : _b.scrollUp())
                 (_c = this.tilesManager) === null || _c === void 0 ? void 0 : _c.scrollUp();
+            // this.rowsManager!.scrollUp();
         }
     }
     /**
@@ -148,6 +192,63 @@ export class ScrollManager {
         if (isVisible) {
             if ((_b = this.columnsManager) === null || _b === void 0 ? void 0 : _b.scrollLeft())
                 (_c = this.tilesManager) === null || _c === void 0 ? void 0 : _c.scrollLeft();
+            // this.columnsManager!.scrollLeft();
         }
+    }
+    getIdxTop(scrollTop) {
+        let sum = 0;
+        let prevSum = 0;
+        for (let i = 0; i < 4000 - this.rowsManager.visibleRowCnt; i++) {
+            const currentSum = this.getSum25Row(i);
+            if (sum + currentSum > scrollTop) {
+                return { idx: i - 1, top: prevSum };
+            }
+            prevSum = sum;
+            sum += currentSum;
+        }
+        return { idx: 4000 - this.rowsManager.visibleRowCnt, top: prevSum };
+    }
+    getSum25Row(idx) {
+        let currIdx = idx * 25;
+        let sum = 0;
+        for (let i = 0; i < 25; i++) {
+            currIdx++;
+            const currentHeight = this.rowsManager.rowHeights.get(currIdx);
+            if (currentHeight) {
+                sum += currentHeight.height;
+            }
+            else {
+                sum += this.rowsManager.defaultHeight;
+            }
+        }
+        return sum;
+    }
+    getIdxLeft(scrollLeft) {
+        let sum = 0;
+        let prevSum = 0;
+        for (let i = 0; i < 40 - this.columnsManager.visibleColumnCnt; i++) {
+            const currentSum = this.getSum25Column(i);
+            if (sum + currentSum > scrollLeft) {
+                return { idx: (i - 1), left: prevSum };
+            }
+            prevSum = sum;
+            sum += currentSum;
+        }
+        return { idx: 40 - this.columnsManager.visibleColumnCnt, left: prevSum };
+    }
+    getSum25Column(idx) {
+        let currIdx = idx * 25;
+        let sum = 0;
+        for (let i = 0; i < 25; i++) {
+            currIdx++;
+            const currentWidth = this.columnsManager.columnWidths.get(currIdx);
+            if (currentWidth) {
+                sum += currentWidth.width;
+            }
+            else {
+                sum += this.columnsManager.defaultWidth;
+            }
+        }
+        return sum;
     }
 }

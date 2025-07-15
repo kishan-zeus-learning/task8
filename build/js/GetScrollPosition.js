@@ -5,23 +5,29 @@ export class GetScrollPosition {
     }
     getIdxTop(scrollTop) {
         let sum = 0;
-        for (let i = 1; i <= 4000; i++) {
+        let prevSum = 0;
+        for (let i = 0; i < 4000; i++) {
             const currentSum = this.getSum25Row(i);
             if (sum + currentSum > scrollTop) {
-                return { idx: (i - 1), top: sum };
+                return { idx: i - 1, top: prevSum };
             }
+            prevSum = sum;
+            sum += currentSum;
         }
-        return { idx: 4000, top: sum };
+        return { idx: 3999, top: sum };
     }
     getIdxLeft(scrollLeft) {
         let sum = 0;
-        for (let i = 1; i <= 40; i++) {
+        let prevSum = 0;
+        for (let i = 0; i < 40; i++) {
             const currentSum = this.getSum25Column(i);
             if (sum + currentSum > scrollLeft) {
-                return { idx: (i - 1), left: sum };
+                return { idx: (i - 1), left: prevSum };
             }
+            prevSum = sum;
+            sum += currentSum;
         }
-        return { idx: 40, left: sum };
+        return { idx: 39, left: prevSum };
     }
     getSum25Row(idx) {
         let currIdx = idx * 25;

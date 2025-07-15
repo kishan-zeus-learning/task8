@@ -100,16 +100,14 @@ class App {
 
         // TilesManager handles cell rendering, merging selection + data
         this.TilesManagerObj = new TilesManager(
-            this.RowsManagerObj.rowsPositionPrefixSumArr,
-            this.ColumnsManagerObj.visibleColumnsPrefixSum,
+            this.RowsManagerObj,
+            this.ColumnsManagerObj,
             this.ScrollManagerObj.verticalNum,
             this.ScrollManagerObj.horizontalNum,
             this.selectionCoordinates,
             this.CellsManagerObj,
-            undefined, 
-            undefined, 
-            this.RowsManagerObj.marginTop,
-            this.ColumnsManagerObj.marginLeft
+            // this.RowsManagerObj.marginTop,
+            // this.ColumnsManagerObj.marginLeft
         );
 
         // Enables uploading JSON file to populate spreadsheet

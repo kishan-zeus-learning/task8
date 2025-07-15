@@ -87,6 +87,8 @@ export class RowResizingOperation extends Operation {
      */
     undo(): void {
         this.changeHeight(this.prevValue);
+        this.rowsManagerObject.resizePosition();
+        this.tilesMangerObject.resizePosition();
     }
 
     /**
@@ -95,6 +97,8 @@ export class RowResizingOperation extends Operation {
      */
     redo(): void {
         this.changeHeight(this.newValue);
+        this.rowsManagerObject.resizePosition();
+        this.tilesMangerObject.resizePosition();
     }
 
     /**

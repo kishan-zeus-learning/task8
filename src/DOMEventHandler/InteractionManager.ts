@@ -119,7 +119,6 @@ export class InteractionManager {
 
         // Set up all event listeners
         this.setupEventListeners();
-        console.log("InteractionManager initialized with handlers:", this.pointerEventHandlers);
     }
 
     /**

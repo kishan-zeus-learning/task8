@@ -62,6 +62,7 @@ export class ColumnsResizeEventHandler extends PointerEventHandlerBase {
      */
     pointerMove(event) {
         this.currentCanvasObj.resizeColumn(event.clientX, this.hoverIdx, this.columnKey);
+        this.columnsManager.resizePosition();
     }
     /**
      * Finalizes the resize operation and registers it with the undo/redo manager.
@@ -72,6 +73,6 @@ export class ColumnsResizeEventHandler extends PointerEventHandlerBase {
         this.ColumnDiv.style.cursor = "";
         const columnResizeOperation = new ColumnResizingOperation(this.columnKey, this.prevValue, this.currentCanvasObj.getNewValue(), this.currentCanvasObj.columnWidths, this.columnsManager, this.tilesManager, this.currentCanvasObj);
         this.undoRedoManager.execute(columnResizeOperation);
-        this.tilesManager.redrawColumn(this.columnID);
+        // this.tilesManager.redrawColumn(this.columnID!);
     }
 }

@@ -26,6 +26,9 @@ export class Tile {
         this.selectionCoordinates = selectionCoordinates;
         this.CellsManager = CellsManager;
         this.tileDiv = this.createTile();
+        this.tileDivWrapper = document.createElement("div");
+        this.tileDivWrapper.classList.add("tileDivWrapper");
+        this.tileDivWrapper.appendChild(this.tileDiv);
         this.drawGrid();
     }
     /**

@@ -21,6 +21,8 @@ export class Tile {
     /** @type {HTMLDivElement} Wrapper div that holds the canvas */
     readonly tileDiv: HTMLDivElement;
 
+    readonly tileDivWrapper: HTMLDivElement;
+
     /** @type {HTMLCanvasElement} Canvas used for rendering the tile */
     private tileCanvas: HTMLCanvasElement = document.createElement("canvas");
 
@@ -53,6 +55,9 @@ export class Tile {
         this.selectionCoordinates = selectionCoordinates;
         this.CellsManager = CellsManager;
         this.tileDiv = this.createTile();
+        this.tileDivWrapper=document.createElement("div");
+        this.tileDivWrapper.classList.add("tileDivWrapper");
+        this.tileDivWrapper.appendChild(this.tileDiv);
         this.drawGrid();
     }
 

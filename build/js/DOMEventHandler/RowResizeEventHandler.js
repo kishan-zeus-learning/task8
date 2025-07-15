@@ -61,16 +61,18 @@ export class RowResizeEventHandler extends PointerEventHandlerBase {
      */
     pointerMove(event) {
         this.currentCanvasObj.resizeRow(event.clientY, this.hoverIdx, this.rowKey);
+        this.rowsManager.resizePosition();
     }
     /**
      * Finalizes the resize and pushes the operation to the undo/redo stack
      * @param {PointerEvent} event
      */
     pointerUp(event) {
+        console.log("calling pointerup for row resize");
         document.body.style.cursor = "";
         this.rowsManager.rowsDivContainer.style.cursor = "";
         const rowResizeOperation = new RowResizingOperation(this.rowKey, this.prevValue, this.currentCanvasObj.getNewValue(), this.currentCanvasObj.rowHeights, this.rowsManager, this.tilesManager, this.currentCanvasObj);
         this.undoRedoManager.execute(rowResizeOperation);
-        this.tilesManager.redrawRow(this.rowID);
+        // this.tilesManager.redrawRow(this.rowID!);
     }
 }

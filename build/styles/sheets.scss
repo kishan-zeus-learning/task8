@@ -33,6 +33,14 @@
     display: flex;
     background-color: #f1f1f1;
     cursor: url("../img/ArrowDown.png"),auto;
+
+    .columnsRow{
+      position: relative;
+      .subColumn{
+        position: absolute;
+        top:0;
+      }
+    }
   }
 
   .rowsColumnWrapper {
@@ -44,6 +52,14 @@
     background-color: #f1f1f1;
     box-sizing: content-box;
     cursor: url("../img/ArrowRight.png"), auto;
+
+    .rowsColumn{
+      position: relative;
+      .subRow{
+        position: absolute;
+        left:0;
+      }
+    }
   }
 
   .gridContent {
@@ -51,6 +67,13 @@
     grid-column: 2 / 3;
     overflow: scroll;
     position: relative;
+  }
+
+  .grid{
+    position: relative;
+    .tileDivWrapper{
+      position: absolute;
+    }
   }
 }
 
@@ -75,7 +98,8 @@
     top: 0;
     left: 0;
     box-sizing: border-box;
-
+    z-index: 10;
+    
     &:focus {
       outline: none;
       border: 2px solid #137E43;

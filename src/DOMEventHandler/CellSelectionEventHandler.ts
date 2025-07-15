@@ -134,7 +134,7 @@ export class CellSelectionEventHandler extends PointerEventHandlerBase {
      * Maximum scroll speed in pixels per frame
      * @type {number}
      */
-    readonly maxSpeed: number = 10;
+    readonly maxSpeed: number = 25;
     
     // Double-click simulation for pointer move
     /**
@@ -199,7 +199,6 @@ export class CellSelectionEventHandler extends PointerEventHandlerBase {
     hitTest(event: PointerEvent): boolean {
         const currentElement = event.target;
         if (!currentElement || !(currentElement instanceof HTMLCanvasElement)) return false;
-        console.log("hit test true");
         return this.gridDiv.contains(currentElement);
     }
 
@@ -432,7 +431,9 @@ export class CellSelectionEventHandler extends PointerEventHandlerBase {
         
         // Show input, focus it, and populate with current cell value
         this.inputDiv.style.visibility = "visible";
-        this.inputDiv.focus({ preventScroll: true });
+        // this.inputDiv.focus({ preventScroll: true });
+        this.inputDiv.focus();
+        console.log("Focus attempt:", document.activeElement);
         this.putInput();
         this.inputFocus = true;
         this.ifCellEdited = true;
@@ -561,7 +562,6 @@ export class CellSelectionEventHandler extends PointerEventHandlerBase {
      * Continuously scrolls the sheet when dragging near edges
      */
     private autoScroll(): void {
-        console.log("scrolling is on at cell selection");
         
         // Stop scrolling if selection is not active
         if (!this.ifSelectionOn) {

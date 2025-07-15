@@ -33,6 +33,13 @@
   background-color: #f1f1f1;
   cursor: url("../img/ArrowDown.png"), auto;
 }
+.sheet .columnsRowWrapper .columnsRow {
+  position: relative;
+}
+.sheet .columnsRowWrapper .columnsRow .subColumn {
+  position: absolute;
+  top: 0;
+}
 .sheet .rowsColumnWrapper {
   grid-row: 2/3;
   grid-column: 1/2;
@@ -43,11 +50,24 @@
   box-sizing: content-box;
   cursor: url("../img/ArrowRight.png"), auto;
 }
+.sheet .rowsColumnWrapper .rowsColumn {
+  position: relative;
+}
+.sheet .rowsColumnWrapper .rowsColumn .subRow {
+  position: absolute;
+  left: 0;
+}
 .sheet .gridContent {
   grid-row: 2/3;
   grid-column: 2/3;
   overflow: scroll;
   position: relative;
+}
+.sheet .grid {
+  position: relative;
+}
+.sheet .grid .tileDivWrapper {
+  position: absolute;
 }
 
 .subRow {
@@ -70,6 +90,7 @@
   top: 0;
   left: 0;
   box-sizing: border-box;
+  z-index: 10;
 }
 .tileDiv .cellInput:focus {
   outline: none;
@@ -250,11 +271,9 @@
 .subRow {
   width: -moz-fit-content;
   width: fit-content;
-  position: relative;
 }
 .subRow .RowResizeDiv {
   display: none;
-  position: absolute;
   width: 30px;
   left: 10px;
   height: 2px;
@@ -267,11 +286,9 @@
 .subColumn {
   width: -moz-fit-content;
   width: fit-content;
-  position: relative;
 }
 .subColumn .ColumnResizeDiv {
   display: none;
-  position: absolute;
   width: 2px;
   top: 5px;
   height: 15px;
@@ -281,7 +298,6 @@
   pointer-events: none;
 }
 
-.columnsRow,
 .flex {
   display: flex;
 }

@@ -85,6 +85,7 @@ export class ColumnResizingOperation extends Operation {
      */
     undo(): void {
         this.changeWidth(this.prevValue);
+        this.columnsManagerObject.resizePosition();
     }
 
     /**
@@ -94,6 +95,7 @@ export class ColumnResizingOperation extends Operation {
         // console.log("old : ",this.prevValue);
         // console.log("new : ",this.newValue);
         this.changeWidth(this.newValue);
+        this.columnsManagerObject.resizePosition();
     }
 
     /**

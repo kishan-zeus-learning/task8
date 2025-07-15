@@ -1,7 +1,7 @@
 import { ColumnsCanvas } from "./ColumnsCanvas.js";
 import { ColumnData } from "./types/ColumnRows.js";
 import { MultipleSelectionCoordinates } from "./types/MultipleSelectionCoordinates.js";
-import { NumberObj } from "./types/NumberObj.js";
+// import { NumberObj } from "./types/NumberObj.js";
 
 /**
  * Manages the creation, rendering, and scrolling of column canvases.
@@ -15,19 +15,14 @@ export class ColumnsManager {
     private startColumnIdx: number;
 
     /** Number of column groups visible at any time */
-    private visibleColumnCnt: number;
+    readonly visibleColumnCnt: number;
 
     /** Prefix sum arrays storing x-positions of each column in visible groups */
-    readonly visibleColumnsPrefixSum: number[][];
+    readonly visibleColumnsPrefixSumArr: number[][];
 
     /** Array of visible ColumnsCanvas instances */
     readonly visibleColumns: ColumnsCanvas[];
 
-    /** Shared global number used to track the left margin of the columns container */
-    readonly marginLeft: NumberObj;
-    
-    /** Shared global number used to track the right margin of the columns container */
-    readonly marginRight: NumberObj;
 
     /** HTML container where column canvas divs are mounted */
     readonly columnsDivContainer: HTMLDivElement;
@@ -40,6 +35,11 @@ export class ColumnsManager {
 
     /** Max number of ColumnsCanvas groups allowed (used for scroll bounds) */
     private columnCanvasLimit: number;
+
+
+    private scrollWidth:number;
+
+    private scrollWidthStart:number;
 
     /** Shared selection coordinates for column highlighting */
     private selectionCoordinates: MultipleSelectionCoordinates;
@@ -62,7 +62,6 @@ export class ColumnsManager {
         columnCanvasLimit: number = 40,
         defaultHeight: number = 25,
         defaultWidth: number = 100,
-        // marginLeft = { value: 0 }
     ) {
         this.columnWidths = columnWidths;
         this.startColumnIdx = startColumnIdx;
@@ -71,33 +70,72 @@ export class ColumnsManager {
         this.defaultHeight = defaultHeight;
         this.defaultWidth = defaultWidth;
         this.selectionCoordinates = selectionCoordinates;
-        this.marginLeft = {value:0};
-        this.marginRight= {value:0};
+        this.scrollWidth=0;
+        this.scrollWidthStart=0;
         this.visibleColumns = [];
-        this.visibleColumnsPrefixSum = [];
+        this.visibleColumnsPrefixSumArr = [];
 
         this.columnsDivContainer = document.getElementById("columnsRow") as HTMLDivElement;
 
-        this.initialLoad(); // Load initial column canvases
+        this.reload(0,0); // Load initial column canvases
     }
 
     /**
      * Loads initial visible column canvases and appends them to the DOM.
      */
-    private initialLoad(): void {
-        for (let j = 0; j < this.visibleColumnCnt; j++) {
-            const colIdx = j + this.startColumnIdx;
-            const canvas = new ColumnsCanvas(
-                colIdx,
+    // private initialLoad(): void {
+    //     for (let j = 0; j < this.visibleColumnCnt; j++) {
+    //         const colIdx = j + this.startColumnIdx;
+    //         const canvas = new ColumnsCanvas(
+    //             colIdx,
+    //             this.columnWidths,
+    //             this.defaultWidth,
+    //             this.defaultHeight,
+    //             this.selectionCoordinates
+    //         );
+    //         this.visibleColumns.push(canvas);
+    //         this.visibleColumnsPrefixSumArr.push(canvas.columnsPositionArr);
+    //         this.columnsDivContainer.appendChild(canvas.columnCanvasDiv);
+
+    //         canvas.columnCanvasDiv.style.left=`${this.scrollWidth}px`;
+    //         this.scrollWidth+=canvas.columnsPositionArr[24];
+    //         this.columnsDivContainer.style.width=`${this.scrollWidth}px`;
+    //     }
+    // }
+
+    reload(startIdx:number,startPosition:number){
+        startIdx=Math.max(0,startIdx);
+        startPosition=Math.max(0,startPosition);
+        this.columnsDivContainer.replaceChildren();
+        this.visibleColumns.splice(0,this.visibleColumns.length);
+        // this.columnsD
+        this.startColumnIdx=startIdx;
+        this.visibleColumnsPrefixSumArr.splice(0,this.visibleColumnsPrefixSumArr.length);
+        this.scrollWidthStart=startPosition;
+        this.scrollWidth=startPosition;
+
+        for(let j=0;j<this.visibleColumnCnt;j++){
+            const columnIdx = this.startColumnIdx+j;
+
+            const canvas=new ColumnsCanvas(
+                columnIdx,
                 this.columnWidths,
                 this.defaultWidth,
                 this.defaultHeight,
                 this.selectionCoordinates
             );
+
             this.visibleColumns.push(canvas);
-            this.visibleColumnsPrefixSum.push(canvas.columnsPositionArr);
+
+            this.visibleColumnsPrefixSumArr.push(canvas.columnsPositionArr);
+
             this.columnsDivContainer.appendChild(canvas.columnCanvasDiv);
+
+            canvas.columnCanvasDiv.style.left=`${this.scrollWidth}px`;
+            this.scrollWidth+=canvas.columnsPositionArr[24];
+            this.columnsDivContainer.style.width=`${this.scrollWidth}px`;
         }
+        
     }
 
     /**
@@ -137,13 +175,15 @@ export class ColumnsManager {
             this.selectionCoordinates
         );
         this.visibleColumns.push(canvas);
-        this.visibleColumnsPrefixSum.push(canvas.columnsPositionArr);
+        this.visibleColumnsPrefixSumArr.push(canvas.columnsPositionArr);
         this.columnsDivContainer.appendChild(canvas.columnCanvasDiv);
 
-        if(this.marginRight.value>0){
-            this.marginRight.value-=canvas.columnsPositionArr[24];
-            this.columnsDivContainer.style.marginRight=`${this.marginRight.value}px`;
-        }
+        canvas.columnCanvasDiv.style.left=`${this.scrollWidth}px`;
+
+        this.scrollWidth+=canvas.columnsPositionArr[24];
+        this.columnsDivContainer.style.width=`${this.scrollWidth}px`;
+
+
     }
 
     /**
@@ -159,35 +199,34 @@ export class ColumnsManager {
             this.selectionCoordinates
         );
         this.visibleColumns.unshift(canvas);
-        this.visibleColumnsPrefixSum.unshift(canvas.columnsPositionArr);
+        this.visibleColumnsPrefixSumArr.unshift(canvas.columnsPositionArr);
         this.columnsDivContainer.prepend(canvas.columnCanvasDiv);
 
-        // Adjust container margin to maintain visual continuity
-        this.marginLeft.value -= canvas.columnsPositionArr[24];
-        this.columnsDivContainer.style.marginLeft = `${this.marginLeft.value}px`;
+        this.scrollWidthStart-=canvas.columnsPositionArr[24];
+        canvas.columnCanvasDiv.style.left=`${this.scrollWidthStart}px`;
+
     }
 
     /**
      * Unmounts the leftmost canvas and updates margin.
      */
     private unmountColumnLeft(): void {
-        this.marginLeft.value += this.visibleColumns[0].columnsPositionArr[24];
-        this.columnsDivContainer.style.marginLeft = `${this.marginLeft.value}px`;
+        this.scrollWidthStart+=this.visibleColumns[this.visibleColumnCnt-1].columnsPositionArr[24];
+
         this.columnsDivContainer.removeChild(this.visibleColumns[0].columnCanvasDiv);
         this.visibleColumns.shift();
-        this.visibleColumnsPrefixSum.shift();
+        this.visibleColumnsPrefixSumArr.shift();
     }
 
     /**
      * Unmounts the rightmost canvas from the DOM.
      */
     private unmountColumnRight(): void {
-        this.marginRight.value+=this.visibleColumns[this.visibleColumnCnt-1].columnsPositionArr[24];
-        this.columnsDivContainer.style.marginRight=`${this.marginRight.value}px`;
+        this.scrollWidth-=this.visibleColumns[this.visibleColumnCnt-1].columnsPositionArr[24];
         const canvas = this.visibleColumns.pop();
         if (canvas) {
             this.columnsDivContainer.removeChild(canvas.columnCanvasDiv);
-            this.visibleColumnsPrefixSum.pop();
+            this.visibleColumnsPrefixSumArr.pop();
         }
     }
 
@@ -210,5 +249,31 @@ export class ColumnsManager {
         if (arrIdx >= 0 && arrIdx < this.visibleColumns.length) return this.visibleColumns[arrIdx];
         alert("something went wrong inside columns manager");
         return null;
+    }
+
+
+    resizePosition(){
+        this.scrollWidth=this.scrollWidthStart+this.visibleColumns[0].columnsPositionArr[24];
+
+        for(let i=1;i<this.visibleColumnCnt;i++){
+            this.visibleColumns[i].columnCanvasDiv.style.left=`${this.scrollWidth}px`;
+            this.scrollWidth+=this.visibleColumns[i].columnsPositionArr[24];
+        }
+    }
+
+    resetScrollLeft(){
+        this.columnsDivContainer.style.width=`${this.scrollWidth}px`;
+    }
+
+    getStartLeft(){
+        return this.scrollWidthStart;
+    }
+
+    getScrollWidth(){
+        return this.scrollWidth;
+    }
+
+    getStartColIdx(){
+        return this.startColumnIdx;
     }
 }

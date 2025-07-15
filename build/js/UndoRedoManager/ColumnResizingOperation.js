@@ -29,6 +29,7 @@ export class ColumnResizingOperation extends Operation {
      */
     undo() {
         this.changeWidth(this.prevValue);
+        this.columnsManagerObject.resizePosition();
     }
     /**
      * Redoes the column resizing operation by applying the column's new width.
@@ -37,6 +38,7 @@ export class ColumnResizingOperation extends Operation {
         // console.log("old : ",this.prevValue);
         // console.log("new : ",this.newValue);
         this.changeWidth(this.newValue);
+        this.columnsManagerObject.resizePosition();
     }
     /**
      * Changes the width of the specified column and triggers a re-render of affected components.

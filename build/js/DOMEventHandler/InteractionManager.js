@@ -46,7 +46,6 @@ export class InteractionManager {
         this.keyboardHandler = new KeyboardHandler(this.undoRedoManager, this.cellSelectionHandler);
         // Set up all event listeners
         this.setupEventListeners();
-        console.log("InteractionManager initialized with handlers:", this.pointerEventHandlers);
     }
     /**
      * Instantiates all pointer event handlers in priority order.
