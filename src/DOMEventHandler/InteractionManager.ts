@@ -265,9 +265,9 @@ export class InteractionManager {
      * @private
      * @param {MouseEvent} event - The mouse click event
      */
-    private handleWindowClick(event: MouseEvent): void {
-        this.cellSelectionHandler.handleWindowClick(event);
-    }
+    // private handleWindowClick(event: MouseEvent): void {
+    //     this.cellSelectionHandler.handleWindowClick(event);
+    // }
 
     /**
      * Checks and updates cursor when hovering near resizable row areas.
@@ -396,7 +396,7 @@ export class InteractionManager {
         window.removeEventListener("pointerup", this.handlePointerUp);
         window.removeEventListener("keydown", this.handleKeyDown);
         window.removeEventListener("keyup", this.handleKeyUp);
-        window.removeEventListener("click", this.handleWindowClick);
+        // window.removeEventListener("click", this.handleWindowClick);
 
         // Clear internal state
         this.activePointerHandler = null;

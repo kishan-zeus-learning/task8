@@ -279,25 +279,6 @@ export class CellSelectionEventHandler extends PointerEventHandlerBase {
         this.ifSelectionOn = false;
     }
 
-    /**
-     * Handles window click events to manage input focus states
-     * @param {MouseEvent} event The mouse click event
-     */
-    handleWindowClick(event: MouseEvent): void {
-        // Update outer input focus state
-        if (event.target === this.outerInput) {
-            this.outerInputFocus = true;
-        } else {
-            this.outerInputFocus = false;
-        }
-        
-        // If clicking on input element, don't save
-        if (!this.inputDiv || event.target === this.inputDiv) return;
-        
-        // Save input and update display
-        this.saveInput();
-        this.rerender();
-    }
 
     /**
      * Handles arrow key navigation for cell selection

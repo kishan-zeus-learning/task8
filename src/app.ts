@@ -14,6 +14,7 @@ import { CellsMap } from "./types/CellsMap.js";
 import { ColumnData } from "./types/ColumnRows.js";
 import { RowData } from "./types/RowsColumn.js";
 import { CellsManager } from "./Tiles/CellsManager.js";
+import { TestingMethods } from "./TestingMethods.js";
 
 /**
  * Main application class responsible for initializing and managing the spreadsheet-like interface.
@@ -198,6 +199,8 @@ class App {
             this.RowsManagerObj,
             this.TilesManagerObj
         );
+
+        new TestingMethods(this.selectionCoordinates,this.cellData,this.rowData,this.columnData)
     }
 }
 
