@@ -10,6 +10,7 @@ declare global {
     testHooks?: {
       getSelectedCells: ()=> MultipleSelectionCoordinates,
       getSelectedCoordinates: (startRow:number,endRow:number,startColumn:number,endColumn:number)=> PointerPosition,
+       getRowResizingCoordinate: (rowNum: number) => PointerPosition;
     }
   }
 }
@@ -32,7 +33,8 @@ export class TestingMethods{
             console.log("this.selectedCells",this.selectedCells);
             window.testHooks={
                 getSelectedCells:() =>  this.selectedCells,
-                getSelectedCoordinates:(startRow:number,endRow:number,startColumn:number,endColumn:number)=> this.getCoordinates(startRow,endRow,startColumn,endColumn)
+                getSelectedCoordinates:(startRow:number,endRow:number,startColumn:number,endColumn:number)=> this.getCoordinates(startRow,endRow,startColumn,endColumn),
+                getRowResizingCoordinate:(rowNum:number) => this.getRowResizeCoordinates(rowNum), 
             }
 
             // window.abc="kishan kumar";
@@ -149,7 +151,9 @@ export class TestingMethods{
       }
     }
 
-
+    private getRowResizeCoordinates(startRow:number): PointerPosition{
+      
+    }
 
 
 }
