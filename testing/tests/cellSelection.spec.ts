@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect, Page } from "@playwright/test";
 import { MultipleSelectionCoordinates} from "../types/MultipleSelectionCoordinates";
 
 import type { TestHooks } from "../types/hooks";
@@ -11,7 +11,7 @@ declare global {
 }
 
 // Utility: Scroll in chunks (used for large grids)
-async function scrollInSteps(page, scrollX: number, scrollY: number, stepX = 1000, stepY = 400) {
+async function scrollInSteps(page:Page, scrollX: number, scrollY: number, stepX = 1000, stepY = 400) {
   while (scrollY > stepY) {
     await page.mouse.wheel(0, stepY);
     scrollY -= stepY;
@@ -35,10 +35,10 @@ test(">> Single cell selection", async ({ page }) => {
 
   await page.goto("http://localhost:5501/build/index.html?testing=true");
 
-  // Wait until the hook is available
-  await page.waitForFunction(() =>
-    typeof window.testHooks?.getSelectedCoordinates === "function"
-  );
+  // // Wait until the hook is available
+  // await page.waitForFunction(() =>
+  //   typeof window.testHooks?.getSelectedCoordinates === "function"
+  // );
 
   // Get screen coordinates and scroll values for the cell
   const cellPos = await page.evaluate(

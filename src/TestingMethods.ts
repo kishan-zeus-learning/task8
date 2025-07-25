@@ -1,8 +1,10 @@
-import { off } from "process";
+
 import { CellsMap } from "./types/CellsMap";
+import { ColumnResizingTesting } from "./types/ColumnResizingTesting";
 import { ColumnData } from "./types/ColumnRows";
 import { MultipleSelectionCoordinates } from "./types/MultipleSelectionCoordinates";
 import { PointerPosition } from "./types/PointerPosition";
+import { RowResizingTesting } from "./types/RowResizeTesting";
 import { RowData } from "./types/RowsColumn";
 
 declare global {
@@ -10,7 +12,13 @@ declare global {
     testHooks?: {
       getSelectedCells: ()=> MultipleSelectionCoordinates,
       getSelectedCoordinates: (startRow:number,endRow:number,startColumn:number,endColumn:number)=> PointerPosition,
-       getRowResizingCoordinate: (rowNum: number) => PointerPosition;
+       getRowResizingCoordinate: (rowNum: number) => RowResizingTesting,
+
+       getColumnResizingCoordinate:(columnNum:number)=>ColumnResizingTesting,
+
+       getRowHeight:(rowNum:number) => number,
+
+       getColumnWidth:(columnNum:number) => number,
     }
   }
 }
@@ -33,8 +41,16 @@ export class TestingMethods{
             console.log("this.selectedCells",this.selectedCells);
             window.testHooks={
                 getSelectedCells:() =>  this.selectedCells,
+
                 getSelectedCoordinates:(startRow:number,endRow:number,startColumn:number,endColumn:number)=> this.getCoordinates(startRow,endRow,startColumn,endColumn),
+
                 getRowResizingCoordinate:(rowNum:number) => this.getRowResizeCoordinates(rowNum), 
+
+                getColumnResizingCoordinate:(columnNum:number)=> this.getColumnResizeCoordinates(columnNum),
+
+                getRowHeight:(rowNum:number) => this.getRowHeight(rowNum),
+
+                getColumnWidth:(columnNum:number) =>this.getColumnWidth(columnNum)
             }
 
             // window.abc="kishan kumar";
@@ -56,8 +72,8 @@ export class TestingMethods{
       let selectionEndX=gridRect.left+1;
       let selectionEndY=gridRect.top+1;
 
-      const visibleHeight= sheetRect.height - 25;
-      const visibleWidth= sheetRect.width - 50;
+      const visibleHeight= sheetRect.height - 25-10;
+      const visibleWidth= sheetRect.width - 50-10;
 
       let offsetX=1;
       let offsetY=1;
@@ -151,8 +167,115 @@ export class TestingMethods{
       }
     }
 
-    private getRowResizeCoordinates(startRow:number): PointerPosition{
-      
+    private getRowResizeCoordinates(startRow:number): RowResizingTesting{
+        const gridDiv=document.getElementById("grid") as HTMLDivElement;
+        const gridRect=gridDiv.getBoundingClientRect();
+
+        const sheetDiv=document.getElementById("sheet") as HTMLDivElement;
+
+        const sheetRect= sheetDiv.getBoundingClientRect();
+
+        let selectionStartY=gridRect.top;
+
+        const visibleHeight=sheetRect.height - 25;
+
+
+        let offsetY=1;
+        for(let i=1;i<startRow;i++){
+          const currentRow=this.rowsData.get(i);
+          if(currentRow){
+            offsetY+=currentRow.height;
+          }else{
+            offsetY+=25;
+          }
+        }
+
+        let scrollY=0;
+
+        if(offsetY>=visibleHeight){
+          scrollY=offsetY%visibleHeight + (Math.floor(offsetY/visibleHeight))*visibleHeight;
+        }
+
+        for(let i=1;i<=startRow;i++){
+          const currentRow=this.rowsData.get(i);
+          if(currentRow){
+            selectionStartY+=currentRow.height;
+          }else{
+            selectionStartY+=25;
+          }
+        }
+
+        selectionStartY-=scrollY;
+
+        return {
+          selectionStartY,
+          scrollY   
+        }
+    }
+
+
+    private getColumnResizeCoordinates(columnNum:number):ColumnResizingTesting{
+      const gridDiv=document.getElementById("grid") as HTMLDivElement;
+      const gridRect=gridDiv.getBoundingClientRect();
+
+      const sheetDiv=document.getElementById("sheet") as HTMLDivElement;
+
+      const sheetRect=sheetDiv.getBoundingClientRect();
+
+      let selectionStartX=gridRect.left;
+
+      const visibleWidth=sheetRect.width - 50;
+
+      let offsetX=1;
+
+      for(let j=1;j<columnNum;j++){
+        const currentColumn= this.columnsData.get(j);
+        if(currentColumn){
+          offsetX+=currentColumn.width;
+        }else{
+          offsetX+=100;
+        }
+      }
+
+      let scrollX=0;
+
+      if(offsetX>=visibleWidth){
+        scrollX=offsetX%visibleWidth + (Math.floor(offsetX/visibleWidth))*visibleWidth;
+      }
+
+      for(let j=1;j<=columnNum;j++){
+        const currentColumn=this.columnsData.get(j);
+
+        if(currentColumn){
+          selectionStartX+=currentColumn.width;
+        }else{
+          selectionStartX+=100;
+        }
+      }
+
+      selectionStartX-=scrollX;
+      const selectionStartY=sheetRect.top;
+
+      return {
+        selectionStartX,
+        selectionStartY,
+        scrollX
+      }
+    }
+
+
+    private getRowHeight(rowNum:number){
+      const currentRow=this.rowsData.get(rowNum);
+
+      if(currentRow) return currentRow.height;
+      else return 25;
+    }
+
+    private getColumnWidth(columnNum:number){
+      const currentColumn=this.columnsData.get(columnNum);
+
+      if(currentColumn) return currentColumn.width;
+      else return 100;
     }
 
 
